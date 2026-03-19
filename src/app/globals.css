@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
+/* ── Light theme (default) ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAFAFA;
+  --foreground: #1A1A1A;
+  --accent: #0066FF;
+  --accent-light: #E8F0FE;
+  --accent-dark: #0047B3;
+  --surface: #FFFFFF;
+  --muted: #737373;
+  --border: #E5E7EB;
+}
+
+/* ── Dark theme (explicit toggle) ── */
+[data-theme="dark"] {
+  --background: #0A0A0A;
+  --foreground: #E5E5E5;
+  --accent: #3B82F6;
+  --accent-light: #1E3A5F;
+  --accent-dark: #60A5FA;
+  --surface: #141414;
+  --muted: #525252;
+  --border: #262626;
+}
+
+/* ── Dark theme (system preference fallback before JS loads) ── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0A0A0A;
+    --foreground: #E5E5E5;
+    --accent: #3B82F6;
+    --accent-light: #1E3A5F;
+    --accent-dark: #60A5FA;
+    --surface: #141414;
+    --muted: #525252;
+    --border: #262626;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-accent-dark: var(--accent-dark);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ── Base styles ── */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+}
+
+/* ── Blueprint grid background ── */
+.blueprint-grid {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ── Circuit-trace divider ── */
+.circuit-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent) 20%,
+    var(--accent) 50%,
+    var(--border) 80%,
+    transparent 100%
+  );
+  opacity: 0.4;
+}
+
+/* ── Selection colour ── */
+::selection {
+  background-color: var(--accent);
+  color: white;
 }
