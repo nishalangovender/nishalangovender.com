@@ -17,18 +17,22 @@ export function useTheme() {
   return ctx;
 }
 
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "light";
-  const stored = localStorage.getItem("theme") as Theme | null;
-  if (stored === "dark" || stored === "light") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  // Always start with "light" to match server render and avoid hydration mismatch
+  const [theme, setTheme] = useState<Theme>("light");
 
+  // Read stored preference after mount (client-only)
+  useEffect(() => {
+    const stored = localStorage.getItem("theme") as Theme | null;
+    if (stored === "dark" || stored === "light") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reading browser-only localStorage on mount
+      setTheme(stored);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+  }, []);
+
+  // Sync to DOM and localStorage whenever theme changes
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { siteConfig } from "@/lib/constants";
 
@@ -36,7 +38,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans">
         <ThemeProvider>
-          <main className="flex-1">{children}</main>
+          <Navbar />
+          <main className="flex-1 pt-16">{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
