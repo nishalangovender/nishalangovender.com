@@ -25,7 +25,7 @@ export default function Hero() {
           className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight"
           variants={fadeUp}
         >
-          I solve problems.
+          I Solve Problems
         </motion.h1>
 
         <motion.div className="circuit-divider max-w-xs mx-auto" variants={fadeUp} />
@@ -45,7 +45,7 @@ export default function Hero() {
             href="/projects"
             className="inline-flex items-center px-6 py-3 bg-accent text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
           >
-            View my work
+            View My Work
           </Link>
           <Link
             href="/cv"
