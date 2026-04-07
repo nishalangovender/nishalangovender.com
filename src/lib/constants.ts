@@ -9,6 +9,7 @@ export const siteConfig = {
     github: "https://github.com/nishalangovender",
     linkedin: "https://linkedin.com/in/nishalangovender",
   },
+  formspreeId: process.env.NEXT_PUBLIC_FORMSPREE_ID ?? "",
 } as const;
 
 export const navLinks = [
