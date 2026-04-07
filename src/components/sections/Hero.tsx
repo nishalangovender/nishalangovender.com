@@ -7,7 +7,7 @@ import { fadeUp, staggerContainer } from "@/lib/animations";
 
 export default function Hero() {
   return (
-    <section className="blueprint-grid min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+    <section className="blueprint-grid min-h-[calc(100dvh-4rem)] flex items-center justify-center px-4">
       <motion.div
         className="text-center max-w-3xl space-y-8"
         variants={staggerContainer}

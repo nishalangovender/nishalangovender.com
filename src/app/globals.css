@@ -10,6 +10,7 @@
   --surface: #FFFFFF;
   --muted: #737373;
   --border: #E5E7EB;
+  --blueprint-line: rgba(0, 102, 255, 0.06);
 }
 
 /* ── Dark theme (explicit toggle) ── */
@@ -22,6 +23,7 @@
   --surface: #141414;
   --muted: #525252;
   --border: #262626;
+  --blueprint-line: rgba(59, 130, 246, 0.08);
 }
 
 /* ── Dark theme (system preference fallback before JS loads) ── */
@@ -35,6 +37,7 @@
     --surface: #141414;
     --muted: #525252;
     --border: #262626;
+    --blueprint-line: rgba(59, 130, 246, 0.08);
   }
 }
 
@@ -61,8 +64,8 @@ body {
 /* ── Blueprint grid background ── */
 .blueprint-grid {
   background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    linear-gradient(var(--blueprint-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
@@ -80,8 +83,20 @@ body {
   opacity: 0.4;
 }
 
+/* ── Mobile touch: eliminate 300ms tap delay ── */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ── Selection colour ── */
 ::selection {
   background-color: var(--accent);
   color: white;
+}
+
+/* ── Typewriter cursor blink ── */
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }

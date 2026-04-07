@@ -22,6 +22,18 @@ export function Navbar() {
     return () => document.removeEventListener("keydown", handleKey);
   }, [mobileOpen]);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   const closeMenu = useCallback(() => {
     setMobileOpen(false);
   }, []);
@@ -153,10 +165,16 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Mobile menu overlay */}
       {mobileOpen && (
-        <div className="lg:hidden border-t border-border bg-background/95 backdrop-blur-md">
-          <ul className="max-w-5xl mx-auto px-4 py-3 space-y-1">
+        <div
+          className="lg:hidden fixed inset-0 top-16 z-40 bg-background border-t border-border overflow-y-auto"
+          onClick={closeMenu}
+        >
+          <ul
+            className="max-w-5xl mx-auto px-4 py-3 space-y-1"
+            onClick={(e) => e.stopPropagation()}
+          >
             {navLinks.map((link) => {
               const isActive =
                 link.href === "/"
