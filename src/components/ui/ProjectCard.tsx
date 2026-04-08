@@ -3,13 +3,28 @@
 import { motion } from "framer-motion";
 
 import type { Project } from "@/data/projects";
-import { fadeUp } from "@/lib/animations";
 
-export default function ProjectCard({ project }: { project: Project }) {
+export default function ProjectCard({
+  project,
+  index = 0,
+}: {
+  project: Project;
+  /** Position in the current list — used to stagger the fade-up on mount. */
+  index?: number;
+}) {
   return (
     <motion.article
-      variants={fadeUp}
-      className="group relative flex h-full flex-col rounded-xl border border-border/60 bg-surface p-6 transition-all duration-300 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5"
+      layout
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{
+        duration: 0.35,
+        ease: "easeOut",
+        delay: Math.min(index * 0.05, 0.4),
+        layout: { duration: 0.3, ease: "easeOut" },
+      }}
+      className="group relative flex h-full flex-col rounded-xl border border-border/60 bg-surface p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5"
     >
       {/* Tags */}
       <div className="mb-4 flex flex-wrap gap-2">
