@@ -10,6 +10,7 @@ export type BlogPostFrontmatter = {
   title: string;
   description: string;
   date: string;
+  updated?: string;
   tags?: string[];
   draft?: boolean;
 };

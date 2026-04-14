@@ -202,6 +202,24 @@ button, a, [role="button"] {
   padding-left: 0.75rem;
   margin-left: -1rem;
 }
+.prose-blog img {
+  margin: 2rem auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+}
+.prose-blog figure {
+  margin: 2rem 0;
+}
+.prose-blog figcaption {
+  margin-top: 0.625rem;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
 .prose-blog hr {
   border: 0;
   height: 1px;

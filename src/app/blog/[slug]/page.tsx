@@ -71,6 +71,12 @@ export default async function BlogPostPage({
         <div className="circuit-divider max-w-xs mt-6" />
         <p className="mt-6 font-mono text-xs uppercase tracking-wider text-muted">
           {formatPostDate(post.date)} · {post.readingMinutes} Min Read
+          {post.updated && (
+            <>
+              {" "}
+              · Updated {formatPostDate(post.updated)}
+            </>
+          )}
         </p>
         {post.tags && post.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
