@@ -1,8 +1,9 @@
 "use client";
 
-import { timelineChapters } from "@/data/timeline";
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
+
+import { timelineChapters } from "@/data/timeline";
 
 // ─── Animation variants ───────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ export default function MobileTimeline() {
           {/* Continuous vertical line */}
           <div className="absolute left-[7px] top-2 bottom-2 w-[2px] bg-accent/20" />
 
-          {timelineChapters.map((chapter, chapterIdx) => (
+          {timelineChapters.map((chapter) => (
             <Wrapper
               key={chapter.id}
               className="relative mb-12 last:mb-0"

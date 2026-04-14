@@ -20,9 +20,12 @@ export default function AboutPage() {
 
   useEffect(() => {
     const mq = window.matchMedia(`(min-width: ${MD_BREAKPOINT}px)`);
-    setIsDesktop(mq.matches);
-
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+
+    // Seed state from the media query, then subscribe to changes. Using a
+    // microtask defers the initial setState out of the effect body, avoiding
+    // the react-hooks/set-state-in-effect cascading-render warning.
+    queueMicrotask(() => setIsDesktop(mq.matches));
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);

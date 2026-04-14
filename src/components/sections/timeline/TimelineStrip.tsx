@@ -141,7 +141,6 @@ const LOGO_SIZE = 8;
 const LOGO_R = 1.5;   // border-radius for logo rounded rect
 const LABEL_Y = -30;  // institution labels above the line (raised to clear commit date labels)
 const YEAR_Y = 24;    // year labels below the line
-const ARC_DROP = 30;  // how far below the line the arcs dip (below year labels)
 
 /**
  * All strip content as SVG <g> — line, boundary dots, year labels,
