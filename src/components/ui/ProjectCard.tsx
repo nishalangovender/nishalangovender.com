@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 import { TechPill } from "@/components/ui/TechPill";
 import type { Project } from "@/data/projects";
@@ -13,6 +14,9 @@ export default function ProjectCard({
   /** Position in the current list — used to stagger the fade-up on mount. */
   index?: number;
 }) {
+  const hasCaseStudy = Boolean(project.caseStudy);
+  const caseStudyHref = `/projects/${project.slug}`;
+
   return (
     <motion.article
       layout
@@ -25,8 +29,28 @@ export default function ProjectCard({
         delay: Math.min(index * 0.05, 0.4),
         layout: { duration: 0.3, ease: "easeOut" },
       }}
-      className="group relative flex h-full flex-col rounded-xl border border-border/60 bg-surface p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5"
+      className={`group relative flex h-full flex-col rounded-xl border border-border/60 bg-surface p-6 transition-[border-color,box-shadow] duration-300 ${
+        project.confidential
+          ? "opacity-90"
+          : "hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5"
+      }`}
     >
+      {/* Status badges */}
+      {(project.confidential || project.interactiveDemoPlanned) && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {project.confidential && (
+            <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-border bg-surface px-2 py-0.5 text-muted">
+              Confidential
+            </span>
+          )}
+          {project.interactiveDemoPlanned && (
+            <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-accent/30 bg-accent-light px-2 py-0.5 text-accent">
+              ⚡ Interactive Demo Coming
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Tags */}
       <div className="mb-4 flex flex-wrap gap-2">
         {project.tags.map((tag) => (
@@ -34,27 +58,46 @@ export default function ProjectCard({
         ))}
       </div>
 
-      {/* Title */}
-      <h3 className="text-lg font-semibold text-foreground transition-colors group-hover:text-accent">
-        {project.title}
-      </h3>
+      {/* Title — links to case study when one exists */}
+      {hasCaseStudy ? (
+        <h3 className="text-lg font-semibold text-foreground transition-colors group-hover:text-accent">
+          <Link
+            href={caseStudyHref}
+            className="before:absolute before:inset-0 before:content-['']"
+          >
+            {project.title}
+          </Link>
+        </h3>
+      ) : (
+        <h3 className="text-lg font-semibold text-foreground">
+          {project.title}
+        </h3>
+      )}
 
       {/* Description */}
       <p className="mt-2 text-sm text-muted leading-relaxed">
         {project.description}
       </p>
 
-      {/* Links (external / source) — push to the bottom of the card */}
-      {(project.link || project.github) && (
-        <div className="mt-auto flex items-center gap-4 pt-4">
+      {/* Footer row — case study link + external/source */}
+      {(hasCaseStudy || project.link || project.github) && (
+        <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-4">
+          {hasCaseStudy && (
+            <Link
+              href={caseStudyHref}
+              className="font-mono text-xs text-accent transition-colors hover:text-accent-dark"
+            >
+              Read Case Study &rarr;
+            </Link>
+          )}
           {project.link && (
             <a
               href={project.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs text-accent transition-colors hover:text-accent-dark"
+              className="relative z-10 font-mono text-xs text-muted transition-colors hover:text-foreground"
             >
-              View Project &rarr;
+              Live Site
             </a>
           )}
           {project.github && (
@@ -62,7 +105,7 @@ export default function ProjectCard({
               href={project.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs text-muted transition-colors hover:text-foreground"
+              className="relative z-10 font-mono text-xs text-muted transition-colors hover:text-foreground"
             >
               Source
             </a>
@@ -70,11 +113,13 @@ export default function ProjectCard({
         </div>
       )}
 
-      {/* Hover accent bar */}
-      <div
-        className="absolute bottom-0 left-6 right-6 h-[2px] origin-left scale-x-0 rounded-full bg-accent transition-transform duration-300 group-hover:scale-x-100"
-        aria-hidden="true"
-      />
+      {/* Hover accent bar — only when card is interactive */}
+      {hasCaseStudy && (
+        <div
+          className="absolute bottom-0 left-6 right-6 h-[2px] origin-left scale-x-0 rounded-full bg-accent transition-transform duration-300 group-hover:scale-x-100"
+          aria-hidden="true"
+        />
+      )}
     </motion.article>
   );
 }

@@ -46,6 +46,16 @@ export interface Project {
   github?: string;
   /** Flagship projects surface first on the grid and homepage. */
   featured: boolean;
+  /**
+   * Confidential client work that cannot have a detail page or imagery.
+   * Renders as a non-clickable card with a "Confidential" badge.
+   */
+  confidential?: boolean;
+  /**
+   * Marks a project that has an interactive demo planned for Milestone 5.
+   * Surfaces a subtle badge on the card while the demo is still pending.
+   */
+  interactiveDemoPlanned?: boolean;
   /** Full case study content. Undefined until the case study is written. */
   caseStudy?: CaseStudy;
 }
@@ -62,14 +72,40 @@ export const projects: Project[] = [
       "Designed and deployed an end-to-end AGV and fleet management system at Toyota SA Manufacturing, with a scalable architecture designed to support further line expansion. Built the full software stack including kinematic modelling, SMACC2 state machines, embedded Linux customisation, low-level C++ CANOpen drivers, IMU/LiDAR fusion, and Zenoh-based fleet communication.",
     tags: ["Robotics", "ROS2", "C++", "CANOpen", "Zenoh"],
     featured: true,
+    caseStudy: {
+      problem:
+        "A South African automotive manufacturer needed a production AGV fleet to move parts across multiple assembly lines, on an accelerated delivery schedule. The system had to run reliably on a factory floor shared with human operators, integrate cleanly with existing plant infrastructure, and be extensible so that additional lines could be brought online without rewriting the software stack.\n\nI joined BATTALION Technologies under a senior engineer and progressively took ownership of technical decisions during my first year. After the senior engineer departed, I led the company's technical practice for the remaining eight months — responsible for the architecture, the embedded stack, controls, DevOps, client engagement and team development carrying this deployment to production.",
+      approach:
+        "The brief was less about a single AGV and more about a fleet-capable platform — so the guiding principle from day one was that the software had to be modular, configurable, and reusable across hardware variants rather than hand-tuned to one chassis.\n\nI architected the full stack around ROS2 as the runtime backbone, with SMACC2 state machines coordinating autonomous, manual and error-recovery modes, and Zenoh handling real-time coordination between vehicles and the fleet layer. Configuration was lifted out of code so that the same stack could be reconfigured for different AGV variants without touching the application logic.\n\nAlongside the robotics stack I defined the team's engineering practice — version control strategy, code review standards, containerised testing and CI/CD — so that the growing codebase stayed reliable as multiple engineers and contractors contributed in parallel.",
+      technicalDetails:
+        "The stack spanned kernel to cloud. At the embedded layer I customised Linux builds for industrial controller hardware and wrote low-level C++ drivers for motor controllers and sensors over CANOpen, including protocol work against limited vendor documentation. Sensor fusion combined 2D/3D LiDAR, magnetic line sensors and IMU data for accurate localisation and navigation.\n\nHigher up, the motion stack included forward and inverse kinematics, path-following controllers and motion planning; SMACC2 orchestrated the behaviour modes and error-recovery flows. Zenoh provided the real-time communication fabric between vehicles and the fleet coordinator. For the operator side I designed and shipped a ReactJS dashboard in two weeks — real-time fleet status, position, battery and sensor health — to give plant operators visibility into what the fleet was doing.\n\nOn the tooling side I built internal CLI utilities to automate system bring-up and to bridge mechanical CAD outputs into the ROS2 simulation environment, closing the loop between the mechanical team and the software stack.",
+      outcome:
+        "Delivered an end-to-end production AGV and fleet management system at Toyota SA Manufacturing on an accelerated schedule, with an architecture designed to scale across further assembly lines. In parallel I maintained and upgraded a legacy AGV deployment at a Toyota parts distribution centre, including on-site debugging under production pressure, a full operating system and firmware migration across the deployed fleet, and network infrastructure upgrades to improve fleet communication reliability.\n\nBeyond the deployment itself, I represented the company as its technical face — presenting to senior management at Toyota and demonstrating laser-guided AGV systems at national automotive innovation events attended by Ford, VW and Isuzu — and mentored a junior engineer plus remote contract engineers through the build-out.",
+      techStack: [
+        "ROS2",
+        "SMACC2",
+        "Zenoh",
+        "C++",
+        "Python",
+        "CANOpen",
+        "Embedded Linux",
+        "LiDAR",
+        "IMU",
+        "Sensor Fusion",
+        "ReactJS",
+        "Docker",
+        "GitHub Actions",
+      ],
+    },
   },
   {
     slug: "agv-operator-dashboard",
     title: "AGV Operator Dashboard",
     description:
-      "Delivered a ReactJS operator dashboard in two weeks for an automotive AGV deployment, displaying real-time position, battery status, sensor health and fault diagnostics.",
+      "Delivered a ReactJS operator dashboard in two weeks for an automotive AGV deployment, displaying real-time position, battery status, sensor health and fault diagnostics. Confidential client work — no detail page or imagery publicly available.",
     tags: ["ReactJS", "Full-Stack", "Real-Time"],
-    featured: true,
+    featured: false,
+    confidential: true,
   },
   {
     slug: "nishos",
@@ -79,6 +115,7 @@ export const projects: Project[] = [
     tags: ["Next.js", "Supabase", "PostgreSQL", "Full-Stack", "MCP"],
     link: "https://app.nishalangovender.com",
     featured: true,
+    interactiveDemoPlanned: true,
   },
   {
     slug: "park-bot",
@@ -88,6 +125,25 @@ export const projects: Project[] = [
     tags: ["ROS2", "Gazebo", "SLAM", "NAV2", "Python"],
     github: "https://github.com/nishalangovender/park_bot",
     featured: true,
+    interactiveDemoPlanned: true,
+  },
+  {
+    slug: "path-following",
+    title: "Path Following Control System",
+    description:
+      "Developed an autonomous path-following system for a differential-drive wagon tracking predefined trajectories using noisy GPS/IMU sensor fusion via Extended Kalman Filter, achieving 325mm per-sample tracking error.",
+    tags: ["Python", "EKF", "Control Theory", "Sensor Fusion"],
+    featured: true,
+    interactiveDemoPlanned: true,
+  },
+  {
+    slug: "pen-plotter",
+    title: "Pen Plotter Control System",
+    description:
+      "Built an automated pen plotter for whiteboard drawing: RP2040 firmware controlling stepper motors and actuator hardware, with a Python GUI for interactive path planning, Bezier curves, and SVG file import.",
+    tags: ["C++", "Python", "RP2040", "Embedded"],
+    featured: true,
+    interactiveDemoPlanned: true,
   },
   {
     slug: "mergens-workshop",
@@ -97,6 +153,7 @@ export const projects: Project[] = [
     tags: ["Next.js", "Supabase", "Full-Stack", "Web"],
     link: "https://mergensworkshop.co.za",
     featured: true,
+    interactiveDemoPlanned: true,
   },
   {
     slug: "nishalangovender-com",
@@ -105,22 +162,6 @@ export const projects: Project[] = [
       "This site. Built with Next.js 15 (App Router), TypeScript, Tailwind CSS, Framer Motion and MDX. Engineering-aesthetic design with blueprint grid, circuit-trace dividers, and a git-graph career timeline.",
     tags: ["Next.js", "React", "Tailwind", "TypeScript", "Web"],
     link: "https://nishalangovender.com",
-    featured: false,
-  },
-  {
-    slug: "pen-plotter",
-    title: "Pen Plotter Control System",
-    description:
-      "Built an automated pen plotter for whiteboard drawing: RP2040 firmware controlling stepper motors and actuator hardware, with a Python GUI for interactive path planning, Bezier curves, and SVG file import.",
-    tags: ["C++", "Python", "RP2040", "Embedded"],
-    featured: false,
-  },
-  {
-    slug: "path-following",
-    title: "Path Following Control System",
-    description:
-      "Developed an autonomous path-following system for a differential-drive wagon tracking predefined trajectories using noisy GPS/IMU sensor fusion via Extended Kalman Filter, achieving 325mm per-sample tracking error.",
-    tags: ["Python", "EKF", "Control Theory", "Sensor Fusion"],
     featured: false,
   },
   {

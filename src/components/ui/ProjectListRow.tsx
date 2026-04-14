@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 import { TechPill } from "@/components/ui/TechPill";
 import type { Project } from "@/data/projects";
@@ -13,6 +14,9 @@ export default function ProjectListRow({
   /** Position in the current list — used to stagger the fade-up on mount. */
   index?: number;
 }) {
+  const hasCaseStudy = Boolean(project.caseStudy);
+  const caseStudyHref = `/projects/${project.slug}`;
+
   return (
     <motion.li
       layout
@@ -30,16 +34,37 @@ export default function ProjectListRow({
       <div className="flex flex-col gap-4 py-5 md:flex-row md:items-start md:justify-between md:gap-8">
         {/* ── Left: title + description ─────────────────────────────────── */}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3">
-            <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-accent md:text-lg">
-              {project.title}
-            </h3>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            {hasCaseStudy ? (
+              <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-accent md:text-lg">
+                <Link
+                  href={caseStudyHref}
+                  className="before:absolute before:inset-0 before:content-['']"
+                >
+                  {project.title}
+                </Link>
+              </h3>
+            ) : (
+              <h3 className="text-base font-semibold text-foreground md:text-lg">
+                {project.title}
+              </h3>
+            )}
             {project.featured && (
               <span
                 className="font-mono text-[9px] tracking-wider uppercase text-accent"
                 aria-label="Featured project"
               >
                 ★ Featured
+              </span>
+            )}
+            {project.confidential && (
+              <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-border bg-surface px-2 py-0.5 text-muted">
+                Confidential
+              </span>
+            )}
+            {project.interactiveDemoPlanned && (
+              <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-accent/30 bg-accent-light px-2 py-0.5 text-accent">
+                ⚡ Demo Coming
               </span>
             )}
           </div>
@@ -57,16 +82,24 @@ export default function ProjectListRow({
               </TechPill>
             ))}
           </div>
-          {(project.link || project.github) && (
+          {(hasCaseStudy || project.link || project.github) && (
             <div className="flex items-center gap-4">
+              {hasCaseStudy && (
+                <Link
+                  href={caseStudyHref}
+                  className="font-mono text-[11px] text-accent hover:text-accent-dark transition-colors"
+                >
+                  Case Study &rarr;
+                </Link>
+              )}
               {project.link && (
                 <a
                   href={project.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-[11px] text-accent hover:text-accent-dark transition-colors"
+                  className="relative z-10 font-mono text-[11px] text-muted hover:text-foreground transition-colors"
                 >
-                  View Project &rarr;
+                  Live Site
                 </a>
               )}
               {project.github && (
@@ -74,7 +107,7 @@ export default function ProjectListRow({
                   href={project.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-[11px] text-muted hover:text-foreground transition-colors"
+                  className="relative z-10 font-mono text-[11px] text-muted hover:text-foreground transition-colors"
                 >
                   Source
                 </a>
@@ -84,11 +117,13 @@ export default function ProjectListRow({
         </div>
       </div>
 
-      {/* Hover accent bar in the left gutter (matches card's bottom bar, rotated) */}
-      <div
-        className="absolute -left-3 top-5 bottom-5 w-[2px] origin-top scale-y-0 rounded-full bg-accent transition-transform duration-300 group-hover:scale-y-100"
-        aria-hidden="true"
-      />
+      {/* Hover accent bar — only when row is interactive */}
+      {hasCaseStudy && (
+        <div
+          className="absolute -left-3 top-5 bottom-5 w-[2px] origin-top scale-y-0 rounded-full bg-accent transition-transform duration-300 group-hover:scale-y-100"
+          aria-hidden="true"
+        />
+      )}
     </motion.li>
   );
 }
