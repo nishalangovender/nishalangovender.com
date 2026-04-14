@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
 
 import { projects } from "@/data/projects";
+import { getAllPosts } from "@/lib/blog";
 import { siteConfig } from "@/lib/constants";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const base = siteConfig.url;
 
@@ -13,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/projects`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${base}/skills`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/cv`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/contact`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
   ];
 
@@ -25,5 +27,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     }));
 
-  return [...staticRoutes, ...projectRoutes];
+  const posts = await getAllPosts();
+  const postRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
+    url: `${base}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: "yearly",
+    priority: 0.6,
+  }));
+
+  return [...staticRoutes, ...projectRoutes, ...postRoutes];
 }
