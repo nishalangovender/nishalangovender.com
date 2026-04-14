@@ -24,9 +24,23 @@ export async function generateMetadata({
   const { slug } = await params;
   const project = getProjectBySlug(slug);
   if (!project) return {};
+  const path = `/projects/${project.slug}`;
   return {
-    title: `${project.title} — Nishalan Govender`,
+    title: project.title,
     description: project.description,
+    alternates: { canonical: path },
+    openGraph: {
+      title: `${project.title} — Nishalan Govender`,
+      description: project.description,
+      url: path,
+      type: "article",
+      tags: [...project.tags],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${project.title} — Nishalan Govender`,
+      description: project.description,
+    },
   };
 }
 
