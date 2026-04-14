@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
+import { Reveal } from "@/components/ui/Reveal";
 import { TechPill } from "@/components/ui/TechPill";
 import { getProjectBySlug, projects } from "@/data/projects";
 
@@ -152,7 +153,7 @@ function CaseStudySection({
   const paragraphs = body.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   return (
-    <section>
+    <Reveal as="section">
       <div className="flex items-baseline gap-4">
         <span className="font-mono text-sm text-accent tracking-wider">
           {label}
@@ -166,6 +167,6 @@ function CaseStudySection({
           <p key={i}>{p}</p>
         ))}
       </div>
-    </section>
+    </Reveal>
   );
 }

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import CvRequestForm from "@/components/sections/CvRequestForm";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
+import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import {
   courses,
@@ -232,13 +233,13 @@ function ProfileSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-20">
+    <Reveal as="section" className="mt-20">
       <Eyebrow size="small">{label}</Eyebrow>
       <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
         {title}
       </h2>
       <div className="circuit-divider mt-4 max-w-[10rem]" />
       <div className="mt-8">{children}</div>
-    </section>
+    </Reveal>
   );
 }
