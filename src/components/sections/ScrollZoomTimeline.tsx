@@ -265,9 +265,9 @@ export default function ScrollZoomTimeline() {
         <div className="relative z-20 pt-8 flex justify-center">
           <div className="w-full max-w-5xl px-4">
             <Eyebrow className="mb-2">About</Eyebrow>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
               The Engineer Behind the Code
-            </h2>
+            </h1>
           </div>
         </div>
 

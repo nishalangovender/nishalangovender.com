@@ -102,8 +102,11 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
         <ThemeProvider>
+          <a href="#main" className="skip-link">
+            Skip To Content
+          </a>
           <Navbar />
-          <main className="flex-1 pt-16">
+          <main id="main" className="flex-1 pt-16">
             <PageTransition>{children}</PageTransition>
           </main>
           <Footer />

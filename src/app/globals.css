@@ -8,7 +8,7 @@
   --accent-light: #E8F0FE;
   --accent-dark: #0047B3;
   --surface: #FFFFFF;
-  --muted: #737373;
+  --muted: #6B6B6B;
   --border: #E5E7EB;
   --blueprint-line: rgba(0, 102, 255, 0.06);
 }
@@ -21,7 +21,7 @@
   --accent-light: #1E3A5F;
   --accent-dark: #60A5FA;
   --surface: #141414;
-  --muted: #525252;
+  --muted: #8A8A8A;
   --border: #262626;
   --blueprint-line: rgba(59, 130, 246, 0.08);
 }
@@ -35,7 +35,7 @@
     --accent-light: #1E3A5F;
     --accent-dark: #60A5FA;
     --surface: #141414;
-    --muted: #525252;
+    --muted: #8A8A8A;
     --border: #262626;
     --blueprint-line: rgba(59, 130, 246, 0.08);
   }
@@ -87,6 +87,46 @@ body {
 button, a, [role="button"] {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Focus-visible: consistent accent ring across the site ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Skip link: hidden until focused, then jumps into view ── */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.625rem 1rem;
+  background: var(--accent);
+  color: white;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 0.5rem;
+  transform: translateY(-150%);
+  transition: transform 0.2s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ── Reduced motion: shut down lingering transitions/animations ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── Selection colour ── */

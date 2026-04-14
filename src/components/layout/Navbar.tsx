@@ -44,7 +44,10 @@ export function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <nav className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <nav
+        aria-label="Primary"
+        className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between"
+      >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <span className="flex items-center justify-center w-8 h-8 rounded-md bg-accent text-white font-bold text-sm">
@@ -66,6 +69,7 @@ export function Navbar() {
               <li key={link.href}>
                 <Link
                   href={link.href}
+                  aria-current={isActive ? "page" : undefined}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
                       ? "text-accent bg-accent-light"
@@ -83,6 +87,7 @@ export function Navbar() {
         <div className="flex items-center gap-1">
           {/* Theme toggle */}
           <button
+            type="button"
             onClick={toggleTheme}
             className="p-3 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
             aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
@@ -126,10 +131,12 @@ export function Navbar() {
 
           {/* Mobile hamburger */}
           <button
+            type="button"
             onClick={toggleMenu}
             className="p-3 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors lg:hidden"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
+            aria-controls="mobile-menu"
           >
             {mobileOpen ? (
               <svg
@@ -168,6 +175,10 @@ export function Navbar() {
       {/* Mobile menu overlay */}
       {mobileOpen && (
         <div
+          id="mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site navigation"
           className="lg:hidden fixed inset-0 top-16 z-40 bg-background border-t border-border overflow-y-auto"
           onClick={closeMenu}
         >
@@ -185,6 +196,7 @@ export function Navbar() {
                   <Link
                     href={link.href}
                     onClick={closeMenu}
+                    aria-current={isActive ? "page" : undefined}
                     className={`block px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
                       isActive
                         ? "text-accent bg-accent-light"

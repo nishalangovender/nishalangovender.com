@@ -41,9 +41,9 @@ export default function MobileTimeline() {
           <p className="font-mono text-sm text-accent tracking-wider uppercase mb-2">
             About
           </p>
-          <h2 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight">
             The Engineer Behind the Code
-          </h2>
+          </h1>
         </div>
 
         {/* ── Vertical timeline ── */}

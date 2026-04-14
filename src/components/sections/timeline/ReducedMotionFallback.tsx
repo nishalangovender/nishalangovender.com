@@ -5,6 +5,14 @@ export function ReducedMotionFallback() {
   return (
     <section className="py-24 px-4">
       <div className="max-w-2xl mx-auto">
+        <header className="mb-12">
+          <p className="font-mono text-sm text-accent tracking-wider uppercase mb-2">
+            About
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            The Engineer Behind the Code
+          </h1>
+        </header>
         {timelineChapters.map((chapter) => (
           <div key={chapter.id} className="mb-12">
             <h3 className="text-xl font-bold">{chapter.title}</h3>
