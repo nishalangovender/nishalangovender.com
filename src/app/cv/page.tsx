@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 
 import CvRequestForm from "@/components/sections/CvRequestForm";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { PageSection } from "@/components/ui/PageSection";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import {
   courses,
   education,
@@ -19,21 +22,13 @@ export const metadata: Metadata = {
 
 export default function CvPage() {
   return (
-    <section className="blueprint-grid min-h-[calc(100dvh-4rem)] px-4 py-20 sm:py-24">
-      <div className="mx-auto max-w-4xl">
-        {/* ── Hero ────────────────────────────────────────────────────── */}
-        <p className="font-mono text-sm text-accent tracking-wider uppercase">
-          At A Glance
-        </p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight leading-tight sm:text-5xl">
-          Profile
-        </h1>
-        <div className="circuit-divider mt-6 max-w-xs" />
-        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-          A public overview of my work, education and technical background.
-          For the complete CV — including tailored variants by region and
-          role — use the request form below.
-        </p>
+    <PageSection maxWidth="max-w-4xl">
+      {/* ── Hero ────────────────────────────────────────────────────── */}
+      <SectionHeading
+        eyebrow="At A Glance"
+        title="Profile"
+        intro="A public overview of my work, education and technical background. For the complete CV — including tailored variants by region and role — use the request form below."
+      />
 
         {/* ── Request Form ────────────────────────────────────────────── */}
         <div className="mt-12">
@@ -141,9 +136,7 @@ export default function CvPage() {
           <div className="grid gap-6 sm:grid-cols-2">
             {skillCategories.map((category) => (
               <div key={category.label}>
-                <p className="font-mono text-[11px] uppercase tracking-wider text-accent">
-                  {category.label}
-                </p>
+                <Eyebrow size="xsmall">{category.label}</Eyebrow>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {category.items.map((item) => (
                     <span
@@ -163,9 +156,7 @@ export default function CvPage() {
         <ProfileSection label="Training" title="Courses, Training & Languages">
           <div className="grid gap-10 md:grid-cols-2">
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-wider text-accent">
-                Courses & Training
-              </p>
+              <Eyebrow size="xsmall">Courses & Training</Eyebrow>
               <ul className="mt-4 space-y-2 text-sm leading-relaxed text-foreground/90 sm:text-[15px]">
                 {courses.map((course) => (
                   <li
@@ -179,9 +170,7 @@ export default function CvPage() {
             </div>
 
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-wider text-accent">
-                Languages
-              </p>
+              <Eyebrow size="xsmall">Languages</Eyebrow>
               <ul className="mt-4 space-y-2 text-sm leading-relaxed text-foreground/90 sm:text-[15px]">
                 {languages.map((lang) => (
                   <li
@@ -225,8 +214,7 @@ export default function CvPage() {
             ))}
           </ul>
         </ProfileSection>
-      </div>
-    </section>
+    </PageSection>
   );
 }
 
@@ -245,9 +233,7 @@ function ProfileSection({
 }) {
   return (
     <section className="mt-20">
-      <p className="font-mono text-xs uppercase tracking-wider text-accent">
-        {label}
-      </p>
+      <Eyebrow size="small">{label}</Eyebrow>
       <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
         {title}
       </h2>

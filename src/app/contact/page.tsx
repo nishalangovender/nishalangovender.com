@@ -2,6 +2,9 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { PageSection } from "@/components/ui/PageSection";
 import { fadeUp, staggerContainer } from "@/lib/animations";
 import { siteConfig } from "@/lib/constants";
 
@@ -58,19 +61,15 @@ export default function ContactPage() {
   }
 
   return (
-    <section className="blueprint-grid min-h-[calc(100dvh-4rem)] px-4 py-20 sm:py-24">
+    <PageSection maxWidth="max-w-3xl">
       <motion.div
-        className="mx-auto max-w-3xl"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
-        <motion.p
-          className="font-mono text-sm text-accent tracking-wider uppercase"
-          variants={fadeUp}
-        >
-          Get In Touch
-        </motion.p>
+        <motion.div variants={fadeUp}>
+          <Eyebrow>Get In Touch</Eyebrow>
+        </motion.div>
 
         <motion.h1
           className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight leading-tight"
@@ -190,6 +189,6 @@ export default function ContactPage() {
           </div>
         </motion.form>
       </motion.div>
-    </section>
+    </PageSection>
   );
 }

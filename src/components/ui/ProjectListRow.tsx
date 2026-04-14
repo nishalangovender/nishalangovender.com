@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 
+import { TechPill } from "@/components/ui/TechPill";
 import type { Project } from "@/data/projects";
 
 export default function ProjectListRow({
@@ -51,12 +52,9 @@ export default function ProjectListRow({
         <div className="flex flex-shrink-0 flex-col items-start gap-3 md:items-end">
           <div className="flex flex-wrap gap-1.5 md:justify-end">
             {project.tags.map((tag) => (
-              <span
-                key={tag}
-                className="font-mono text-[9px] tracking-wider uppercase rounded-full bg-accent-light text-accent px-2 py-0.5"
-              >
+              <TechPill key={tag} size="sm">
                 {tag}
-              </span>
+              </TechPill>
             ))}
           </div>
           {(project.link || project.github) && (

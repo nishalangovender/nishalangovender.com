@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+import { Eyebrow } from "@/components/ui/Eyebrow";
 import { fadeUp, staggerContainer } from "@/lib/animations";
 
 export default function Hero() {
@@ -14,12 +15,9 @@ export default function Hero() {
         initial="hidden"
         animate="visible"
       >
-        <motion.p
-          className="font-mono text-sm text-accent tracking-wider uppercase"
-          variants={fadeUp}
-        >
-          Design &middot; Iterate &middot; Deploy
-        </motion.p>
+        <motion.div variants={fadeUp}>
+          <Eyebrow>Design &middot; Iterate &middot; Deploy</Eyebrow>
+        </motion.div>
 
         <motion.h1
           className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight"

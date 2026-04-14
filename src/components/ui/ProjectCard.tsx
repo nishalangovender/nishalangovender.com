@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 
+import { TechPill } from "@/components/ui/TechPill";
 import type { Project } from "@/data/projects";
 
 export default function ProjectCard({
@@ -29,12 +30,7 @@ export default function ProjectCard({
       {/* Tags */}
       <div className="mb-4 flex flex-wrap gap-2">
         {project.tags.map((tag) => (
-          <span
-            key={tag}
-            className="font-mono text-[10px] tracking-wider uppercase rounded-full bg-accent-light text-accent px-2.5 py-0.5"
-          >
-            {tag}
-          </span>
+          <TechPill key={tag}>{tag}</TechPill>
         ))}
       </div>
 

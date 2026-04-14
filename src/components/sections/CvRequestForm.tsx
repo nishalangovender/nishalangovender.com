@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Eyebrow } from "@/components/ui/Eyebrow";
 import { siteConfig } from "@/lib/constants";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
@@ -66,9 +67,7 @@ export default function CvRequestForm() {
   if (status === "success") {
     return (
       <div className="relative overflow-hidden rounded-xl border border-accent/40 bg-accent-light/40 p-6 sm:p-8">
-        <p className="font-mono text-xs uppercase tracking-wider text-accent">
-          Request Received
-        </p>
+        <Eyebrow size="small">Request Received</Eyebrow>
         <h2 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
           Thanks — I&apos;ll Be In Touch Shortly
         </h2>
@@ -83,9 +82,7 @@ export default function CvRequestForm() {
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-border/70 bg-surface p-6 sm:p-8">
-      <p className="font-mono text-xs uppercase tracking-wider text-accent">
-        Request Full CV
-      </p>
+      <Eyebrow size="small">Request Full CV</Eyebrow>
       <h2 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
         Prefer The Complete CV?
       </h2>
