@@ -1,6 +1,6 @@
 // src/lib/path-following/types.ts
 
-export type PathKind = "lemniscate" | "circle" | "figure-eight";
+export type PathKind = "lemniscate" | "circle" | "stadium";
 
 /** Static configuration set once per simulation run. */
 export interface SimConfig {

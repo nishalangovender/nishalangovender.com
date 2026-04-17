@@ -17,12 +17,18 @@ describe("samplePath", () => {
     expect(p1.kappa).toBeGreaterThan(0);
   });
 
-  it("figure-eight has curvature that changes sign", () => {
-    const curvatures = Array.from({ length: 100 }, (_, i) =>
-      samplePath("figure-eight", (i / 100) * 20).kappa,
-    );
-    expect(Math.min(...curvatures)).toBeLessThan(0);
-    expect(Math.max(...curvatures)).toBeGreaterThan(0);
+  it("stadium has zero curvature on straights and constant on arcs", () => {
+    const midBottom = samplePath("stadium", 1.5); // mid of bottom straight
+    expect(midBottom.kappa).toBe(0);
+    const midArc = samplePath("stadium", 5); // well into the right arc
+    expect(midArc.kappa).toBeGreaterThan(0);
+  });
+
+  it("stadium closes on itself after full period", () => {
+    const p0 = samplePath("stadium", 0);
+    const pT = samplePath("stadium", 20);
+    expect(pT.x).toBeCloseTo(p0.x, 5);
+    expect(pT.y).toBeCloseTo(p0.y, 5);
   });
 });
 

@@ -5,6 +5,10 @@ const PERIOD = 20; // seconds — one full traversal
 const A = 5;       // metres — lemniscate semi-width
 const R = 4;       // metres — circle radius
 
+// Stadium: two straights of length 2·L and two semicircles of radius R.
+const STADIUM_R = 2.5;
+const STADIUM_L = 3;
+
 /**
  * Sample the reference trajectory at a given parametric time t ∈ [0, duration].
  * Returns pose + signed curvature at that point. Periodic in PERIOD.
@@ -33,18 +37,44 @@ export function samplePath(kind: PathKind, t: number): ReferencePoint {
       const theta = phase + Math.PI / 2;
       return { x, y, theta, kappa: 1 / R, t };
     }
-    case "figure-eight": {
-      // Lissajous (1, 2) — horizontal figure eight
-      const x = A * Math.sin(phase);
-      const y = A * Math.sin(2 * phase) / 2;
-      const dx = A * Math.cos(phase);
-      const dy = A * Math.cos(2 * phase);
-      const ddx = -A * Math.sin(phase);
-      const ddy = -2 * A * Math.sin(2 * phase);
-      const theta = Math.atan2(dy, dx);
-      const speedSq = dx * dx + dy * dy;
-      const kappa = (dx * ddy - dy * ddx) / (speedSq ** 1.5 || 1e-9);
-      return { x, y, theta, kappa, t };
+    case "stadium": {
+      // Closed oval: straight → semicircle → straight → semicircle.
+      // Parameterise by arc length to keep constant speed.
+      const straight = 2 * STADIUM_L;
+      const arc = Math.PI * STADIUM_R;
+      const perimeter = 2 * (straight + arc);
+      const s = ((t / PERIOD) % 1) * perimeter;
+
+      // Segment 1: bottom straight, left → right at y = -R
+      if (s < straight) {
+        const x = -STADIUM_L + s;
+        return { x, y: -STADIUM_R, theta: 0, kappa: 0, t };
+      }
+      // Segment 2: right semicircle, bottom → top
+      if (s < straight + arc) {
+        const a = (s - straight) / STADIUM_R - Math.PI / 2;
+        return {
+          x: STADIUM_L + STADIUM_R * Math.cos(a),
+          y: STADIUM_R * Math.sin(a),
+          theta: a + Math.PI / 2,
+          kappa: 1 / STADIUM_R,
+          t,
+        };
+      }
+      // Segment 3: top straight, right → left at y = +R
+      if (s < 2 * straight + arc) {
+        const x = STADIUM_L - (s - straight - arc);
+        return { x, y: STADIUM_R, theta: Math.PI, kappa: 0, t };
+      }
+      // Segment 4: left semicircle, top → bottom
+      const a = (s - 2 * straight - arc) / STADIUM_R + Math.PI / 2;
+      return {
+        x: -STADIUM_L + STADIUM_R * Math.cos(a),
+        y: STADIUM_R * Math.sin(a),
+        theta: a + Math.PI / 2,
+        kappa: 1 / STADIUM_R,
+        t,
+      };
     }
   }
 }

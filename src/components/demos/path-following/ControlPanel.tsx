@@ -25,7 +25,7 @@ interface Props {
 const PATH_OPTIONS: { value: PathKind; label: string }[] = [
   { value: "lemniscate", label: "Lemniscate" },
   { value: "circle", label: "Circle" },
-  { value: "figure-eight", label: "Figure-8" },
+  { value: "stadium", label: "Stadium" },
 ];
 
 export function ControlPanel({
