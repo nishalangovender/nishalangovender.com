@@ -111,6 +111,27 @@ export default async function ProjectCaseStudyPage({
         )}
       </header>
 
+      {/* ── Interactive demo CTA ─────────────────────────────────────── */}
+      {project.interactiveDemoHref && (
+        <section className="mt-12 rounded-lg border border-accent/30 bg-accent-light/60 p-6">
+          <Eyebrow size="small">Interactive Demo</Eyebrow>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            Try the live simulation
+          </h2>
+          <p className="mt-2 text-muted max-w-2xl">
+            The real EKF and Pure Pursuit controllers ported to TypeScript.
+            Dial sensor noise, flip filter modes, and watch tracking change
+            in real time.
+          </p>
+          <Link
+            href={project.interactiveDemoHref}
+            className="inline-flex items-center mt-4 rounded-md bg-accent px-4 py-2 font-mono text-xs tracking-wider uppercase text-surface hover:bg-accent-dark"
+          >
+            Open Demo →
+          </Link>
+        </section>
+      )}
+
       {/* ── Case study sections ─────────────────────────────────────────── */}
       <div className="mt-20 space-y-16">
         <CaseStudySection label="01" title="Problem" body={caseStudy.problem} />
