@@ -11,6 +11,12 @@ const MIN_FRAME_INTERVAL_MS = 20; // 50 Hz cap
 
 type Listener = () => void;
 
+interface SimSnapshot {
+  frames: SimFrame[];
+  isPlaying: boolean;
+  stats: SimStats;
+}
+
 export interface UseSimulationResult {
   frames: SimFrame[];
   latest: SimFrame | null;
@@ -33,8 +39,20 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
   const lastTickRef = useRef<number>(0);
   const degradedRef = useRef<boolean>(false);
   const slowFramesRef = useRef<number>(0);
+  const tickRef = useRef<(now: number) => void>(() => {});
+  const snapRef = useRef<SimSnapshot>({
+    frames: [],
+    isPlaying: false,
+    stats: { meanError: 0, maxError: 0, outliersRejected: 0, samplesProcessed: 0 },
+  });
 
   const notify = useCallback(() => {
+    // Update the snapshot before notifying so subscribers see fresh values.
+    snapRef.current = {
+      frames: bufferRef.current,
+      isPlaying: playingRef.current,
+      stats: simRef.current.getStats(),
+    };
     for (const l of listenersRef.current) l();
   }, []);
 
@@ -45,8 +63,8 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
     };
   }, []);
 
-  const snapshot = useCallback(() => bufferRef.current, []);
-  const frames = useSyncExternalStore(subscribe, snapshot, snapshot);
+  const snapshot = useCallback(() => snapRef.current, []);
+  const snap = useSyncExternalStore(subscribe, snapshot, snapshot);
 
   const tick = useCallback(
     (now: number) => {
@@ -67,18 +85,24 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
         if (buf.length > BUFFER_SIZE) buf.shift();
         notify();
       }
-      rafRef.current = requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(tickRef.current);
     },
     [notify],
   );
+
+  // Keep the ref pointed at the latest tick so the rAF scheduler always
+  // references the current closure.
+  useEffect(() => {
+    tickRef.current = tick;
+  }, [tick]);
 
   const play = useCallback(() => {
     if (playingRef.current) return;
     playingRef.current = true;
     lastTickRef.current = performance.now();
-    rafRef.current = requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(tickRef.current);
     notify();
-  }, [notify, tick]);
+  }, [notify]);
 
   const pause = useCallback(() => {
     playingRef.current = false;
@@ -119,17 +143,17 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
 
   const result = useMemo<UseSimulationResult>(
     () => ({
-      frames,
-      latest: frames.length ? frames[frames.length - 1] : null,
-      stats: simRef.current.getStats(),
-      isPlaying: playingRef.current,
+      frames: snap.frames,
+      latest: snap.frames.length ? snap.frames[snap.frames.length - 1] : null,
+      stats: snap.stats,
+      isPlaying: snap.isPlaying,
       play,
       pause,
       reset,
       updateConfig,
       sampleReference,
     }),
-    [frames, play, pause, reset, updateConfig, sampleReference],
+    [snap, play, pause, reset, updateConfig, sampleReference],
   );
 
   return result;

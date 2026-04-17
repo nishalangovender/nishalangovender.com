@@ -1,7 +1,7 @@
 // src/components/demos/path-following/TrajectoryCanvas.tsx
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { SimFrame } from "@/lib/path-following/types";
 
@@ -19,7 +19,14 @@ interface Props {
   ariaLabel: string;
 }
 
+interface Viewport {
+  zoom: number;
+  panX: number;
+  panY: number;
+}
+
 const WORLD_SIZE = 14; // metres — viewport side
+const DEFAULT_VIEWPORT: Viewport = { zoom: 1, panX: 0, panY: 0 };
 
 export function TrajectoryCanvas({
   frames,
@@ -30,6 +37,7 @@ export function TrajectoryCanvas({
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  const [viewport, setViewport] = useState<Viewport>(DEFAULT_VIEWPORT);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -51,9 +59,10 @@ export function TrajectoryCanvas({
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      const scale = Math.min(w, h) / WORLD_SIZE;
-      const cx = w / 2;
-      const cy = h / 2;
+      const baseScale = Math.min(w, h) / WORLD_SIZE;
+      const scale = baseScale * viewport.zoom;
+      const cx = w / 2 + viewport.panX;
+      const cy = h / 2 + viewport.panY;
 
       const worldToScreen = (x: number, y: number): [number, number] => [
         cx + x * scale,
@@ -168,7 +177,7 @@ export function TrajectoryCanvas({
       window.removeEventListener("resize", resize);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, [frames, reference, layers, reducedMotion]);
+  }, [frames, reference, layers, reducedMotion, viewport]);
 
   return (
     <canvas
@@ -176,6 +185,14 @@ export function TrajectoryCanvas({
       role="img"
       aria-label={ariaLabel}
       className="h-full w-full block"
+      onWheel={(e) => {
+        e.preventDefault();
+        setViewport((v) => ({
+          ...v,
+          zoom: Math.max(0.5, Math.min(4, v.zoom * (e.deltaY < 0 ? 1.1 : 0.9))),
+        }));
+      }}
+      onDoubleClick={() => setViewport(DEFAULT_VIEWPORT)}
     >
       {/* Fallback content for browsers without canvas support. */}
       <p className="p-4 text-sm text-muted">
