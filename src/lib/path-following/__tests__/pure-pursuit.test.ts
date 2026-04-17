@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { computeLookahead, findTarget } from "../pure-pursuit";
 
 describe("computeLookahead", () => {

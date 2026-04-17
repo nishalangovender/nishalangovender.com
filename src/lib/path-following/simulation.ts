@@ -1,8 +1,8 @@
 // src/lib/path-following/simulation.ts
+import { PiController } from "./controller";
 import { Ekf } from "./ekf";
 import { stepKinematics } from "./kinematics";
 import { densify, nearestReference, samplePath } from "./paths";
-import { PiController } from "./controller";
 import {
   computeLookahead,
   desiredOmega,

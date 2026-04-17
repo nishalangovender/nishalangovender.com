@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { Ekf } from "../ekf";
 
 describe("Ekf", () => {
@@ -7,7 +8,6 @@ describe("Ekf", () => {
     const trueBias = 0.03;
     const dt = 0.02;
     for (let step = 0; step < 2000; step++) {
-      const t = step * dt;
       ekf.predict(1.0, 0.0, dt);
       if (step % 50 === 0) {
         ekf.updateGps(step * dt * 1.0, 0, 0.5, 0);

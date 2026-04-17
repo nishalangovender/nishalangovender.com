@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../types";
+
 import { Simulator } from "../simulation";
+import { DEFAULT_CONFIG } from "../types";
 
 describe("Simulator", () => {
   it("is deterministic given the same config", () => {
