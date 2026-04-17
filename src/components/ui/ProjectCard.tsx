@@ -36,17 +36,28 @@ export default function ProjectCard({
       }`}
     >
       {/* Status badges */}
-      {(project.confidential || project.interactiveDemoPlanned) && (
+      {(project.confidential ||
+        project.interactiveDemoHref ||
+        project.interactiveDemoPlanned) && (
         <div className="mb-3 flex flex-wrap gap-2">
           {project.confidential && (
             <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-border bg-surface px-2 py-0.5 text-muted">
               Confidential
             </span>
           )}
-          {project.interactiveDemoPlanned && (
-            <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-accent/30 bg-accent-light px-2 py-0.5 text-accent">
-              ⚡ Interactive Demo Coming
-            </span>
+          {project.interactiveDemoHref ? (
+            <Link
+              href={project.interactiveDemoHref}
+              className="relative z-10 font-mono text-[9px] tracking-wider uppercase rounded-full border border-accent bg-accent text-surface px-2 py-0.5 hover:bg-accent-dark"
+            >
+              ⚡ Live Demo →
+            </Link>
+          ) : (
+            project.interactiveDemoPlanned && (
+              <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-accent/30 bg-accent-light px-2 py-0.5 text-accent">
+                ⚡ Interactive Demo Coming
+              </span>
+            )
           )}
         </div>
       )}
