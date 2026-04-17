@@ -119,7 +119,7 @@ export default function PathFollowingDemo() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-rows-[1fr_auto] lg:grid-rows-none lg:grid-cols-[1fr_16rem] gap-4 h-[calc(100vh-12rem)]">
+      <div className="grid grid-rows-[60vh_auto] lg:grid-rows-none lg:grid-cols-[1fr_16rem] gap-4 lg:h-[calc(100vh-12rem)]">
         <div className="relative rounded-lg border border-border overflow-hidden bg-background">
           <TrajectoryCanvas
             frames={sim.frames}
@@ -129,7 +129,7 @@ export default function PathFollowingDemo() {
             ariaLabel={ariaLabel}
           />
         </div>
-        <div className="max-h-[40vh] overflow-y-auto lg:max-h-none lg:h-full lg:overflow-visible">
+        <div className="lg:h-full">
           <ControlPanel
             config={config}
             layers={layers}

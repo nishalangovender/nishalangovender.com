@@ -65,22 +65,17 @@ export function ControlPanel({
       </Section>
 
       <Section label="Path">
-        <div className="flex flex-col gap-1">
+        <div role="radiogroup" aria-label="Path" className="flex flex-col gap-1.5 items-start">
           {PATH_OPTIONS.map((opt) => (
-            <label
+            <Pill
               key={opt.value}
-              className="flex items-center gap-2 cursor-pointer"
+              active={config.path === opt.value}
+              role="radio"
+              ariaChecked={config.path === opt.value}
+              onClick={() => onConfig({ path: opt.value })}
             >
-              <input
-                type="radio"
-                name="path"
-                value={opt.value}
-                checked={config.path === opt.value}
-                onChange={() => onConfig({ path: opt.value })}
-                className="accent-accent"
-              />
               {opt.label}
-            </label>
+            </Pill>
           ))}
         </div>
       </Section>
@@ -107,28 +102,74 @@ export function ControlPanel({
       </Section>
 
       <Section label="Filter">
-        <Toggle
-          label="κ-adaptive EKF"
-          checked={config.useCurvatureAdaptiveEkf}
-          onChange={(v) => onConfig({ useCurvatureAdaptiveEkf: v })}
-        />
-        <Toggle
-          label="Outlier rejection"
-          checked={config.useMahalanobisRejection}
-          onChange={(v) => onConfig({ useMahalanobisRejection: v })}
-        />
+        <div className="flex flex-col gap-1.5 items-start">
+          <Pill
+            active={config.useCurvatureAdaptiveEkf}
+            ariaPressed={config.useCurvatureAdaptiveEkf}
+            onClick={() =>
+              onConfig({
+                useCurvatureAdaptiveEkf: !config.useCurvatureAdaptiveEkf,
+              })
+            }
+          >
+            κ-adaptive EKF
+          </Pill>
+          <Pill
+            active={config.useMahalanobisRejection}
+            ariaPressed={config.useMahalanobisRejection}
+            onClick={() =>
+              onConfig({
+                useMahalanobisRejection: !config.useMahalanobisRejection,
+              })
+            }
+          >
+            Outlier rejection
+          </Pill>
+        </div>
       </Section>
 
       <Section label="Layers" last>
-        <Toggle label="Reference" checked={layers.reference} onChange={(v) => onLayers({ reference: v })} />
-        <Toggle label="Truth" checked={layers.truth} onChange={(v) => onLayers({ truth: v })} />
-        <Toggle label="Estimate" checked={layers.estimate} onChange={(v) => onLayers({ estimate: v })} />
-        <Toggle label="GPS fixes" checked={layers.gps} onChange={(v) => onLayers({ gps: v })} />
-        <Toggle label="Outliers" checked={layers.outliers} onChange={(v) => onLayers({ outliers: v })} />
+        <div className="flex flex-col gap-1.5 items-start">
+          <Pill
+            active={layers.reference}
+            ariaPressed={layers.reference}
+            onClick={() => onLayers({ reference: !layers.reference })}
+          >
+            Reference
+          </Pill>
+          <Pill
+            active={layers.truth}
+            ariaPressed={layers.truth}
+            onClick={() => onLayers({ truth: !layers.truth })}
+          >
+            Truth
+          </Pill>
+          <Pill
+            active={layers.estimate}
+            ariaPressed={layers.estimate}
+            onClick={() => onLayers({ estimate: !layers.estimate })}
+          >
+            Estimate
+          </Pill>
+          <Pill
+            active={layers.gps}
+            ariaPressed={layers.gps}
+            onClick={() => onLayers({ gps: !layers.gps })}
+          >
+            GPS fixes
+          </Pill>
+          <Pill
+            active={layers.outliers}
+            ariaPressed={layers.outliers}
+            onClick={() => onLayers({ outliers: !layers.outliers })}
+          >
+            Outliers
+          </Pill>
+        </div>
         <button
           type="button"
           onClick={onOpenCharts}
-          className="w-full mt-2 rounded border border-border bg-background px-3 py-1.5 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
+          className="w-full mt-3 rounded border border-border bg-background px-3 py-1.5 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
         >
           Open Charts ↗
         </button>
@@ -148,7 +189,9 @@ function Section({
 }) {
   // On mobile/short viewports, shrink to content. On tall viewports, each
   // section gets an equal vertical slice so the panel fills the column.
-  const base = "px-3 py-2 lg:flex-1 lg:flex lg:flex-col lg:justify-center";
+  // Content sits at the top of each slice so the section label + its pills
+  // stay anchored together — empty stretch happens below the content.
+  const base = "px-3 py-3 lg:flex-1";
   return (
     <section className={last ? base : `${base} border-b border-border`}>
       <div className="font-mono text-[10px] tracking-wider uppercase text-muted mb-1.5">
@@ -198,24 +241,36 @@ function Slider({
   );
 }
 
-function Toggle({
-  label,
-  checked,
-  onChange,
+function Pill({
+  active,
+  onClick,
+  role = "button",
+  ariaPressed,
+  ariaChecked,
+  children,
 }: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
+  active: boolean;
+  onClick: () => void;
+  role?: "button" | "radio";
+  ariaPressed?: boolean;
+  ariaChecked?: boolean;
+  children: ReactNode;
 }) {
+  const base =
+    "font-mono text-[10px] tracking-wider uppercase rounded-full border px-2.5 py-1 transition-colors cursor-pointer";
+  const state = active
+    ? "border-accent bg-accent-light text-accent"
+    : "border-border bg-background text-muted hover:border-accent/60 hover:text-foreground";
   return (
-    <label className="flex items-center gap-2 py-0.5 cursor-pointer">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="accent-accent"
-      />
-      <span>{label}</span>
-    </label>
+    <button
+      type="button"
+      role={role}
+      aria-pressed={ariaPressed}
+      aria-checked={ariaChecked}
+      onClick={onClick}
+      className={`${base} ${state}`}
+    >
+      {children}
+    </button>
   );
 }
