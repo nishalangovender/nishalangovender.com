@@ -18,11 +18,12 @@ interface Props {
   layers: Layers;
   isPlaying: boolean;
   isComplete: boolean;
+  chartsOpen: boolean;
   onConfig: (patch: Partial<SimConfig>) => void;
   onLayers: (patch: Partial<Layers>) => void;
   onPlayPause: () => void;
   onReset: () => void;
-  onOpenCharts: () => void;
+  onToggleCharts: () => void;
 }
 
 const PATH_OPTIONS: { value: PathKind; label: string }[] = [
@@ -36,11 +37,12 @@ export function ControlPanel({
   layers,
   isPlaying,
   isComplete,
+  chartsOpen,
   onConfig,
   onLayers,
   onPlayPause,
   onReset,
-  onOpenCharts,
+  onToggleCharts,
 }: Props) {
   const playLabel = isComplete ? "Restart" : isPlaying ? "Pause" : "Play";
   return (
@@ -102,7 +104,7 @@ export function ControlPanel({
       </Section>
 
       <Section label="Filter">
-        <div className="flex flex-col gap-1.5 items-start">
+        <div className="flex flex-wrap gap-1.5">
           <Pill
             active={config.useCurvatureAdaptiveEkf}
             ariaPressed={config.useCurvatureAdaptiveEkf}
@@ -129,7 +131,7 @@ export function ControlPanel({
       </Section>
 
       <Section label="Layers" last>
-        <div className="flex flex-col gap-1.5 items-start">
+        <div className="flex flex-wrap gap-1.5">
           <Pill
             active={layers.reference}
             ariaPressed={layers.reference}
@@ -168,10 +170,11 @@ export function ControlPanel({
         </div>
         <button
           type="button"
-          onClick={onOpenCharts}
+          onClick={onToggleCharts}
+          aria-pressed={chartsOpen}
           className="w-full mt-3 rounded border border-border bg-background px-3 py-1.5 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
         >
-          Open Charts ↗
+          {chartsOpen ? "Hide Charts" : "Show Charts"}
         </button>
       </Section>
     </aside>

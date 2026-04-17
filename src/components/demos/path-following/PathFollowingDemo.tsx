@@ -5,8 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { DEFAULT_CONFIG, type SimConfig } from "@/lib/path-following/types";
 
+import { ChartsPanel } from "./ChartsPanel";
 import { ControlPanel, type Layers } from "./ControlPanel";
-import { StatsDrawer } from "./StatsDrawer";
 import { StatsStrip } from "./StatsStrip";
 import { TrajectoryCanvas } from "./TrajectoryCanvas";
 import { useSimulation } from "./useSimulation";
@@ -22,8 +22,8 @@ const DEFAULT_LAYERS: Layers = {
 export default function PathFollowingDemo() {
   const [config, setConfig] = useState<SimConfig>(DEFAULT_CONFIG);
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
-  const [chartsOpen, setChartsOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [chartsOpen, setChartsOpen] = useState(true);
   const lastResetAtRef = useRef(0);
 
   const sim = useSimulation(config);
@@ -119,8 +119,9 @@ export default function PathFollowingDemo() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-rows-[60vh_auto] lg:grid-rows-none lg:grid-cols-[1fr_16rem] gap-4 lg:h-[calc(100vh-12rem)]">
-        <div className="relative rounded-lg border border-border overflow-hidden bg-background">
+      <StatsStrip latest={sim.latest} stats={sim.stats} />
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_16rem] gap-4">
+        <div className="relative rounded-lg border border-border overflow-hidden bg-background h-[60vh] lg:h-[70vh]">
           <TrajectoryCanvas
             frames={sim.frames}
             reference={reference}
@@ -129,26 +130,22 @@ export default function PathFollowingDemo() {
             ariaLabel={ariaLabel}
           />
         </div>
-        <div className="lg:h-full">
+        <div className="lg:h-[70vh]">
           <ControlPanel
             config={config}
             layers={layers}
             isPlaying={sim.isPlaying}
             isComplete={sim.isComplete}
+            chartsOpen={chartsOpen}
             onConfig={onConfig}
             onLayers={onLayers}
             onPlayPause={onPlayPause}
             onReset={debouncedReset}
-            onOpenCharts={() => setChartsOpen(true)}
+            onToggleCharts={() => setChartsOpen((v) => !v)}
           />
         </div>
       </div>
-      <StatsStrip latest={sim.latest} stats={sim.stats} />
-      <StatsDrawer
-        frames={sim.frames}
-        open={chartsOpen}
-        onClose={() => setChartsOpen(false)}
-      />
+      {chartsOpen && <ChartsPanel frames={sim.frames} />}
       {toast && (
         <div
           role="status"
