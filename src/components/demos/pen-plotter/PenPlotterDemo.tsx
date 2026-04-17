@@ -7,6 +7,7 @@ import { isInsideEnvelope } from "@/lib/pen-plotter/kinematics";
 import { DEFAULT_CONFIG, type SimConfig, type Vec2 } from "@/lib/pen-plotter/types";
 
 import { ControlPanel } from "./ControlPanel";
+import { FirmwareDrawer } from "./FirmwareDrawer";
 import { PlotterCanvas } from "./PlotterCanvas";
 import { useSimulation } from "./useSimulation";
 
@@ -120,6 +121,7 @@ export default function PenPlotterDemo() {
           />
         </div>
       </div>
+      {drawerOpen && <FirmwareDrawer latest={sim.latest} />}
     </div>
   );
 }
