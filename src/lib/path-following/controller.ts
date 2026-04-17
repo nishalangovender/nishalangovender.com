@@ -1,47 +1,24 @@
 // src/lib/path-following/controller.ts
 
-const KP_V = 1.5;
-const KI_V = 0.2;
-const KP_OMEGA = 3.0;
-const KI_OMEGA = 0.5;
-const WINDUP_CLAMP = 0.5;
-
+/**
+ * Path-following inner loop.
+ *
+ * Pure Pursuit commands the angular velocity from the geometric path-tracking
+ * error, and we cruise at a constant linear velocity. We don't have an
+ * independent velocity measurement — the EKF's `v` is just whatever we
+ * commanded last tick — so closing a PI loop on that would just oscillate.
+ * Instead, the controller passes the target velocity through directly.
+ *
+ * The class exists so the Simulator has a stable per-run handle with a
+ * `reset()` method, and so future iterations (feed-forward, curvature-aware
+ * speed limits) have a single place to live.
+ */
 export class PiController {
-  private integralV = 0;
-  private integralOmega = 0;
-
   reset(): void {
-    this.integralV = 0;
-    this.integralOmega = 0;
+    // Stateless for now — kept on the class for the reset contract.
   }
 
-  step(
-    desiredV: number,
-    measuredV: number,
-    desiredOmega: number,
-    measuredOmega: number,
-    dt: number,
-  ): { v: number; omega: number } {
-    const ev = desiredV - measuredV;
-    this.integralV = clamp(
-      this.integralV + ev * dt,
-      -WINDUP_CLAMP,
-      WINDUP_CLAMP,
-    );
-    const v = desiredV + KP_V * ev + KI_V * this.integralV;
-
-    const eo = desiredOmega - measuredOmega;
-    this.integralOmega = clamp(
-      this.integralOmega + eo * dt,
-      -WINDUP_CLAMP,
-      WINDUP_CLAMP,
-    );
-    const omega = desiredOmega + KP_OMEGA * eo + KI_OMEGA * this.integralOmega;
-
-    return { v, omega };
+  step(desiredV: number): { v: number } {
+    return { v: desiredV };
   }
-}
-
-function clamp(x: number, lo: number, hi: number): number {
-  return Math.min(hi, Math.max(lo, x));
 }
