@@ -11,6 +11,10 @@
   --muted: #6B6B6B;
   --border: #E5E7EB;
   --blueprint-line: rgba(0, 102, 255, 0.06);
+  --prof-advanced: #059669;
+  --prof-proficient: #0284C7;
+  --prof-competent: #D97706;
+  --prof-familiar: #6B7280;
 }
 
 /* ── Dark theme (explicit toggle) ── */
@@ -24,6 +28,10 @@
   --muted: #8A8A8A;
   --border: #262626;
   --blueprint-line: rgba(59, 130, 246, 0.08);
+  --prof-advanced: #34D399;
+  --prof-proficient: #38BDF8;
+  --prof-competent: #FBBF24;
+  --prof-familiar: #CBD5E1;
 }
 
 /* ── Dark theme (system preference fallback before JS loads) ── */
@@ -38,6 +46,10 @@
     --muted: #8A8A8A;
     --border: #262626;
     --blueprint-line: rgba(59, 130, 246, 0.08);
+    --prof-advanced: #34D399;
+    --prof-proficient: #38BDF8;
+    --prof-competent: #FBBF24;
+    --prof-familiar: #CBD5E1;
   }
 }
 

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
+import SkillsBrowser from "@/components/ui/SkillsBrowser";
 import SkillsVenn from "@/components/ui/SkillsVenn";
 import { fadeUp, staggerContainer } from "@/lib/animations";
 
@@ -44,6 +45,10 @@ export default function SkillsPage() {
           <SkillsVenn />
         </motion.div>
       </motion.div>
+
+      <div className="circuit-divider mt-20 mb-16" />
+
+      <SkillsBrowser />
     </PageSection>
   );
 }

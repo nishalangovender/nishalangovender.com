@@ -97,6 +97,48 @@ export function profLabel(p: number): string {
   return "Familiar";
 }
 
+export type ProficiencyTier = "advanced" | "proficient" | "competent" | "familiar";
+
+export function profTier(p: number): ProficiencyTier {
+  if (p >= 90) return "advanced";
+  if (p >= 75) return "proficient";
+  if (p >= 60) return "competent";
+  return "familiar";
+}
+
+/** Returns the CSS variable reference for a given proficiency's tier colour.
+ *  Use as both bar fill and label text colour for consistent scanning. */
+export function profColor(p: number): { varName: string; tier: ProficiencyTier } {
+  const tier = profTier(p);
+  return { varName: `var(--prof-${tier})`, tier };
+}
+
+/** Ring colour for each zone's icon tile. Mirrors the discipline palette and
+ *  gives each zone a distinct visual signature. */
+export function zoneRingColor(key: ZoneKey): string {
+  switch (key) {
+    case "software":
+      return "#3B82F6";
+    case "electronics":
+      return "#10B981";
+    case "hardware":
+      return "#F59E0B";
+    case "software-electronics":
+      return "#14B8A6";
+    case "software-hardware":
+      return "#8B5CF6";
+    case "electronics-hardware":
+      return "#84CC16";
+    case "center":
+      return "var(--accent)";
+  }
+}
+
+/** Stable DOM anchor id for a zone section in the SkillsBrowser. */
+export function zoneAnchorId(key: ZoneKey): string {
+  return `zone-${key}`;
+}
+
 // ─── Zone Data ──────────────────────────────────────────────────────────────
 
 export const zones: { key: ZoneKey; data: ZoneData }[] = [

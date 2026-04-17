@@ -3,8 +3,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type KeyboardEvent } from "react";
 
+import { SkillIconTile } from "@/components/ui/SkillIconTile";
 import type { Skill, ZoneData, ZoneKey } from "@/data/skills";
-import { profLabel, zones } from "@/data/skills";
+import { profColor, profLabel, zoneAnchorId, zones } from "@/data/skills";
 
 // ─── Build a lookup from the shared data file ───────────────────────────────
 
@@ -114,7 +115,20 @@ export default function SkillsVenn() {
   }
 
   function toggle(zone: ZoneKey) {
-    setActive((current) => (current === zone ? null : zone));
+    setActive((current) => {
+      const next = current === zone ? null : zone;
+      if (next !== null && typeof window !== "undefined") {
+        const reduceMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        const el = document.getElementById(zoneAnchorId(next));
+        el?.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "start",
+        });
+      }
+      return next;
+    });
   }
 
   function handleKey(event: KeyboardEvent<SVGCircleElement>, zone: ZoneKey) {
@@ -260,7 +274,7 @@ export default function SkillsVenn() {
 
               <div className="mt-5 space-y-4">
                 {zoneMap[active].skills.map((skill, i) => (
-                  <SkillRow key={skill.name} skill={skill} index={i} />
+                  <SkillRow key={skill.name} skill={skill} zoneKey={active} index={i} />
                 ))}
               </div>
             </motion.div>
@@ -280,6 +294,13 @@ export default function SkillsVenn() {
                 disciplines converge — and the centre, where all three meet,
                 is mechatronics.
               </p>
+              <a
+                href="#skills-browser"
+                className="mt-5 inline-flex items-center gap-1.5 font-mono text-[11px] tracking-[0.15em] uppercase text-accent hover:text-accent-dark transition-colors"
+              >
+                Browse All Skills
+                <span aria-hidden>↓</span>
+              </a>
             </motion.div>
           )}
         </AnimatePresence>
@@ -290,8 +311,16 @@ export default function SkillsVenn() {
 
 // ─── Skill Row ──────────────────────────────────────────────────────────────
 
-function SkillRow({ skill, index }: { skill: Skill; index: number }) {
-  const Icon = skill.icon;
+function SkillRow({
+  skill,
+  zoneKey,
+  index,
+}: {
+  skill: Skill;
+  zoneKey: ZoneKey;
+  index: number;
+}) {
+  const { varName } = profColor(skill.proficiency);
 
   return (
     <motion.div
@@ -300,28 +329,25 @@ function SkillRow({ skill, index }: { skill: Skill; index: number }) {
       transition={{ delay: index * 0.05, duration: 0.25 }}
       className="flex items-center gap-3"
     >
-      {/* Icon tile */}
-      <div className="flex items-center justify-center w-7 h-7 rounded-md bg-accent-light flex-shrink-0">
-        <Icon
-          className={`w-3.5 h-3.5 ${skill.color ? "" : "text-accent"}`}
-          style={skill.color ? { color: skill.color } : undefined}
-        />
-      </div>
+      <SkillIconTile skill={skill} zoneKey={zoneKey} size="sm" />
 
-      {/* Name + animated proficiency bar */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm text-foreground font-medium truncate">
             {skill.name}
           </span>
-          <span className="font-mono text-[10px] text-muted ml-2 flex-shrink-0">
+          <span
+            className="font-mono text-[10px] ml-2 flex-shrink-0"
+            style={{ color: varName }}
+          >
             {profLabel(skill.proficiency)}
           </span>
         </div>
 
         <div className="h-[3px] w-full bg-border rounded-full overflow-hidden">
           <motion.div
-            className="h-full rounded-full bg-accent"
+            className="h-full rounded-full"
+            style={{ backgroundColor: varName }}
             initial={{ width: 0 }}
             animate={{ width: `${skill.proficiency}%` }}
             transition={{
