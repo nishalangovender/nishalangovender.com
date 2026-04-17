@@ -96,9 +96,9 @@ export default function EngineeringProcess() {
           ))}
         </div>
 
-        {/* ── SVG (1/3) + Card (2/3) side by side ────────── */}
+        {/* ── SVG + Card layout ───────────────────────���── */}
         <div className="flex items-center gap-6">
-          {/* SVG — takes ~1/3, on the grid background */}
+          {/* SVG — desktop only, takes ~1/3 */}
           <div className="hidden sm:flex flex-[1] justify-center">
             <AnimatePresence mode="wait">
               <motion.div
@@ -114,7 +114,7 @@ export default function EngineeringProcess() {
             </AnimatePresence>
           </div>
 
-          {/* White card — takes ~2/3 */}
+          {/* White card */}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
@@ -130,6 +130,22 @@ export default function EngineeringProcess() {
               <p className="text-muted leading-relaxed">
                 {activePhase.description}
               </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* ── Mobile SVG — full width below the card ── */}
+        <div className="sm:hidden flex justify-center mt-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.4 }}
+              className="w-full max-w-[240px] aspect-square text-foreground/50"
+            >
+              <Icon />
             </motion.div>
           </AnimatePresence>
         </div>
