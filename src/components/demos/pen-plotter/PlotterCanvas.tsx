@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { HW } from "@/lib/pen-plotter/types";
 import type { SimFrame, Vec2 } from "@/lib/pen-plotter/types";
@@ -8,9 +8,10 @@ import type { SimFrame, Vec2 } from "@/lib/pen-plotter/types";
 interface Props {
   latest: SimFrame | null;
   showEnvelope: boolean;
-  onDrawClick?: (p: Vec2) => void;  // used later in Task 17
+  onDrawClick?: (p: Vec2) => void;
   drawMode?: boolean;
   drawnPolyline?: ReadonlyArray<Vec2>;
+  outOfEnvelopeFlash?: number;
   ariaLabel?: string;
 }
 
@@ -23,9 +24,23 @@ export function PlotterCanvas({
   onDrawClick,
   drawMode = false,
   drawnPolyline,
+  outOfEnvelopeFlash,
   ariaLabel,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const flashExpiryRef = useRef<number>(0);
+  const [flashTick, setFlashTick] = useState(0);
+
+  useEffect(() => {
+    if (outOfEnvelopeFlash === undefined) return;
+    flashExpiryRef.current = performance.now() + 400;
+    const tOn = setTimeout(() => setFlashTick((n) => n + 1), 0);
+    const tOff = setTimeout(() => setFlashTick((n) => n + 1), 400);
+    return () => {
+      clearTimeout(tOn);
+      clearTimeout(tOff);
+    };
+  }, [outOfEnvelopeFlash]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -65,6 +80,23 @@ export function PlotterCanvas({
       ctx.strokeStyle = "rgba(0, 102, 255, 0.35)";
       ctx.setLineDash([4, 4]);
       ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, HW.R_MAX * s, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, HW.R_MIN * s, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Out-of-envelope flash — red rings at R_MIN / R_MAX.
+    const flashActive = performance.now() < flashExpiryRef.current;
+    if (flashActive) {
+      const c = worldToScreen({ x: 0, y: 0 });
+      ctx.save();
+      ctx.strokeStyle = "rgba(220, 38, 38, 0.75)";
+      ctx.setLineDash([6, 4]);
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(c.x, c.y, HW.R_MAX * s, 0, 2 * Math.PI);
       ctx.stroke();
@@ -159,7 +191,7 @@ export function PlotterCanvas({
       ctx.restore();
     }
     ctx.restore();
-  }, [latest, showEnvelope, drawMode, drawnPolyline]);
+  }, [latest, showEnvelope, drawMode, drawnPolyline, flashTick]);
 
   return (
     <canvas
