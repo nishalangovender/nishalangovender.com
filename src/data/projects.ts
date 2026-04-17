@@ -56,6 +56,11 @@ export interface Project {
    * Surfaces a subtle badge on the card while the demo is still pending.
    */
   interactiveDemoPlanned?: boolean;
+  /**
+   * When present, the project has a live interactive demo and the card
+   * surfaces a link badge pointing here. Overrides the "planned" badge.
+   */
+  interactiveDemoHref?: string;
   /** Full case study content. Undefined until the case study is written. */
   caseStudy?: CaseStudy;
 }
@@ -182,6 +187,7 @@ export const projects: Project[] = [
     tags: ["Python", "EKF", "Control Theory", "Sensor Fusion"],
     featured: true,
     interactiveDemoPlanned: true,
+    interactiveDemoHref: "/projects/path-following/demo",
     caseStudy: {
       problem:
         "Make a differential-drive wagon autonomously track a parametric reference trajectory within a fixed time budget, using only noisy GPS (1 Hz) and IMU (20 Hz) as sensors. The GPS alone is too low-rate and too noisy to drive a controller; the IMU alone drifts; and the reference path varies sharply in curvature, so any controller tuned for straight-line tracking falls apart on the tight sections.",
