@@ -1,6 +1,8 @@
 // src/components/demos/path-following/ControlPanel.tsx
 "use client";
 
+import type { ReactNode } from "react";
+
 import type { PathKind, SimConfig } from "@/lib/path-following/types";
 
 export interface Layers {
@@ -15,6 +17,7 @@ interface Props {
   config: SimConfig;
   layers: Layers;
   isPlaying: boolean;
+  isComplete: boolean;
   onConfig: (patch: Partial<SimConfig>) => void;
   onLayers: (patch: Partial<Layers>) => void;
   onPlayPause: () => void;
@@ -32,40 +35,36 @@ export function ControlPanel({
   config,
   layers,
   isPlaying,
+  isComplete,
   onConfig,
   onLayers,
   onPlayPause,
   onReset,
   onOpenCharts,
 }: Props) {
+  const playLabel = isComplete ? "Restart" : isPlaying ? "Pause" : "Play";
   return (
-    <aside className="flex flex-col gap-6 text-sm">
-      <section>
-        <div className="font-mono text-[10px] tracking-widest uppercase text-muted mb-2">
-          Simulation
-        </div>
+    <aside className="h-full rounded-lg border border-border bg-surface text-sm overflow-hidden flex flex-col">
+      <Section label="Simulation">
         <div className="flex gap-2">
           <button
             type="button"
             onClick={onPlayPause}
-            className="flex-1 rounded border border-border bg-surface px-3 py-2 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
+            className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
           >
-            {isPlaying ? "Pause" : "Play"}
+            {playLabel}
           </button>
           <button
             type="button"
             onClick={onReset}
-            className="flex-1 rounded border border-border bg-surface px-3 py-2 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
+            className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
           >
             Reset
           </button>
         </div>
-      </section>
+      </Section>
 
-      <section>
-        <div className="font-mono text-[10px] tracking-widest uppercase text-muted mb-2">
-          Path
-        </div>
+      <Section label="Path">
         <div className="flex flex-col gap-1">
           {PATH_OPTIONS.map((opt) => (
             <label
@@ -84,12 +83,9 @@ export function ControlPanel({
             </label>
           ))}
         </div>
-      </section>
+      </Section>
 
-      <section>
-        <div className="font-mono text-[10px] tracking-widest uppercase text-muted mb-2">
-          Sensors
-        </div>
+      <Section label="Sensors">
         <Slider
           label="GPS σ"
           value={config.gpsNoiseSigma}
@@ -108,12 +104,9 @@ export function ControlPanel({
           unit="rad/s"
           onChange={(v) => onConfig({ imuNoiseSigma: v })}
         />
-      </section>
+      </Section>
 
-      <section>
-        <div className="font-mono text-[10px] tracking-widest uppercase text-muted mb-2">
-          Filter
-        </div>
+      <Section label="Filter">
         <Toggle
           label="κ-adaptive EKF"
           checked={config.useCurvatureAdaptiveEkf}
@@ -124,27 +117,45 @@ export function ControlPanel({
           checked={config.useMahalanobisRejection}
           onChange={(v) => onConfig({ useMahalanobisRejection: v })}
         />
-      </section>
+      </Section>
 
-      <section>
-        <div className="font-mono text-[10px] tracking-widest uppercase text-muted mb-2">
-          Layers
-        </div>
+      <Section label="Layers" last>
         <Toggle label="Reference" checked={layers.reference} onChange={(v) => onLayers({ reference: v })} />
         <Toggle label="Truth" checked={layers.truth} onChange={(v) => onLayers({ truth: v })} />
         <Toggle label="Estimate" checked={layers.estimate} onChange={(v) => onLayers({ estimate: v })} />
         <Toggle label="GPS fixes" checked={layers.gps} onChange={(v) => onLayers({ gps: v })} />
         <Toggle label="Outliers" checked={layers.outliers} onChange={(v) => onLayers({ outliers: v })} />
-      </section>
-
-      <button
-        type="button"
-        onClick={onOpenCharts}
-        className="rounded border border-border bg-surface px-3 py-2 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
-      >
-        Open Charts ↗
-      </button>
+        <button
+          type="button"
+          onClick={onOpenCharts}
+          className="w-full mt-2 rounded border border-border bg-background px-3 py-1.5 font-mono text-xs uppercase tracking-wider hover:border-accent hover:text-accent"
+        >
+          Open Charts ↗
+        </button>
+      </Section>
     </aside>
+  );
+}
+
+function Section({
+  label,
+  last,
+  children,
+}: {
+  label: string;
+  last?: boolean;
+  children: ReactNode;
+}) {
+  // On mobile/short viewports, shrink to content. On tall viewports, each
+  // section gets an equal vertical slice so the panel fills the column.
+  const base = "px-3 py-2 lg:flex-1 lg:flex lg:flex-col lg:justify-center";
+  return (
+    <section className={last ? base : `${base} border-b border-border`}>
+      <div className="font-mono text-[10px] tracking-wider uppercase text-muted mb-1.5">
+        {label}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -166,7 +177,7 @@ function Slider({
   onChange: (v: number) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1 py-1">
+    <label className="flex flex-col gap-0.5 py-0.5">
       <div className="flex justify-between font-mono text-xs text-muted">
         <span>{label}</span>
         <span>
@@ -197,7 +208,7 @@ function Toggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 py-1 cursor-pointer">
+    <label className="flex items-center gap-2 py-0.5 cursor-pointer">
       <input
         type="checkbox"
         checked={checked}

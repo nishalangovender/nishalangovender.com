@@ -12,7 +12,7 @@ import { SensorSuite } from "./sensors";
 import type { ReferencePoint, SimConfig, SimFrame, SimStats } from "./types";
 
 const DT = 0.02;       // 50 Hz
-const TARGET_V = 1.0;  // m/s cruise speed
+const TARGET_V = 1.4;  // m/s — matches the longest path perimeter in ~20 s
 
 export class Simulator {
   private samples: ReferencePoint[];

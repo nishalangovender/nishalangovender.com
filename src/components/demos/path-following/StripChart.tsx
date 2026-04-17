@@ -21,16 +21,16 @@ export function StripChart({
   yMin,
   yMax,
   threshold,
-  color = "#3B82F6",
+  color = "var(--accent)",
 }: Props) {
   if (!values.length) {
     return (
       <div className="rounded border border-border bg-surface p-3">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted mb-2">
+        <div className="font-mono text-[10px] uppercase tracking-wider text-muted mb-2">
           {label}
         </div>
         <div
-          className="w-full bg-[#0A0A0A] rounded"
+          className="w-full bg-background rounded"
           style={{ aspectRatio: `${WIDTH}/${HEIGHT}` }}
         />
       </div>
@@ -56,7 +56,7 @@ export function StripChart({
 
   return (
     <div className="rounded border border-border bg-surface p-3">
-      <div className="flex justify-between font-mono text-[10px] uppercase tracking-widest text-muted mb-2">
+      <div className="flex justify-between font-mono text-[10px] uppercase tracking-wider text-muted mb-2">
         <span>{label}</span>
         <span>
           {values[values.length - 1].toFixed(2)} {unit}
@@ -64,7 +64,7 @@ export function StripChart({
       </div>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className="w-full bg-[#0A0A0A] rounded"
+        className="w-full bg-background rounded"
         preserveAspectRatio="none"
       >
         {thresholdY !== null && (

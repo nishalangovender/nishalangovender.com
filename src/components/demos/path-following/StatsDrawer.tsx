@@ -37,7 +37,7 @@ export function StatsDrawer({ frames, open, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="font-mono text-xs uppercase tracking-widest text-muted">
+          <h2 className="font-mono text-xs uppercase tracking-wider text-muted">
             Filter Diagnostics
           </h2>
           <button
@@ -54,13 +54,13 @@ export function StatsDrawer({ frames, open, onClose }: Props) {
             label="Tracking error"
             unit="m"
             yMin={0}
-            color="#FAFAFA"
+            color="var(--foreground)"
           />
           <StripChart
             values={biases}
             label="Gyro bias estimate"
             unit="rad/s"
-            color="#3B82F6"
+            color="var(--accent)"
           />
           <StripChart
             values={residuals}
@@ -68,7 +68,7 @@ export function StatsDrawer({ frames, open, onClose }: Props) {
             unit="m"
             yMin={0}
             threshold={1.5}
-            color="#60a5fa"
+            color="var(--accent-dark)"
           />
         </div>
       </div>

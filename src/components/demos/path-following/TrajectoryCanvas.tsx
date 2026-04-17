@@ -25,8 +25,29 @@ interface Viewport {
   panY: number;
 }
 
+interface ThemeColors {
+  background: string;
+  foreground: string;
+  accent: string;
+  accentDark: string;
+  muted: string;
+}
+
 const WORLD_SIZE = 14; // metres — viewport side
 const DEFAULT_VIEWPORT: Viewport = { zoom: 1, panX: 0, panY: 0 };
+const OUTLIER_RED = "#ef4444";
+
+function readThemeColors(): ThemeColors {
+  const s = getComputedStyle(document.documentElement);
+  const get = (name: string) => s.getPropertyValue(name).trim();
+  return {
+    background: get("--background") || "#FAFAFA",
+    foreground: get("--foreground") || "#1A1A1A",
+    accent: get("--accent") || "#0066FF",
+    accentDark: get("--accent-dark") || "#0047B3",
+    muted: get("--muted") || "#6B6B6B",
+  };
+}
 
 export function TrajectoryCanvas({
   frames,
@@ -38,6 +59,24 @@ export function TrajectoryCanvas({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const [viewport, setViewport] = useState<Viewport>(DEFAULT_VIEWPORT);
+  const [themeVersion, setThemeVersion] = useState(0);
+
+  // Re-read theme colours when <html data-theme> toggles
+  useEffect(() => {
+    const obs = new MutationObserver(() => setThemeVersion((v) => v + 1));
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    // Also watch system preference changes for the fallback case
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => setThemeVersion((v) => v + 1);
+    mq.addEventListener("change", handler);
+    return () => {
+      obs.disconnect();
+      mq.removeEventListener("change", handler);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -56,6 +95,7 @@ export function TrajectoryCanvas({
     window.addEventListener("resize", resize);
 
     const draw = () => {
+      const colors = readThemeColors();
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
@@ -69,31 +109,12 @@ export function TrajectoryCanvas({
         cy - y * scale,
       ];
 
-      // Background
-      ctx.fillStyle = "#0A0A0A";
-      ctx.fillRect(0, 0, w, h);
-
-      // Grid
-      ctx.strokeStyle = "rgba(59, 130, 246, 0.08)";
-      ctx.lineWidth = 1;
-      for (let gx = -WORLD_SIZE / 2; gx <= WORLD_SIZE / 2; gx++) {
-        const [sx] = worldToScreen(gx, 0);
-        ctx.beginPath();
-        ctx.moveTo(sx, 0);
-        ctx.lineTo(sx, h);
-        ctx.stroke();
-      }
-      for (let gy = -WORLD_SIZE / 2; gy <= WORLD_SIZE / 2; gy++) {
-        const [, sy] = worldToScreen(0, gy);
-        ctx.beginPath();
-        ctx.moveTo(0, sy);
-        ctx.lineTo(w, sy);
-        ctx.stroke();
-      }
+      // Transparent canvas — the site's blueprint-grid wrapper shows through.
+      ctx.clearRect(0, 0, w, h);
 
       // Reference
       if (layers.reference && reference.length) {
-        ctx.strokeStyle = "#3B82F6";
+        ctx.strokeStyle = colors.accent;
         ctx.lineWidth = 1.5;
         ctx.setLineDash([6, 4]);
         ctx.beginPath();
@@ -112,18 +133,25 @@ export function TrajectoryCanvas({
         return;
       }
 
-      // Truth trail
+      // Truth trail — foreground colour (black in light mode, white in dark)
       if (layers.truth) {
-        drawTrail(ctx, frames.map((f) => f.truth), worldToScreen, "#FAFAFA", 2, reducedMotion);
+        drawTrail(
+          ctx,
+          frames.map((f) => f.truth),
+          worldToScreen,
+          colors.foreground,
+          2,
+          reducedMotion,
+        );
       }
 
-      // Estimate trail
+      // Estimate trail — accent-dark (lighter/muted variant of accent)
       if (layers.estimate) {
         drawTrail(
           ctx,
           frames.map((f) => f.estimate),
           worldToScreen,
-          "#60a5fa",
+          colors.accentDark,
           1.5,
           reducedMotion,
         );
@@ -136,7 +164,7 @@ export function TrajectoryCanvas({
           const [x, y] = worldToScreen(f.lastGpsFix.x, f.lastGpsFix.y);
           if (f.lastGpsFix.rejected) {
             if (!layers.outliers) continue;
-            ctx.strokeStyle = "#ef4444";
+            ctx.strokeStyle = OUTLIER_RED;
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(x - 4, y - 4);
@@ -145,7 +173,7 @@ export function TrajectoryCanvas({
             ctx.lineTo(x - 4, y + 4);
             ctx.stroke();
           } else if (layers.gps) {
-            ctx.fillStyle = "rgba(250, 250, 250, 0.5)";
+            ctx.fillStyle = withAlpha(colors.muted, 0.6);
             ctx.beginPath();
             ctx.arc(x, y, 2.5, 0, Math.PI * 2);
             ctx.fill();
@@ -153,20 +181,10 @@ export function TrajectoryCanvas({
         }
       }
 
-      // Vehicle sprite
+      // Robot sprite — diff-drive: body, two wheels, caster
       const last = frames[frames.length - 1];
       const [vx, vy] = worldToScreen(last.truth.x, last.truth.y);
-      ctx.save();
-      ctx.translate(vx, vy);
-      ctx.rotate(-last.truth.theta);
-      ctx.fillStyle = "#FAFAFA";
-      ctx.beginPath();
-      ctx.moveTo(7, 0);
-      ctx.lineTo(-5, 4);
-      ctx.lineTo(-5, -4);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+      drawRobot(ctx, vx, vy, last.truth.theta, colors);
 
       rafRef.current = requestAnimationFrame(draw);
     };
@@ -177,7 +195,7 @@ export function TrajectoryCanvas({
       window.removeEventListener("resize", resize);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, [frames, reference, layers, reducedMotion, viewport]);
+  }, [frames, reference, layers, reducedMotion, viewport, themeVersion]);
 
   return (
     <canvas
@@ -233,7 +251,7 @@ function drawTrail(
     const end = Math.min((s + 1) * per + 1, points.length);
     if (end - start < 2) continue;
     const alpha = 0.2 + 0.8 * (s / (segs - 1));
-    ctx.strokeStyle = colorWithAlpha(color, alpha);
+    ctx.strokeStyle = withAlpha(color, alpha);
     ctx.lineWidth = lineWidth;
     ctx.beginPath();
     const [x0, y0] = worldToScreen(points[start].x, points[start].y);
@@ -246,10 +264,104 @@ function drawTrail(
   }
 }
 
-function colorWithAlpha(hex: string, alpha: number): string {
-  // Accepts #RRGGBB only
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+/**
+ * Draw a small top-down diff-drive robot at (vx, vy) oriented by theta.
+ * Body is a rounded rectangle; two wheels straddle the body; a small
+ * caster sits at the rear. Scale is fixed in screen pixels — we don't
+ * want the robot to grow when the user zooms in.
+ */
+function drawRobot(
+  ctx: CanvasRenderingContext2D,
+  vx: number,
+  vy: number,
+  theta: number,
+  colors: ThemeColors,
+): void {
+  ctx.save();
+  ctx.translate(vx, vy);
+  ctx.rotate(-theta);
+
+  // Body: rounded rectangle, 14×10 px, facing +x
+  const bodyW = 14;
+  const bodyH = 10;
+  const radius = 2;
+  ctx.fillStyle = colors.accent;
+  roundedRect(ctx, -bodyW / 2, -bodyH / 2, bodyW, bodyH, radius);
+  ctx.fill();
+
+  // Heading indicator: small triangle on the front edge
+  ctx.fillStyle = colors.background;
+  ctx.beginPath();
+  ctx.moveTo(bodyW / 2 - 2, -2.5);
+  ctx.lineTo(bodyW / 2 + 1, 0);
+  ctx.lineTo(bodyW / 2 - 2, 2.5);
+  ctx.closePath();
+  ctx.fill();
+
+  // Wheels: two bars on either side
+  ctx.fillStyle = colors.foreground;
+  ctx.fillRect(-3, -bodyH / 2 - 2, 6, 2); // top wheel
+  ctx.fillRect(-3, bodyH / 2, 6, 2);      // bottom wheel
+
+  // Rear caster: small circle at the back
+  ctx.fillStyle = colors.muted;
+  ctx.beginPath();
+  ctx.arc(-bodyW / 2 + 1.5, 0, 1.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function roundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+/**
+ * Return a color string with alpha baked in. Accepts:
+ * - `#RRGGBB` or `#RGB`
+ * - `rgb(r, g, b)` / `rgba(r, g, b, a)` (we override alpha)
+ * - Anything else → returns input unchanged (safe fallback for CSS keywords).
+ */
+function withAlpha(color: string, alpha: number): string {
+  const c = color.trim();
+  if (c.startsWith("#")) {
+    const hex = c.slice(1);
+    let r: number, g: number, b: number;
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length === 6) {
+      r = parseInt(hex.slice(0, 2), 16);
+      g = parseInt(hex.slice(2, 4), 16);
+      b = parseInt(hex.slice(4, 6), 16);
+    } else {
+      return c;
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  if (c.startsWith("rgb")) {
+    const nums = c.match(/[\d.]+/g);
+    if (nums && nums.length >= 3) {
+      return `rgba(${nums[0]}, ${nums[1]}, ${nums[2]}, ${alpha})`;
+    }
+  }
+  return c;
 }

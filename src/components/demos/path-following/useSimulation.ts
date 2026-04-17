@@ -14,6 +14,7 @@ type Listener = () => void;
 interface SimSnapshot {
   frames: SimFrame[];
   isPlaying: boolean;
+  isComplete: boolean;
   stats: SimStats;
 }
 
@@ -22,6 +23,8 @@ export interface UseSimulationResult {
   latest: SimFrame | null;
   stats: SimStats;
   isPlaying: boolean;
+  /** True once the sim has run for the configured `duration`. */
+  isComplete: boolean;
   play: () => void;
   pause: () => void;
   reset: (nextConfig?: Partial<SimConfig>) => void;
@@ -40,9 +43,11 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
   const degradedRef = useRef<boolean>(false);
   const slowFramesRef = useRef<number>(0);
   const tickRef = useRef<(now: number) => void>(() => {});
+  const completeRef = useRef<boolean>(false);
   const snapRef = useRef<SimSnapshot>({
     frames: [],
     isPlaying: false,
+    isComplete: false,
     stats: { meanError: 0, maxError: 0, outliersRejected: 0, samplesProcessed: 0 },
   });
 
@@ -51,6 +56,7 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
     snapRef.current = {
       frames: bufferRef.current,
       isPlaying: playingRef.current,
+      isComplete: completeRef.current,
       stats: simRef.current.getStats(),
     };
     for (const l of listenersRef.current) l();
@@ -83,6 +89,15 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
         const buf = bufferRef.current;
         buf.push(frame);
         if (buf.length > BUFFER_SIZE) buf.shift();
+        // Stop the sim once we've run for the configured duration.
+        if (frame.t >= configRef.current.duration) {
+          playingRef.current = false;
+          completeRef.current = true;
+          if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+          notify();
+          return;
+        }
         notify();
       }
       rafRef.current = requestAnimationFrame(tickRef.current);
@@ -98,6 +113,8 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
 
   const play = useCallback(() => {
     if (playingRef.current) return;
+    // Play after completion is a no-op — callers should reset first.
+    if (completeRef.current) return;
     playingRef.current = true;
     lastTickRef.current = performance.now();
     rafRef.current = requestAnimationFrame(tickRef.current);
@@ -119,6 +136,7 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
       bufferRef.current = [];
       degradedRef.current = false;
       slowFramesRef.current = 0;
+      completeRef.current = false;
       notify();
     },
     [notify],
@@ -147,6 +165,7 @@ export function useSimulation(initial: SimConfig): UseSimulationResult {
       latest: snap.frames.length ? snap.frames[snap.frames.length - 1] : null,
       stats: snap.stats,
       isPlaying: snap.isPlaying,
+      isComplete: snap.isComplete,
       play,
       pause,
       reset,

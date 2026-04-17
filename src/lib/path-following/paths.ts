@@ -1,7 +1,7 @@
 import type { PathKind, ReferencePoint } from "./types";
 
 const TWO_PI = Math.PI * 2;
-const PERIOD = 20; // seconds — one full traversal
+const PERIOD = 20; // seconds — one full traversal of the reference
 const A = 5;       // metres — lemniscate semi-width
 const R = 4;       // metres — circle radius
 

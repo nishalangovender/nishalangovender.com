@@ -26,7 +26,7 @@ export function StatsStrip({ latest, stats }: Props) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <span>
-      <span className="text-muted uppercase tracking-widest mr-2">{label}</span>
+      <span className="text-muted uppercase tracking-wider mr-2">{label}</span>
       <span>{value}</span>
     </span>
   );

@@ -63,24 +63,32 @@ export default function PathFollowingDemo() {
     sim.reset(config);
   }, [sim, config]);
 
-  // Keyboard: space = play/pause, R = reset
+  const onPlayPause = useCallback(() => {
+    if (sim.isComplete) {
+      // Restart: reset + auto-play.
+      sim.reset(config);
+      sim.play();
+    } else if (sim.isPlaying) {
+      sim.pause();
+    } else {
+      sim.play();
+    }
+  }, [sim, config]);
+
+  // Keyboard: space = play/pause/restart, R = reset
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
       if (e.code === "Space") {
         e.preventDefault();
-        if (sim.isPlaying) {
-          sim.pause();
-        } else {
-          sim.play();
-        }
+        onPlayPause();
       } else if (e.key === "r" || e.key === "R") {
         debouncedReset();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [sim, debouncedReset]);
+  }, [onPlayPause, debouncedReset]);
 
   const onConfig = useCallback(
     (patch: Partial<SimConfig>) => {
@@ -112,7 +120,7 @@ export default function PathFollowingDemo() {
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-rows-[1fr_auto] lg:grid-rows-none lg:grid-cols-[1fr_16rem] gap-4 h-[calc(100vh-12rem)]">
-        <div className="relative rounded-lg border border-border overflow-hidden bg-[#0A0A0A]">
+        <div className="relative rounded-lg border border-border overflow-hidden bg-background">
           <TrajectoryCanvas
             frames={sim.frames}
             reference={reference}
@@ -121,14 +129,15 @@ export default function PathFollowingDemo() {
             ariaLabel={ariaLabel}
           />
         </div>
-        <div className="lg:static lg:max-h-none max-h-[40vh] overflow-y-auto rounded-t-xl bg-surface border-t border-border lg:border-t-0 lg:bg-transparent px-4 lg:px-0 pt-4 lg:pt-0">
+        <div className="max-h-[40vh] overflow-y-auto lg:max-h-none lg:h-full lg:overflow-visible">
           <ControlPanel
             config={config}
             layers={layers}
             isPlaying={sim.isPlaying}
+            isComplete={sim.isComplete}
             onConfig={onConfig}
             onLayers={onLayers}
-            onPlayPause={() => (sim.isPlaying ? sim.pause() : sim.play())}
+            onPlayPause={onPlayPause}
             onReset={debouncedReset}
             onOpenCharts={() => setChartsOpen(true)}
           />
