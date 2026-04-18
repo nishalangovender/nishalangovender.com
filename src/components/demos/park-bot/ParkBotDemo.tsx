@@ -3,16 +3,16 @@
 
 import { useEffect, useState } from "react";
 
+import { getScenario } from "@/lib/park-bot/scenarios";
+import { DEFAULT_CONFIG } from "@/lib/park-bot/types";
+import type { KinematicMode, Scenario, SimConfig } from "@/lib/park-bot/types";
+
 import { DemoLegend, type LegendItem } from "../DemoLegend";
 
 import { ControlPanel } from "./ControlPanel";
 import { Hud } from "./Hud";
 import { ParkCanvas } from "./ParkCanvas";
 import { useSimulation } from "./useSimulation";
-
-import { getScenario } from "@/lib/park-bot/scenarios";
-import type { KinematicMode, Scenario, SimConfig } from "@/lib/park-bot/types";
-import { DEFAULT_CONFIG } from "@/lib/park-bot/types";
 
 const LEGEND: LegendItem[] = [
   { label: "Chassis", kind: "ring", color: "var(--foreground)" },
@@ -23,13 +23,15 @@ const LEGEND: LegendItem[] = [
 ];
 
 function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
+  const [reduced, setReduced] = useState(() =>
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const h = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", h);
-    return () => mq.removeEventListener("change", h);
+    const handler = () => setReduced(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
   return reduced;
 }

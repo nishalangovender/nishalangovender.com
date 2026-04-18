@@ -55,8 +55,9 @@ export function useSimulation(config: SimConfig): SimulationHandle {
     });
   }, [scenario, config.forcedMode]);
 
-  // Reset when config inputs change.
+  // Reset derived state whenever the external sim config changes.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting derived state on config change is the intended behaviour
     reset();
   }, [reset]);
 
