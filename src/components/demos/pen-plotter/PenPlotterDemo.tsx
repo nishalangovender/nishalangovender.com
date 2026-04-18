@@ -6,6 +6,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isInsideEnvelope } from "@/lib/pen-plotter/kinematics";
 import { DEFAULT_CONFIG, type SimConfig, type Vec2 } from "@/lib/pen-plotter/types";
 
+import { DemoLegend, type LegendItem } from "../DemoLegend";
+
 import { ControlPanel } from "./ControlPanel";
 import { FirmwareDrawer } from "./FirmwareDrawer";
 import { PlotterCanvas } from "./PlotterCanvas";
@@ -109,19 +111,36 @@ export default function PenPlotterDemo() {
     return `Polar pen plotter tracing ${config.source === "preset" ? config.preset : "a drawn path"}.`;
   }, [sim.latest, config.source, config.preset]);
 
+  const legend = useMemo<LegendItem[]>(() => {
+    const items: LegendItem[] = [
+      { label: "Trace", color: "var(--accent)", kind: "solid" },
+      { label: "Arm", color: "var(--foreground)", kind: "solid" },
+      { label: "Pen Down", color: "var(--accent)", kind: "dot" },
+      { label: "Pen Up", color: "var(--foreground)", kind: "ring" },
+    ];
+    if (config.showEnvelope)
+      items.push({ label: "Envelope", color: "var(--accent)", kind: "dashed" });
+    if (config.source === "draw")
+      items.push({ label: "Planned Path", color: "var(--foreground)", kind: "dashed" });
+    return items;
+  }, [config.showEnvelope, config.source]);
+
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_16rem] gap-4">
-        <div className="relative rounded-lg border border-border overflow-hidden bg-background h-[60vh] lg:h-[70vh]">
-          <PlotterCanvas
-            latest={sim.latest}
-            showEnvelope={config.showEnvelope}
-            drawMode={config.source === "draw"}
-            drawnPolyline={drawnPolyline}
-            onDrawClick={onDrawClick}
-            outOfEnvelopeFlash={flashAt}
-            ariaLabel={ariaLabel}
-          />
+        <div className="flex flex-col gap-3">
+          <div className="relative rounded-lg border border-border overflow-hidden bg-background h-[60vh] lg:h-[70vh]">
+            <PlotterCanvas
+              latest={sim.latest}
+              showEnvelope={config.showEnvelope}
+              drawMode={config.source === "draw"}
+              drawnPolyline={drawnPolyline}
+              onDrawClick={onDrawClick}
+              outOfEnvelopeFlash={flashAt}
+              ariaLabel={ariaLabel}
+            />
+          </div>
+          <DemoLegend items={legend} />
         </div>
         <div className="lg:h-[70vh]">
           <ControlPanel

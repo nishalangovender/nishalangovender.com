@@ -82,7 +82,7 @@ export default function FilterDropdown({
       </summary>
       <div
         role="listbox"
-        className="absolute right-0 z-20 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-3 shadow-lg"
+        className="absolute left-0 sm:left-auto sm:right-0 z-20 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-3 shadow-lg"
       >
         <Section label="Status">
           <Option

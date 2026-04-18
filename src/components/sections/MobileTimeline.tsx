@@ -50,15 +50,34 @@ function yearToChapterIndex(year: string): number {
 function buildMobileTimeline(): TimelineYear[] {
   const years: TimelineYear[] = JSON.parse(JSON.stringify(timelineYears));
 
+  // Anchor the start of the timeline at 2000 to match the desktop chapter
+  // span (2000 – 2018). Rendered as a bare year dot + label (no bullets).
+  years.unshift({ year: "2000", events: [] });
+
+  // Floating formative-year notes → attach each to the nearest existing year
+  // whose value matches or falls just below the note's `fromYear`. On desktop
+  // these render as free-floating annotations between years; on mobile they
+  // need a year anchor, so we route them to the chronologically-correct one.
   const formativeNotes = timelineChapters[0].notes || [];
-  years.unshift({
-    year: "2000",
-    events: formativeNotes.map((note) => ({
+  for (const note of formativeNotes) {
+    const yearsAsc = [...years].sort(
+      (a, b) => parseInt(a.year, 10) - parseInt(b.year, 10),
+    );
+    const anchor =
+      yearsAsc.find((y) => parseInt(y.year, 10) === note.fromYear) ??
+      [...yearsAsc]
+        .reverse()
+        .find(
+          (y) =>
+            parseInt(y.year, 10) <= note.fromYear && parseInt(y.year, 10) > 2000,
+        );
+    if (!anchor) continue;
+    anchor.events.push({
       month: "",
       text: note.text,
-      side: "right" as const,
-    })),
-  });
+      side: "right",
+    });
+  }
 
   const su2022 = years.find((y) => y.year === "2022");
   const y2019 = years.find((y) => y.year === "2019");
@@ -110,7 +129,11 @@ function buildMobileTimeline(): TimelineYear[] {
     }
   }
 
-  return years.filter((y) => y.events.length > 0 || y.branch);
+  // Keep the 2000 anchor even though it has no events — it renders as a bare
+  // year dot that matches desktop's chapter span.
+  return years.filter(
+    (y) => y.year === "2000" || y.events.length > 0 || y.branch,
+  );
 }
 
 const mobileYears = buildMobileTimeline();
@@ -195,6 +218,9 @@ export default function MobileTimeline() {
   const descCursorRef = useRef<HTMLSpanElement>(null);
   const activeChapterRef = useRef(-1);
   const introTypingDoneRef = useRef(false);
+  // Monotonic progress per chapter — prevents the same description retyping
+  // when a new year dot enters view within the same chapter.
+  const chapterProgressRef = useRef<Record<number, number>>({});
 
   // Ch0 time-based typewriter
   useEffect(() => {
@@ -210,7 +236,14 @@ export default function MobileTimeline() {
       const charCount = Math.floor(progress * text.length);
       if (descTextRef.current) descTextRef.current.textContent = text.substring(0, charCount);
       if (descCursorRef.current) descCursorRef.current.style.display = progress < 1 ? "inline-block" : "none";
-      if (progress < 1) { raf = requestAnimationFrame(animate); } else { introTypingDoneRef.current = true; }
+      if (progress < 1) {
+        raf = requestAnimationFrame(animate);
+      } else {
+        introTypingDoneRef.current = true;
+        // Lock chapter 0 progress at 100% so the scroll-driven typewriter
+        // never rewinds the intro text the user has already seen.
+        chapterProgressRef.current[0] = 1;
+      }
     }
     raf = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(raf);
@@ -238,13 +271,21 @@ export default function MobileTimeline() {
       if (descTextRef.current) descTextRef.current.textContent = "";
     }
 
-    // Normal phase: type chapter description based on which year section is in view
-    const yearEls = document.querySelectorAll<HTMLElement>("[data-timeline-year]");
-    let activeYear = "2000";
+    // Normal phase: type chapter description based on which year section is in view.
+    // Progress is computed over the entire span of the chapter's year elements
+    // (first-year top → last-year top), so moving between years inside a single
+    // chapter advances the typewriter instead of restarting it.
+    const yearEls = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-timeline-year]"),
+    );
+    if (yearEls.length === 0) return;
+
+    const topmostLine = viewportH * 0.45;
+    let activeYear = yearEls[0].dataset.timelineYear || "2000";
     for (let i = yearEls.length - 1; i >= 0; i--) {
       const rect = yearEls[i].getBoundingClientRect();
-      if (rect.top < viewportH * 0.45) {
-        activeYear = yearEls[i].dataset.timelineYear || "2000";
+      if (rect.top < topmostLine) {
+        activeYear = yearEls[i].dataset.timelineYear || activeYear;
         break;
       }
     }
@@ -260,15 +301,33 @@ export default function MobileTimeline() {
       if (descTextRef.current) descTextRef.current.textContent = "";
     }
 
-    const yearEl = document.querySelector<HTMLElement>(`[data-timeline-year="${activeYear}"]`);
-    if (yearEl) {
-      const rect = yearEl.getBoundingClientRect();
-      const scrollIn = viewportH * 0.45 - rect.top;
-      const typeProgress = Math.min(1, Math.max(0, scrollIn / 200));
-      const charCount = Math.floor(typeProgress * text.length);
-      if (descTextRef.current) descTextRef.current.textContent = text.substring(0, charCount);
-      if (descCursorRef.current) descCursorRef.current.style.display = typeProgress < 1 ? "inline-block" : "none";
-    }
+    // All year elements that belong to this chapter.
+    const chapterYearEls = yearEls.filter(
+      (el) =>
+        yearToChapterIndex(el.dataset.timelineYear || "0") === chapterIdx,
+    );
+    if (chapterYearEls.length === 0) return;
+
+    const firstTop = chapterYearEls[0].getBoundingClientRect().top;
+    const lastTop =
+      chapterYearEls[chapterYearEls.length - 1].getBoundingClientRect().top;
+    // span from first year's top to last year's top, plus a small trailing
+    // cushion so the final characters appear before the next chapter takes over.
+    const span = Math.max(200, lastTop - firstTop + 200);
+    const scrollIn = topmostLine - firstTop;
+    const rawProgress = Math.min(1, Math.max(0, scrollIn / span));
+
+    // Monotonic per-chapter progress — never rewinds on a slight scroll-up.
+    const prev = chapterProgressRef.current[chapterIdx] ?? 0;
+    const typeProgress = Math.max(prev, rawProgress);
+    chapterProgressRef.current[chapterIdx] = typeProgress;
+
+    const charCount = Math.floor(typeProgress * text.length);
+    if (descTextRef.current)
+      descTextRef.current.textContent = text.substring(0, charCount);
+    if (descCursorRef.current)
+      descCursorRef.current.style.display =
+        typeProgress < 1 ? "inline-block" : "none";
   }, [prefersReducedMotion, viewportH]);
 
   // Subscribe to zoomT changes
@@ -295,9 +354,16 @@ export default function MobileTimeline() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [updateTypewriter, zoomT, prefersReducedMotion]);
 
-  // Compute scale for zoom-out — generous padding so nothing is clipped
-  const minScale = contentH > 0 ? Math.min(1, Math.max(0.1, (visibleH - 80) / (contentH + 100))) : 0.18;
+  // Compute scale for zoom-out — clamp to a legible floor on mobile so the
+  // timeline doesn't shrink to an unreadable postage stamp at the end of scroll.
+  // The timeline also fades out as it shrinks, giving a "camera pulls back and
+  // dissolves" effect rather than leaving a tiny illegible copy on screen.
+  const MIN_SCALE_FLOOR = 0.55;
+  const fitScale =
+    contentH > 0 ? (visibleH - 80) / (contentH + 100) : MIN_SCALE_FLOOR;
+  const minScale = Math.min(1, Math.max(MIN_SCALE_FLOOR, fitScale));
   const scale = useTransform(zoomT, [0, 1], [1, minScale]);
+  const timelineOpacity = useTransform(zoomT, [0, 0.6, 1], [1, 0.85, 0.3]);
 
   // ── Reduced motion: simple scrolling page ──
   if (prefersReducedMotion) {
@@ -362,6 +428,7 @@ export default function MobileTimeline() {
               className="relative pl-8 will-change-transform"
               style={{
                 scale,
+                opacity: timelineOpacity,
                 // During normal scroll: translateY moves content up.
                 // During zoom-out: smoothly interpolate y from -maxScroll
                 // back to 0, so the view slides from Freelance up to show

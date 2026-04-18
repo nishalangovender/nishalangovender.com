@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { DEFAULT_CONFIG, type SimConfig } from "@/lib/path-following/types";
 
+import { DemoLegend, type LegendItem } from "../DemoLegend";
+
 import { ChartsPanel } from "./ChartsPanel";
 import { ControlPanel, type Layers } from "./ControlPanel";
 import { StatsStrip } from "./StatsStrip";
@@ -111,6 +113,22 @@ export default function PathFollowingDemo() {
 
   const reference = useMemo(() => sim.sampleReference(), [sim]);
 
+  const legend = useMemo<LegendItem[]>(() => {
+    const items: LegendItem[] = [];
+    if (layers.reference)
+      items.push({ label: "Reference", color: "var(--accent)", kind: "dashed" });
+    if (layers.truth)
+      items.push({ label: "Truth", color: "var(--foreground)", kind: "solid" });
+    if (layers.estimate)
+      items.push({ label: "Estimate", color: "var(--accent-dark)", kind: "solid" });
+    if (layers.gps)
+      items.push({ label: "GPS Fix", color: "var(--muted)", kind: "dot" });
+    if (layers.outliers)
+      items.push({ label: "Outlier", color: "#ef4444", kind: "cross" });
+    items.push({ label: "Robot", color: "var(--accent)", kind: "chip" });
+    return items;
+  }, [layers]);
+
   const ariaLabel = useMemo(() => {
     const f = sim.latest;
     if (!f) return "Path-following simulation initialising.";
@@ -121,14 +139,17 @@ export default function PathFollowingDemo() {
     <div className="flex flex-col gap-3">
       <StatsStrip latest={sim.latest} stats={sim.stats} />
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_16rem] gap-4">
-        <div className="relative rounded-lg border border-border overflow-hidden bg-background h-[60vh] lg:h-[70vh]">
-          <TrajectoryCanvas
-            frames={sim.frames}
-            reference={reference}
-            layers={layers}
-            reducedMotion={reducedMotion}
-            ariaLabel={ariaLabel}
-          />
+        <div className="flex flex-col gap-3">
+          <div className="relative rounded-lg border border-border overflow-hidden bg-background h-[60vh] lg:h-[70vh]">
+            <TrajectoryCanvas
+              frames={sim.frames}
+              reference={reference}
+              layers={layers}
+              reducedMotion={reducedMotion}
+              ariaLabel={ariaLabel}
+            />
+          </div>
+          <DemoLegend items={legend} />
         </div>
         <div className="lg:h-[70vh]">
           <ControlPanel
