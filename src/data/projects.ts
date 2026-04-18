@@ -218,6 +218,7 @@ export const projects: Project[] = [
     tags: ["C++", "Python", "RP2040", "Embedded"],
     featured: true,
     interactiveDemoPlanned: true,
+    interactiveDemoHref: "/projects/pen-plotter/demo",
     caseStudy: {
       problem:
         "Two-day take-home technical challenge: bring up a custom pen-plotter from bare hardware to something you can draw arbitrary shapes on. The hardware is a polar plotter — an RP2040 driving a rotating arm via a high-reduction stepper, and a linear actuator extending a pen along that arm — so every Cartesian point the user wants has to be converted into a (θ, r) pair and tracked accurately against ADC feedback.\n\nThe challenge was explicitly end-to-end: firmware, kinematics, a user-facing tool, and a calibration procedure, all delivered within the 48-hour window.",

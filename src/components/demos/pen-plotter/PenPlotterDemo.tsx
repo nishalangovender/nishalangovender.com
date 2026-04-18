@@ -88,6 +88,22 @@ export default function PenPlotterDemo() {
 
   const onReset = useCallback(() => debouncedReset(config), [debouncedReset, config]);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        onPlayPause();
+      } else if (e.key === "r" || e.key === "R") {
+        debouncedReset(config);
+      } else if (e.key === "d" || e.key === "D") {
+        setDrawerOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onPlayPause, debouncedReset, config]);
+
   const ariaLabel = useMemo(() => {
     if (!sim.latest) return "Pen plotter initialising.";
     return `Polar pen plotter tracing ${config.source === "preset" ? config.preset : "a drawn path"}.`;

@@ -67,18 +67,27 @@ export function ControlPanel({
       </Section>
 
       <Section label="Path">
-        <div role="radiogroup" aria-label="Path" className="flex flex-col gap-1.5 items-start">
-          {PATH_OPTIONS.map((opt) => (
-            <Pill
-              key={opt.value}
-              active={config.path === opt.value}
-              role="radio"
-              ariaChecked={config.path === opt.value}
-              onClick={() => onConfig({ path: opt.value })}
-            >
-              {opt.label}
-            </Pill>
-          ))}
+        <div role="radiogroup" aria-label="Path" className="grid grid-cols-2 gap-2">
+          {PATH_OPTIONS.map((opt) => {
+            const isActive = config.path === opt.value;
+            const base =
+              "px-2 py-1 rounded border font-mono text-xs cursor-pointer";
+            const state = isActive
+              ? "border-accent bg-accent-light text-accent"
+              : "border-border bg-background text-foreground hover:border-accent hover:text-accent";
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={isActive}
+                onClick={() => onConfig({ path: opt.value })}
+                className={`${base} ${state}`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
       </Section>
 

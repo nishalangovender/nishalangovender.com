@@ -51,10 +51,25 @@ export function CommandLog({ lastCommand, lastResponse }: Props) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [entries]);
 
+  const clearLog = () => {
+    queueMicrotask(() => setEntries([]));
+  };
+
   return (
     <div className="flex flex-col border border-border rounded bg-surface h-full min-h-0">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted px-3 py-2 border-b border-border">
-        Command Log
+      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+          Command Log
+        </span>
+        <button
+          type="button"
+          onClick={clearLog}
+          disabled={entries.length === 0}
+          className="font-mono text-[10px] uppercase tracking-widest text-muted hover:text-accent disabled:opacity-40 disabled:hover:text-muted"
+          aria-label="Clear command log"
+        >
+          Clear
+        </button>
       </div>
       <div
         ref={scrollRef}
