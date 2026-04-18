@@ -32,26 +32,43 @@ export interface MissionSample {
   stuck: boolean;
 }
 
+// Recipes are hand-tuned so each scenario's integrated end-pose lands on (or
+// within a few centimetres of) the target bay drawn on the canvas. Durations
+// that depend on π are written as closed-form expressions rather than decimals
+// so the maths stays legible — adjust vx/ω and the duration tracks automatically.
 const RECIPES: Record<Scenario["id"], PhaseSpec[]> = {
+  // Start (-2.5, -1.0, 0°); target (1.5, 0.8, 90°).
+  // Approach: straight forward 3.0 m → (0.5, -1.0, 0°).
+  // Active:   Ackermann left turn, R=1.0, CCW through 90° → (1.5, 0.0, 90°).
+  // Align:    straight forward 0.8 m in heading +y → (1.5, 0.8, 90°).
   forward_bay: [
-    { duration: 2.0, twist: { vx: 0.6, vy: 0, omega: 0 },    mode: "ackermann", phase: "approach" },
-    { duration: 2.5, twist: { vx: 0.4, vy: 0, omega: 0.45 }, mode: "ackermann", phase: "active" },
-    { duration: 1.2, twist: { vx: 0.2, vy: 0, omega: 0 },    mode: "ackermann", phase: "align" },
+    { duration: 3.0,             twist: { vx: 1.0, vy: 0, omega: 0 },    mode: "ackermann", phase: "approach" },
+    { duration: Math.PI / 1.8,   twist: { vx: 0.9, vy: 0, omega: 0.9 },  mode: "ackermann", phase: "active" },
+    { duration: 2.0,             twist: { vx: 0.4, vy: 0, omega: 0 },    mode: "ackermann", phase: "align" },
   ],
+  // Start (-1.5, -0.3, 0°); target (1.5, 0.8, 0°).
+  // Approach: straight 1.2 m → (-0.3, -0.3, 0°).
+  // Active:   crab diagonal (vx=0.5, vy=0.55) for 2.0 s → (0.7, 0.8, 0°).
+  // Align:    straight 0.8 m → (1.5, 0.8, 0°).
   parallel_tight: [
-    { duration: 1.8, twist: { vx: 0.5, vy: 0, omega: 0 },    mode: "crab", phase: "approach" },
-    { duration: 2.2, twist: { vx: 0.2, vy: 0.5, omega: 0 },  mode: "crab", phase: "active" },
-    { duration: 1.2, twist: { vx: 0.1, vy: 0, omega: 0 },    mode: "crab", phase: "align" },
+    { duration: 2.0, twist: { vx: 0.6, vy: 0,    omega: 0 }, mode: "crab", phase: "approach" },
+    { duration: 2.0, twist: { vx: 0.5, vy: 0.55, omega: 0 }, mode: "crab", phase: "active" },
+    { duration: 2.0, twist: { vx: 0.4, vy: 0,    omega: 0 }, mode: "crab", phase: "align" },
   ],
+  // Start (-2.5, -0.6, 0°); target (-2.5, 0.6, 180°).
+  // Approach: straight 1.0 m → (-1.5, -0.6, 0°).
+  // Active:   counter-steer CCW half-circle R=0.6 around (-1.5, 0) → (-1.5, +0.6, π).
+  // Align:    straight 1.0 m in heading π (i.e. -x world) → (-2.5, 0.6, π).
   narrow_uturn: [
-    { duration: 1.5, twist: { vx: 0.5, vy: 0, omega: 0 },            mode: "counter_steer", phase: "approach" },
-    { duration: 3.0, twist: { vx: 0.35, vy: 0, omega: 0.8 },         mode: "counter_steer", phase: "active" },
-    { duration: 1.5, twist: { vx: 0.4, vy: 0, omega: 0 },            mode: "counter_steer", phase: "align" },
+    { duration: 2.0,             twist: { vx: 0.5, vy: 0, omega: 0 }, mode: "counter_steer", phase: "approach" },
+    { duration: Math.PI,         twist: { vx: 0.6, vy: 0, omega: 1 }, mode: "counter_steer", phase: "active" },
+    { duration: 2.0,             twist: { vx: 0.5, vy: 0, omega: 0 }, mode: "counter_steer", phase: "align" },
   ],
+  // Start (0, 0, 0°); target (0, 0, 180°). Pure yaw by π.
   pivot_rotate: [
-    { duration: 0.8, twist: { vx: 0, vy: 0, omega: 0 },      mode: "pivot", phase: "approach" },
-    { duration: 2.8, twist: { vx: 0, vy: 0, omega: 0.9 },    mode: "pivot", phase: "active" },
-    { duration: 0.6, twist: { vx: 0, vy: 0, omega: 0 },      mode: "pivot", phase: "align" },
+    { duration: 0.6,     twist: { vx: 0, vy: 0, omega: 0 }, mode: "pivot", phase: "approach" },
+    { duration: Math.PI, twist: { vx: 0, vy: 0, omega: 1 }, mode: "pivot", phase: "active" },
+    { duration: 0.6,     twist: { vx: 0, vy: 0, omega: 0 }, mode: "pivot", phase: "align" },
   ],
 };
 
