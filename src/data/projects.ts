@@ -155,7 +155,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     tags: ["Robotics", "ROS2", "NAV2", "SLAM"],
     github: "https://github.com/nishalangovender/park_bot",
     featured: true,
-    interactiveDemoPlanned: true,
+    interactiveDemoHref: "/projects/park-bot/demo",
     caseStudy: {
       problem:
         "Conventional autonomous parking research focuses almost entirely on Ackermann-steered passenger cars. Four-wheel steering (4WS) platforms have a fundamentally different kinematic envelope — they can crab sideways, pivot on the spot and cover parking manoeuvres that a two-wheel-steered car physically cannot — but there was very little open-source work showing how to drive one through the full autonomy stack.\n\nFor my final-year Mechatronics thesis at Stellenbosch University I set out to close that gap: model a 4WS vehicle, simulate it inside the ROS2 / Gazebo stack, and make it autonomously park into a target spot using standard robotics building blocks (SLAM, a costmap, a path planner and a path-following controller).",
@@ -164,7 +164,7 @@ const PROJECT_DEFINITIONS: Project[] = [
       technicalDetails:
         "Modelled the 4WS vehicle with both forward kinematics (wheel angles + speeds → body velocity) and inverse kinematics (desired body twist → per-wheel commands), with the two front and two rear steering angles treated as independent inputs. The model supports the three canonical 4WS modes: conventional, crab and counter-steer.\n\nThe ROS2 graph runs sensor ingest (2D LiDAR, odometry), a slam_toolbox node producing a 2D occupancy grid, AMCL against that map, the NAV2 stack (costmap_2d, A* planner, RPP controller) and a custom mission node that picks between standard NAV2 goals and 4WS primitives based on the target pose relative to the vehicle. Gazebo provides the physics, sensors and world; RViz visualises the live plan, costmap, and trajectory.\n\nCode and launch files are open-sourced on GitHub with a minimal reproduction path — clone, build the workspace, and a single launch file brings the simulator, map, localisation and planner up together.",
       outcome:
-        "The thesis was awarded Cum Laude. The final system parks a simulated 4WS vehicle into pre-defined parking spots using a mix of NAV2-driven trajectories and 4WS-native manoeuvres, with live visualisation of the plan, costmap and vehicle pose in RViz.\n\nJust as importantly, it became the project where I got fluent in the ROS2 / NAV2 stack — which directly set up the production robotics work I took on straight afterwards at BATTALION Technologies. An improved version with a before/after comparison is planned as the interactive demo for Milestone 5.",
+        "The thesis was awarded Cum Laude. The final system parks a simulated 4WS vehicle into pre-defined parking spots using a mix of NAV2-driven trajectories and 4WS-native manoeuvres, with live visualisation of the plan, costmap and vehicle pose in RViz.\n\nJust as importantly, it became the project where I got fluent in the ROS2 / NAV2 stack — which directly set up the production robotics work I took on straight afterwards at BATTALION Technologies. A live TypeScript re-implementation of the 4WS kinematics and four scenarios — one per primitive — is available as an interactive demo, with the repo itself now polished to senior-engineer shape (CI, unit tests, docs, Docker).",
       techStack: [
         "ROS2",
         "Gazebo",
@@ -399,9 +399,9 @@ const PROJECT_ORDER: readonly string[] = [
   // Tier 1 — Live demos
   "path-following",
   "pen-plotter",
+  "park-bot",
   // Tier 2 — Robotics flagship
   "toyota-agv-fleet",
-  "park-bot",
   // Tier 3 — Full-stack flagship
   "nishos",
   "mergens-workshop",
