@@ -14,6 +14,7 @@ import {
   profileSummary,
   skillCategories,
 } from "@/data/cv";
+import { siteConfig } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -32,6 +33,21 @@ export const metadata: Metadata = {
 export default function CvPage() {
   return (
     <PageSection maxWidth="max-w-4xl">
+      {/* ── Print-only header ──
+          Hidden on screen via `.print-header { display: none }` in globals.css
+          and revealed by the `@media print` block. Keeps the printed page
+          self-identifying when Reveal's scroll-triggered sections wouldn't
+          otherwise show a name/contact line up top. */}
+      <header className="print-header mb-6 border-b border-black pb-4">
+        <h1 className="text-2xl font-bold">{siteConfig.name}</h1>
+        <p className="mt-1 text-sm">{siteConfig.tagline}</p>
+        <p className="mt-2 text-xs">
+          {siteConfig.email} · {siteConfig.url.replace(/^https?:\/\//, "")} ·{" "}
+          {siteConfig.socials.linkedin.replace(/^https?:\/\//, "")} ·{" "}
+          {siteConfig.socials.github.replace(/^https?:\/\//, "")}
+        </p>
+      </header>
+
       {/* ── Hero ────────────────────────────────────────────────────── */}
       <SectionHeading
         eyebrow="At A Glance"
@@ -40,7 +56,7 @@ export default function CvPage() {
       />
 
         {/* ── Request Form ────────────────────────────────────────────── */}
-        <div className="mt-12">
+        <div className="mt-12" data-print-hide>
           <CvRequestForm />
         </div>
 

@@ -295,3 +295,119 @@ button, a, [role="button"] {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
 }
+
+/* ── Print styles ──
+ * Tuned for the public `/cv` page so it prints cleanly as a one-off fallback
+ * when a recruiter hits Cmd/Ctrl-P before requesting the tailored CV. The
+ * preferred path is still the request form; print is a graceful secondary.
+ *
+ * Rules:
+ *  - Everything becomes black-on-white; chrome and decorative motifs are hidden.
+ *  - Framer Motion's `initial="hidden"` state is forced visible so sections
+ *    below the fold still render when printed from a cold scroll position.
+ *  - Links get their href appended in parentheses so URLs survive on paper.
+ *  - Sections, list items and article entries avoid splitting across pages.
+ */
+@media print {
+  @page {
+    margin: 18mm 16mm;
+  }
+
+  /* Reset the dark/light theming — always black on white for print. */
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"] {
+    --background: #ffffff;
+    --foreground: #000000;
+    --muted: #444444;
+    --surface: #ffffff;
+    --border: #cccccc;
+    --accent: #000000;
+    --accent-light: #ffffff;
+    --accent-dark: #000000;
+    --blueprint-line: transparent;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Site chrome and interactive-only affordances don't belong on paper. */
+  nav,
+  header[role="banner"],
+  footer,
+  .skip-link,
+  [data-print-hide],
+  form {
+    display: none !important;
+  }
+
+  /* Main content reclaims the top padding the (now hidden) nav had reserved. */
+  main {
+    padding-top: 0 !important;
+  }
+
+  /* Kill decorative motifs. */
+  .blueprint-grid {
+    background-image: none !important;
+  }
+  .circuit-divider {
+    background: #000000 !important;
+    opacity: 0.5 !important;
+  }
+
+  /* Framer Motion applies inline styles from `initial="hidden"` until a
+     section enters the viewport. In print, there's no viewport event, so
+     off-screen Reveal sections would otherwise print blank. Force them
+     visible and strip any translate/opacity transforms. */
+  [style*="opacity: 0"],
+  [style*="opacity:0"] {
+    opacity: 1 !important;
+  }
+  [style*="translate"] {
+    transform: none !important;
+  }
+
+  /* Tighten typography and remove coloured link styling. */
+  a {
+    color: #000000 !important;
+    text-decoration: none !important;
+  }
+  /* Expand link URLs so they survive on paper. Skip anchors, mailto, and
+     any explicit opt-out. */
+  a[href^="http"]:not([data-print-plain])::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #444444;
+    word-break: break-all;
+  }
+
+  /* Page-break hygiene: don't split an article or a section heading from
+     the content that follows it. */
+  section,
+  article {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  h1, h2, h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Print header — hidden on screen, shown only on paper. */
+  .print-header {
+    display: block !important;
+  }
+}
+
+/* The print header renders inside the normal document flow so the CV page
+   keeps its screen layout intact — this simply hides it off-print. */
+.print-header {
+  display: none;
+}
