@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+import ProjectBadges from "@/components/ui/ProjectBadges";
 import { TechPill } from "@/components/ui/TechPill";
-import type { Project } from "@/data/projects";
+import { splitProjectTags, type Project } from "@/data/projects";
 
 export default function ProjectCard({
   project,
@@ -16,6 +17,7 @@ export default function ProjectCard({
 }) {
   const hasCaseStudy = Boolean(project.caseStudy);
   const caseStudyHref = `/projects/${project.slug}`;
+  const { discipline, technologies } = splitProjectTags(project.tags);
 
   return (
     <motion.article
@@ -35,38 +37,12 @@ export default function ProjectCard({
           : "hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5"
       }`}
     >
-      {/* Status badges */}
-      {(project.confidential ||
-        project.interactiveDemoHref ||
-        project.interactiveDemoPlanned) && (
-        <div className="mb-3 flex flex-wrap gap-2">
-          {project.confidential && (
-            <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-border bg-surface px-2 py-0.5 text-muted">
-              Confidential
-            </span>
-          )}
-          {project.interactiveDemoHref ? (
-            <Link
-              href={project.interactiveDemoHref}
-              className="relative z-10 font-mono text-[9px] tracking-wider uppercase rounded-full border border-accent bg-accent text-surface px-2 py-0.5 hover:bg-accent-dark"
-            >
-              ⚡ Live Demo →
-            </Link>
-          ) : (
-            project.interactiveDemoPlanned && (
-              <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-accent/30 bg-accent-light px-2 py-0.5 text-accent">
-                ⚡ Interactive Demo Coming
-              </span>
-            )
-          )}
-        </div>
-      )}
-
-      {/* Tags */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        {project.tags.map((tag) => (
-          <TechPill key={tag}>{tag}</TechPill>
-        ))}
+      {/* Discipline eyebrow + status badges — shared metadata row */}
+      <div className="mb-2 flex items-center justify-between gap-3 min-h-[1.25rem]">
+        <p className="font-mono text-[10px] tracking-wider uppercase text-accent">
+          {discipline ?? ""}
+        </p>
+        <ProjectBadges project={project} />
       </div>
 
       {/* Title — links to case study when one exists */}
@@ -86,9 +62,16 @@ export default function ProjectCard({
       )}
 
       {/* Description */}
-      <p className="mt-2 text-sm text-muted leading-relaxed">
+      <p className="mt-2 text-sm text-muted leading-relaxed line-clamp-2 md:line-clamp-none">
         {project.description}
       </p>
+
+      {/* Technology pills — single line, max 3 tech tags per project */}
+      <div className="mt-4 flex gap-2 overflow-hidden">
+        {technologies.map((tag) => (
+          <TechPill key={tag}>{tag}</TechPill>
+        ))}
+      </div>
 
       {/* Footer row — case study link + external/source */}
       {(hasCaseStudy || project.link || project.github) && (

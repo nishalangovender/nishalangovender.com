@@ -5,24 +5,19 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { TbLayoutGrid, TbList } from "react-icons/tb";
 
+import FilterDropdown, { type Filter } from "@/components/ui/FilterDropdown";
 import ProjectCard from "@/components/ui/ProjectCard";
 import ProjectListRow from "@/components/ui/ProjectListRow";
-import { allTags, projects } from "@/data/projects";
+import { projects } from "@/data/projects";
 
 // ─── Filter + view model ────────────────────────────────────────────────────
-
-type Filter =
-  | { type: "all" }
-  | { type: "featured" }
-  | { type: "tag"; value: string };
 
 type ViewMode = "cards" | "list";
 
 const ALL: Filter = { type: "all" };
-const FEATURED: Filter = { type: "featured" };
 
 function filterFromSearch(params: URLSearchParams): Filter {
-  if (params.get("filter") === "featured") return FEATURED;
+  if (params.get("filter") === "featured") return { type: "featured" };
   const tag = params.get("tag");
   if (tag) return { type: "tag", value: tag };
   return ALL;
@@ -41,12 +36,6 @@ function buildQueryString(filter: Filter, view: ViewMode): string {
   return q ? `?${q}` : "";
 }
 
-function isSameFilter(a: Filter, b: Filter): boolean {
-  if (a.type !== b.type) return false;
-  if (a.type === "tag" && b.type === "tag") return a.value === b.value;
-  return true;
-}
-
 function filterLabel(filter: Filter): string {
   if (filter.type === "all") return "All";
   if (filter.type === "featured") return "Featured";
@@ -61,11 +50,6 @@ export default function ProjectsExplorer() {
   const mutableParams = new URLSearchParams(searchParams.toString());
   const active = filterFromSearch(mutableParams);
   const view = viewFromSearch(mutableParams);
-
-  const chips: Filter[] = useMemo(
-    () => [ALL, FEATURED, ...allTags.map((tag) => ({ type: "tag" as const, value: tag }))],
-    [],
-  );
 
   const filtered = useMemo(() => {
     if (active.type === "all") return projects;
@@ -84,12 +68,9 @@ export default function ProjectsExplorer() {
 
   const setFilter = useCallback(
     (next: Filter) => {
-      // Clicking the active chip (unless it's All) resets to All for a quick toggle.
-      const target =
-        isSameFilter(active, next) && next.type !== "all" ? ALL : next;
-      updateUrl(target, view);
+      updateUrl(next, view);
     },
-    [active, view, updateUrl],
+    [view, updateUrl],
   );
 
   const setView = useCallback(
@@ -104,34 +85,8 @@ export default function ProjectsExplorer() {
 
   return (
     <div>
-      {/* ── Filter chip row ────────────────────────────────────────────── */}
-      <div
-        className="flex flex-wrap gap-2"
-        role="toolbar"
-        aria-label="Filter projects"
-      >
-        {chips.map((chip) => {
-          const selected = isSameFilter(chip, active);
-          return (
-            <button
-              key={`${chip.type}-${chip.type === "tag" ? chip.value : ""}`}
-              type="button"
-              onClick={() => setFilter(chip)}
-              aria-pressed={selected}
-              className={`font-mono text-[11px] tracking-wider uppercase rounded-full px-3 py-1.5 border transition-colors ${
-                selected
-                  ? "border-accent bg-accent text-white"
-                  : "border-border text-muted hover:border-accent/50 hover:text-foreground"
-              }`}
-            >
-              {filterLabel(chip)}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── Count + clear + view toggle ───────────────────────────────── */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+      {/* ── Toolbar: count + clear + filter + view toggle ──────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <p className="font-mono text-xs text-muted">
             Showing {filtered.length} of {projects.length} project
@@ -154,24 +109,28 @@ export default function ProjectsExplorer() {
           )}
         </div>
 
-        {/* View toggle — segmented control */}
-        <div
-          className="inline-flex items-center rounded-full border border-border bg-surface p-0.5"
-          role="radiogroup"
-          aria-label="Projects view mode"
-        >
-          <ViewToggleButton
-            active={view === "cards"}
-            onClick={() => setView("cards")}
-            label="Cards"
-            Icon={TbLayoutGrid}
-          />
-          <ViewToggleButton
-            active={view === "list"}
-            onClick={() => setView("list")}
-            label="List"
-            Icon={TbList}
-          />
+        <div className="flex items-center gap-3">
+          <FilterDropdown active={active} onChange={setFilter} />
+
+          {/* View toggle — segmented control */}
+          <div
+            className="inline-flex items-center rounded-full border border-border bg-surface p-0.5"
+            role="radiogroup"
+            aria-label="Projects view mode"
+          >
+            <ViewToggleButton
+              active={view === "cards"}
+              onClick={() => setView("cards")}
+              label="Cards"
+              Icon={TbLayoutGrid}
+            />
+            <ViewToggleButton
+              active={view === "list"}
+              onClick={() => setView("list")}
+              label="List"
+              Icon={TbList}
+            />
+          </div>
         </div>
       </div>
 

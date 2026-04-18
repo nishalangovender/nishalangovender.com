@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+import ProjectBadges from "@/components/ui/ProjectBadges";
 import { TechPill } from "@/components/ui/TechPill";
-import type { Project } from "@/data/projects";
+import { splitProjectTags, type Project } from "@/data/projects";
 
 export default function ProjectListRow({
   project,
@@ -16,6 +17,7 @@ export default function ProjectListRow({
 }) {
   const hasCaseStudy = Boolean(project.caseStudy);
   const caseStudyHref = `/projects/${project.slug}`;
+  const { discipline, technologies } = splitProjectTags(project.tags);
 
   return (
     <motion.li
@@ -32,51 +34,37 @@ export default function ProjectListRow({
       className="group relative border-t border-border/60 first:border-t-0"
     >
       <div className="flex flex-col gap-4 py-5 md:flex-row md:items-start md:justify-between md:gap-8">
-        {/* ── Left: title + description ─────────────────────────────────── */}
+        {/* ── Left: discipline + title + description ────────────────────── */}
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            {hasCaseStudy ? (
-              <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-accent md:text-lg">
-                <Link
-                  href={caseStudyHref}
-                  className="before:absolute before:inset-0 before:content-['']"
-                >
-                  {project.title}
-                </Link>
-              </h3>
-            ) : (
-              <h3 className="text-base font-semibold text-foreground md:text-lg">
-                {project.title}
-              </h3>
-            )}
-            {project.featured && (
-              <span
-                className="font-mono text-[9px] tracking-wider uppercase text-accent"
-                aria-label="Featured project"
-              >
-                ★ Featured
-              </span>
-            )}
-            {project.confidential && (
-              <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-border bg-surface px-2 py-0.5 text-muted">
-                Confidential
-              </span>
-            )}
-            {project.interactiveDemoPlanned && (
-              <span className="font-mono text-[9px] tracking-wider uppercase rounded-full border border-accent/30 bg-accent-light px-2 py-0.5 text-accent">
-                ⚡ Demo Coming
-              </span>
-            )}
+          <div className="mb-1 flex items-center justify-between gap-3 min-h-[1.25rem]">
+            <p className="font-mono text-[10px] tracking-wider uppercase text-accent">
+              {discipline ?? ""}
+            </p>
+            <ProjectBadges project={project} />
           </div>
+          {hasCaseStudy ? (
+            <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-accent md:text-lg">
+              <Link
+                href={caseStudyHref}
+                className="before:absolute before:inset-0 before:content-['']"
+              >
+                {project.title}
+              </Link>
+            </h3>
+          ) : (
+            <h3 className="text-base font-semibold text-foreground md:text-lg">
+              {project.title}
+            </h3>
+          )}
           <p className="mt-1.5 text-sm text-muted leading-relaxed line-clamp-2 md:line-clamp-none md:max-w-2xl">
             {project.description}
           </p>
         </div>
 
-        {/* ── Right: tags + links ───────────────────────────────────────── */}
+        {/* ── Right: tech pills + links ─────────────────────────────────── */}
         <div className="flex flex-shrink-0 flex-col items-start gap-3 md:items-end">
-          <div className="flex flex-wrap gap-1.5 md:justify-end">
-            {project.tags.map((tag) => (
+          <div className="flex gap-1.5 overflow-hidden md:justify-end">
+            {technologies.map((tag) => (
               <TechPill key={tag} size="sm">
                 {tag}
               </TechPill>
@@ -87,7 +75,7 @@ export default function ProjectListRow({
               {hasCaseStudy && (
                 <Link
                   href={caseStudyHref}
-                  className="font-mono text-[11px] text-accent hover:text-accent-dark transition-colors"
+                  className="font-mono text-xs text-accent hover:text-accent-dark transition-colors"
                 >
                   Case Study &rarr;
                 </Link>
@@ -97,7 +85,7 @@ export default function ProjectListRow({
                   href={project.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative z-10 font-mono text-[11px] text-muted hover:text-foreground transition-colors"
+                  className="relative z-10 font-mono text-xs text-muted hover:text-foreground transition-colors"
                 >
                   Live Site
                 </a>
@@ -107,7 +95,7 @@ export default function ProjectListRow({
                   href={project.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative z-10 font-mono text-[11px] text-muted hover:text-foreground transition-colors"
+                  className="relative z-10 font-mono text-xs text-muted hover:text-foreground transition-colors"
                 >
                   Source
                 </a>

@@ -56,13 +56,12 @@ export default function ProjectsPage() {
 function ProjectsExplorerFallback() {
   return (
     <div>
-      <div className="flex flex-wrap gap-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-7 w-20 rounded-full border border-border bg-surface/50"
-          />
-        ))}
+      <div className="flex items-center justify-between gap-3">
+        <div className="h-4 w-48 rounded bg-surface/50" />
+        <div className="flex items-center gap-3">
+          <div className="h-7 w-24 rounded-full border border-border bg-surface/50" />
+          <div className="h-7 w-28 rounded-full border border-border bg-surface/50" />
+        </div>
       </div>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
