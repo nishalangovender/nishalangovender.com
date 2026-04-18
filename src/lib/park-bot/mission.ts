@@ -99,9 +99,9 @@ export function planMission(
         return {
           twist: { vx: 0, vy: 0, omega: 0 },
           activeMode: forced ?? specs[specs.length - 1].mode,
-          phase: "done",
+          phase: clash ? "stuck" : "done",
           phaseIndex: 2,
-          stuck: false,
+          stuck: Boolean(clash),
         };
       }
       let acc = 0;
@@ -109,7 +109,10 @@ export function planMission(
         const spec = specs[i];
         if (t < acc + spec.duration) {
           const activeMode = forced ?? spec.mode;
-          const isStuck = Boolean(clash) && spec.phase === "active";
+          // Stuck latches: once the active phase clashes, the mission stays
+          // stuck through align + done. Approach still runs normally so the
+          // trail has something to draw before the failure.
+          const isStuck = Boolean(clash) && spec.phase !== "approach";
           return {
             twist: isStuck ? { vx: 0, vy: 0, omega: 0 } : spec.twist,
             activeMode,
