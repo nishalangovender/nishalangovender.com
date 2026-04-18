@@ -1,6 +1,8 @@
 // src/components/demos/park-bot/ControlPanel.tsx
 "use client";
 
+import type { ReactNode } from "react";
+
 import { SCENARIOS } from "@/lib/park-bot/scenarios";
 import type { KinematicMode, Scenario } from "@/lib/park-bot/types";
 
@@ -8,108 +10,167 @@ interface Props {
   scenarioId: Scenario["id"];
   forcedMode: KinematicMode | null;
   playing: boolean;
+  statusOpen: boolean;
   onScenarioChange(id: Scenario["id"]): void;
   onForcedModeChange(mode: KinematicMode | null): void;
   onPlay(): void;
   onPause(): void;
   onReset(): void;
+  onToggleStatus(): void;
 }
 
-const FORCE_OPTIONS: Array<{ label: string; value: KinematicMode | null }> = [
-  { label: "Auto", value: null },
-  { label: "Ackermann", value: "ackermann" },
-  { label: "Crab", value: "crab" },
-  { label: "Counter", value: "counter_steer" },
-  { label: "Pivot", value: "pivot" },
+const FORCE_OPTIONS: { value: KinematicMode | null; label: string }[] = [
+  { value: null, label: "Auto" },
+  { value: "ackermann", label: "Ackermann" },
+  { value: "crab", label: "Crab" },
+  { value: "counter_steer", label: "Counter" },
+  { value: "pivot", label: "Pivot" },
 ];
 
 export function ControlPanel({
   scenarioId,
   forcedMode,
   playing,
+  statusOpen,
   onScenarioChange,
   onForcedModeChange,
   onPlay,
   onPause,
   onReset,
+  onToggleStatus,
 }: Props) {
-  return (
-    <div className="flex flex-col gap-4 rounded-md border border-border/60 bg-surface/60 p-4 text-sm">
-      <div>
-        <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-          Scenario
-        </p>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          {SCENARIOS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => onScenarioChange(s.id)}
-              className={`rounded-md border px-2.5 py-2 text-left text-xs transition-colors ${
-                s.id === scenarioId
-                  ? "border-accent text-foreground"
-                  : "border-border/60 text-muted hover:border-foreground/40 hover:text-foreground"
-              }`}
-            >
-              {s.title}
-            </button>
-          ))}
-        </div>
-      </div>
+  const inactive =
+    "border-border bg-background text-foreground hover:border-accent hover:text-accent";
+  const active = "border-accent bg-accent-light text-accent";
 
-      <div>
-        <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-          Force Mode
-        </p>
-        <div className="mt-2 flex flex-wrap gap-1.5" role="radiogroup" aria-label="Force steering mode">
-          {FORCE_OPTIONS.map((opt) => {
-            const active = forcedMode === opt.value;
+  return (
+    <aside className="h-full rounded-lg border border-border bg-surface text-foreground overflow-hidden flex flex-col">
+      <Section label="Simulation">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={playing ? onPause : onPlay}
+            className={`flex-1 px-3 py-2 rounded border font-mono text-xs uppercase tracking-wider ${inactive}`}
+          >
+            {playing ? "Pause" : "Play"}
+          </button>
+          <button
+            type="button"
+            onClick={onReset}
+            className={`px-3 py-2 rounded border font-mono text-xs uppercase tracking-wider ${inactive}`}
+          >
+            Reset
+          </button>
+        </div>
+      </Section>
+
+      <Section label="Scenario">
+        <div role="radiogroup" aria-label="Scenario" className="grid grid-cols-2 gap-2">
+          {SCENARIOS.map((s) => {
+            const isActive = s.id === scenarioId;
             return (
               <button
-                key={opt.label}
+                key={s.id}
                 type="button"
                 role="radio"
-                aria-checked={active}
-                onClick={() => onForcedModeChange(opt.value)}
-                className={`rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-wider transition-colors ${
-                  active
-                    ? "border-accent text-accent"
-                    : "border-border/60 text-muted hover:border-foreground/40 hover:text-foreground"
+                aria-checked={isActive}
+                onClick={() => onScenarioChange(s.id)}
+                className={`px-2 py-1 rounded border font-mono text-xs cursor-pointer ${
+                  isActive ? active : inactive
                 }`}
               >
-                {opt.label}
+                {s.title}
               </button>
             );
           })}
         </div>
-      </div>
+      </Section>
 
-      <div className="flex gap-2">
-        {playing ? (
-          <button
-            type="button"
-            onClick={onPause}
-            className="flex-1 rounded-md border border-border/60 px-3 py-2 text-sm hover:border-foreground/40"
-          >
-            Pause
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onPlay}
-            className="flex-1 rounded-md border border-accent bg-accent/10 px-3 py-2 text-sm text-accent hover:bg-accent/15"
-          >
-            Run
-          </button>
-        )}
+      <Section label="Force Mode">
+        <div role="radiogroup" aria-label="Force steering mode" className="flex flex-wrap gap-1.5">
+          {FORCE_OPTIONS.map((opt) => {
+            const isActive = forcedMode === opt.value;
+            return (
+              <Pill
+                key={opt.label}
+                active={isActive}
+                ariaChecked={isActive}
+                role="radio"
+                onClick={() => onForcedModeChange(opt.value)}
+              >
+                {opt.label}
+              </Pill>
+            );
+          })}
+        </div>
+      </Section>
+
+      <Section label="View" last>
         <button
           type="button"
-          onClick={onReset}
-          className="rounded-md border border-border/60 px-3 py-2 text-sm hover:border-foreground/40"
+          onClick={onToggleStatus}
+          aria-pressed={statusOpen}
+          className={`w-full px-3 py-2 rounded border font-mono text-xs uppercase tracking-wider ${
+            statusOpen ? active : inactive
+          }`}
         >
-          Reset
+          {statusOpen ? "Hide Status" : "Show Status"}
         </button>
+      </Section>
+    </aside>
+  );
+}
+
+function Section({
+  label,
+  last,
+  children,
+}: {
+  label: string;
+  last?: boolean;
+  children: ReactNode;
+}) {
+  const base = "px-3 py-3 lg:flex-1";
+  return (
+    <section className={last ? base : `${base} border-b border-border`}>
+      <div className="font-mono text-[10px] tracking-wider uppercase text-muted mb-1.5">
+        {label}
       </div>
-    </div>
+      {children}
+    </section>
+  );
+}
+
+function Pill({
+  active,
+  onClick,
+  role = "button",
+  ariaPressed,
+  ariaChecked,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  role?: "button" | "radio";
+  ariaPressed?: boolean;
+  ariaChecked?: boolean;
+  children: ReactNode;
+}) {
+  const base =
+    "font-mono text-[10px] tracking-wider uppercase rounded-full border px-2.5 py-1 transition-colors cursor-pointer";
+  const state = active
+    ? "border-accent bg-accent-light text-accent"
+    : "border-border bg-background text-muted hover:border-accent/60 hover:text-foreground";
+  return (
+    <button
+      type="button"
+      role={role}
+      aria-pressed={ariaPressed}
+      aria-checked={ariaChecked}
+      onClick={onClick}
+      className={`${base} ${state}`}
+    >
+      {children}
+    </button>
   );
 }

@@ -4,37 +4,43 @@ import type { Scenario } from "./types";
 export const SCENARIOS: readonly Scenario[] = [
   {
     id: "forward_bay",
-    title: "Forward Bay Park",
+    title: "Forward",
     hint: "The baseline — steer the front wheels, drive into the bay.",
     recommendedMode: "ackermann",
     start: { x: -2.5, y: -1.0, theta: 0 },
     target: { x: 1.5, y: 0.8, theta: Math.PI / 2 },
     bounds: { width: 8, height: 5 },
+    // Two parked cars flank the bay (target span x ∈ [1.35, 1.65], y ∈ [0.6, 1.0])
+    // with ~0.1 m side clearance. Back wall closes the bay at y = 1.3.
     obstacles: [
-      { x: 0.6, y: 1.5, w: 0.6, h: 1.4 },   // right-side parked car
-      { x: 1.9, y: 1.5, w: 0.6, h: 1.4 },   // left-side parked car
+      { x: 0.85, y: 0.6, w: 0.4, h: 0.7 },  // left-flanking parked car
+      { x: 1.75, y: 0.6, w: 0.4, h: 0.7 },  // right-flanking parked car
     ],
-    phases: ["Approach bay", "Turn in", "Settle"],
+    phases: ["Approach Bay", "Turn In", "Settle"],
   },
   {
     id: "parallel_tight",
-    title: "Tight Parallel Park",
+    title: "Parallel",
     hint: "No room for multi-point turns — crab sideways into the slot.",
     recommendedMode: "crab",
     start: { x: -1.5, y: -0.3, theta: 0 },
     target: { x: 1.5, y: 0.8, theta: 0 },
     bounds: { width: 8, height: 5 },
+    // Bay at theta=0 spans x ∈ [1.3, 1.7], y ∈ [0.65, 0.95]. The crab approach
+    // sweeps diagonally up and right so the car ahead of the slot is held well
+    // clear on the left; the car behind the slot sits tight against the bay,
+    // mirroring real-world parallel parking where the gap is bounded by the
+    // rear obstacle and the road ahead is open.
     obstacles: [
-      { x: 0.3, y: 1.3, w: 1.0, h: 0.5 },
-      { x: 1.9, y: 1.3, w: 1.0, h: 0.5 },
-      // Kerb behind the slot
-      { x: 1.3, y: 1.8, w: 1.6, h: 0.1 },
+      { x: -0.8, y: 0.55, w: 0.8, h: 0.45 },  // car ahead of the slot
+      { x:  1.8, y: 0.55, w: 0.8, h: 0.45 },  // car behind the slot
+      { x: -0.8, y: 1.0,  w: 3.4, h: 0.1 },   // kerb stretching across the back
     ],
-    phases: ["Approach", "Slide in", "Align"],
+    phases: ["Approach", "Slide In", "Align"],
   },
   {
     id: "narrow_uturn",
-    title: "Narrow U-Turn",
+    title: "U-Turn",
     hint: "The lane is too narrow for Ackermann — counter-steer to halve the radius.",
     recommendedMode: "counter_steer",
     start: { x: -2.5, y: -0.6, theta: 0 },
@@ -44,11 +50,11 @@ export const SCENARIOS: readonly Scenario[] = [
       { x: -3.5, y: 1.2, w: 7, h: 0.15 },    // top wall
       { x: -3.5, y: -1.35, w: 7, h: 0.15 },  // bottom wall
     ],
-    phases: ["Approach", "Pivot turn", "Exit"],
+    phases: ["Approach", "Pivot Turn", "Exit"],
   },
   {
     id: "pivot_rotate",
-    title: "Rotate In-Place",
+    title: "Rotate",
     hint: "Nowhere to move forwards — spin the body on its centre.",
     recommendedMode: "pivot",
     start: { x: 0, y: 0, theta: 0 },

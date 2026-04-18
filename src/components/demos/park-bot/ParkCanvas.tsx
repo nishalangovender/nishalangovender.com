@@ -1,36 +1,66 @@
 // src/components/demos/park-bot/ParkCanvas.tsx
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { L, W } from "@/lib/park-bot/types";
-import type { Scenario, SimFrame } from "@/lib/park-bot/types";
+import type { Pose, Scenario, SimFrame } from "@/lib/park-bot/types";
 
 interface Props {
   scenario: Scenario;
   frame: SimFrame | null;
+  /** Offline-computed reference trajectory, drawn dashed beneath the live trail. */
+  plannedPath: readonly Pose[] | null;
+}
+
+// Canvas 2D does not resolve CSS variables — strings like "var(--foreground)"
+// are silently rejected and strokeStyle falls back to whatever was set last.
+// Read computed styles from <html> at paint time so chassis + wheels render
+// in the right colour under both themes.
+function readThemeColors() {
+  const s = getComputedStyle(document.documentElement);
+  const get = (name: string) => s.getPropertyValue(name).trim();
+  return {
+    foreground: get("--foreground") || "#1A1A1A",
+  };
 }
 
 const COLOURS = {
-  bg: "var(--surface)",
   grid: "rgba(148, 163, 184, 0.18)",
   obstacle: "rgba(115, 115, 115, 0.55)",
   targetFill: "rgba(59, 130, 246, 0.10)",
   targetStroke: "rgba(59, 130, 246, 0.75)",
-  chassis: "var(--foreground)",
-  wheel: "var(--foreground)",
+  planned: "rgba(115, 115, 115, 0.55)",
   trail: "rgba(59, 130, 246, 0.7)",
   stuck: "rgba(239, 68, 68, 0.9)",
 } as const;
 
-export function ParkCanvas({ scenario, frame }: Props) {
+export function ParkCanvas({ scenario, frame, plannedPath }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [themeVersion, setThemeVersion] = useState(0);
+
+  // Re-read theme colours when <html data-theme> toggles.
+  useEffect(() => {
+    const obs = new MutationObserver(() => setThemeVersion((v) => v + 1));
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => setThemeVersion((v) => v + 1);
+    mq.addEventListener("change", handler);
+    return () => {
+      obs.disconnect();
+      mq.removeEventListener("change", handler);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const theme = readThemeColors();
 
     const dpr = window.devicePixelRatio || 1;
     const cssW = canvas.clientWidth;
@@ -97,6 +127,23 @@ export function ParkCanvas({ scenario, frame }: Props) {
       ctx.restore();
     }
 
+    // Planned path — dashed grey, drawn beneath the live trail. Hidden during
+    // stuck runs because the plan is the thing that failed.
+    if (plannedPath && plannedPath.length > 1 && !frame?.stuck) {
+      ctx.save();
+      ctx.strokeStyle = COLOURS.planned;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      for (let i = 0; i < plannedPath.length; i++) {
+        const p = worldToCanvas(plannedPath[i].x, plannedPath[i].y);
+        if (i === 0) ctx.moveTo(p.cx, p.cy);
+        else ctx.lineTo(p.cx, p.cy);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
     // Trail.
     if (frame && frame.trail.length > 1) {
       ctx.strokeStyle = frame.stuck ? COLOURS.stuck : COLOURS.trail;
@@ -116,7 +163,7 @@ export function ParkCanvas({ scenario, frame }: Props) {
     ctx.save();
     ctx.translate(vcx, vcy);
     ctx.rotate(-pose.theta);
-    ctx.strokeStyle = COLOURS.chassis;
+    ctx.strokeStyle = theme.foreground;
     ctx.lineWidth = 1.5;
     ctx.strokeRect((-L / 2) * s, (-W / 2) * s, L * s, W * s);
     // Forward tick.
@@ -128,7 +175,7 @@ export function ParkCanvas({ scenario, frame }: Props) {
     const wheelLen = 0.10 * s;
     const wheelThick = 1.8;
     ctx.lineWidth = wheelThick;
-    ctx.strokeStyle = COLOURS.wheel;
+    ctx.strokeStyle = theme.foreground;
     const corners: Array<[number, number, number]> = frame
       ? [
           [L / 2, W / 2, frame.wheels.deltas[0]],
@@ -153,12 +200,12 @@ export function ParkCanvas({ scenario, frame }: Props) {
       ctx.restore();
     }
     ctx.restore();
-  }, [scenario, frame]);
+  }, [scenario, frame, plannedPath, themeVersion]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="block w-full h-[420px] sm:h-[460px] md:h-[520px] rounded-md border border-border/60 bg-surface/60"
+      className="block w-full h-full"
       aria-label={`Top-down view of ${scenario.title}`}
       role="img"
     />
