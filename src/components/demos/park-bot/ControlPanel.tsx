@@ -57,7 +57,7 @@ export function ControlPanel({
           <button
             type="button"
             onClick={onReset}
-            className={`px-3 py-2 rounded border font-mono text-xs uppercase tracking-wider ${inactive}`}
+            className={`flex-1 px-3 py-2 rounded border font-mono text-xs uppercase tracking-wider ${inactive}`}
           >
             Reset
           </button>
@@ -65,7 +65,7 @@ export function ControlPanel({
       </Section>
 
       <Section label="Scenario">
-        <div role="radiogroup" aria-label="Scenario" className="grid grid-cols-2 gap-2">
+        <div role="radiogroup" aria-label="Scenario" className="grid grid-cols-1 gap-2">
           {SCENARIOS.map((s) => {
             const isActive = s.id === scenarioId;
             return (

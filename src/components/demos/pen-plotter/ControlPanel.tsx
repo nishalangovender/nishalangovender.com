@@ -52,7 +52,7 @@ export function ControlPanel({
           </button>
           <button
             type="button"
-            className={`px-3 py-2 rounded border font-mono text-xs uppercase tracking-wider ${inactive}`}
+            className={`flex-1 px-3 py-2 rounded border font-mono text-xs uppercase tracking-wider ${inactive}`}
             onClick={onReset}
           >
             Reset
