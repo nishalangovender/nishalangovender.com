@@ -11,6 +11,11 @@
  *
  * Does NOT render the chassis + drive wheels — those are handled by the
  * consumer because the robot is the element that changes.
+ *
+ * All strokes use `vectorEffect="non-scaling-stroke"` so they render at
+ * their declared width regardless of the parent scale (Beats 2–4 render
+ * this inside a 0.82× page-xform group; without the opt-in, strokes
+ * would render ~18% thinner than in Beat 1).
  */
 export function SketchScaffold() {
   return (
@@ -23,6 +28,7 @@ export function SketchScaffold() {
         strokeWidth={1.75}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
       {/* World frame — X axis */}
       <path
@@ -32,6 +38,7 @@ export function SketchScaffold() {
         strokeWidth={1.75}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
 
       {/* Straight dashed θ-reference line */}
@@ -42,6 +49,7 @@ export function SketchScaffold() {
         strokeLinecap="round"
         strokeDasharray="5 6"
         fill="none"
+        vectorEffect="non-scaling-stroke"
       />
 
       {/* Heading-angle θ */}
@@ -52,6 +60,7 @@ export function SketchScaffold() {
         strokeWidth={1.75}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
 
       {/* Body-x axis */}
@@ -62,6 +71,7 @@ export function SketchScaffold() {
         strokeWidth={1.75}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
       {/* Body-y axis */}
       <path
@@ -71,6 +81,7 @@ export function SketchScaffold() {
         strokeWidth={1.75}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
 
       {/* Velocity vector V */}
@@ -81,6 +92,7 @@ export function SketchScaffold() {
         strokeWidth={1.75}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
 
       {/* Angular velocity ω */}
@@ -91,6 +103,7 @@ export function SketchScaffold() {
         strokeWidth={1.75}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
 
       {/* Labels — hand-tuned positions (do not regenerate procedurally) */}
