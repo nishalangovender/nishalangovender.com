@@ -2,7 +2,7 @@
 
 import type { BeatProps } from "../types";
 
-import { BlueprintGridSvg } from "./BlueprintGridSvg";
+import { Notebook } from "./Notebook";
 import { RobotStatic } from "./RobotStatic";
 import { SketchScaffold } from "./SketchScaffold";
 import { Terminal } from "./Terminal";
@@ -54,18 +54,22 @@ export function BeatBoot({ progress, active }: BeatProps) {
       height="100%"
       style={{ color: "var(--foreground)" }}
     >
-      <BlueprintGridSvg />
-      {/* Analysis overlay — same as Beat 1/2 */}
-      <SketchScaffold />
+      <Notebook />
 
-      {/* Robot — fully materialised, with progress-driven LEDs + LIDAR + recording indicator */}
-      <RobotStatic ledsOn={ledsOn} lidarAngle={lidarAngle} cameraRecording={cameraLedOn} />
+      {/* Sketch + robot live inside the notebook page via this transform
+          — matches Beat 1's sketch placement. */}
+      <g transform="translate(84.4 147.6) scale(0.82)">
+        {/* Analysis overlay — same as Beat 1/2 */}
+        <SketchScaffold />
 
-      {/* Terminal — wide, below the diagram. Same shape in Beat 4 until the
-          camera pan starts, then slides downward out of the viewport. */}
+        {/* Robot — fully materialised, with progress-driven LEDs + LIDAR + recording indicator */}
+        <RobotStatic ledsOn={ledsOn} lidarAngle={lidarAngle} cameraRecording={cameraLedOn} />
+      </g>
+
+      {/* Terminal — on the desk above the notebook, full viewport scale. */}
       <Terminal
-        x={80}
-        y={366}
+        x={100}
+        y={20}
         width={440}
         height={110}
         lines={lines}

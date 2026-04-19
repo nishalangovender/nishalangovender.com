@@ -2,8 +2,8 @@
 
 import type { BeatProps } from "../types";
 
-import { BlueprintGridSvg } from "./BlueprintGridSvg";
 import { Factory } from "./Factory";
+import { Notebook } from "./Notebook";
 import { RobotStatic } from "./RobotStatic";
 import { SketchScaffold } from "./SketchScaffold";
 import { Terminal, BEAT4_OUTPUT_LINES } from "./Terminal";
@@ -130,31 +130,39 @@ export function BeatDrive({ progress, active }: BeatProps) {
     ...(progress >= 0.65 ? [BEAT4_OUTPUT_LINES[3]] : []),
   ];
 
-  // Terminal stays fixed below the kinematic diagram area (y=366, same as
-  // Beat 3). Lives in the world frame; pans and scales with the sketch.
-  const terminalY = 366;
+  // Terminal sits on the desk above the notebook (same as Beat 3), full
+  // viewport scale, outside the camera transform. Stays fully visible for
+  // the whole beat.
 
-  // --- Combined pan+zoom camera transform ---
-  // Starts at progress=0.35 (matches SPLIT). Before that, identity.
-  // Camera zooms out 1.0 → 0.35 as the warehouse is revealed.
-  // Robot is kept at roughly (robotScreenX, robotScreenY) on screen.
-  //
-  // Sanity check at progress=0 (before SPLIT):
-  //   viewProgress=0, viewEased=0, zoomScale=1.0
-  //   robotScreenX=318, robotScreenY=210, currX=318, currY=210 (P0)
-  //   transform = "translate(318 210) scale(1) translate(-318 -210)" → identity ✓
-  //
-  // Sanity check at progress=1:
-  //   viewProgress=1, viewEased=1, zoomScale=0.35
-  //   robotScreenX=320, robotScreenY=260, currX=820, currY=165 (E)
-  //   transform maps world (820, 165):
-  //     screen = (320 + 0.35*(820-820), 260 + 0.35*(165-165)) = (320, 260) ✓
+  // --- Page xform (matches Beats 1–3: sketch sits on the notebook page) ---
+  const PAGE_SX = 0.82;
+  const PAGE_TX = 84.4;
+  const PAGE_TY = 147.6;
+  const pageX = (w: number) => PAGE_TX + PAGE_SX * w;
+  const pageY = (w: number) => PAGE_TY + PAGE_SX * w;
+
+  // --- Combined pan+zoom camera transform (applied AFTER the page xform) ---
+  // At progress ≤ SPLIT (0.35): camera identity — the robot sits on the page
+  // at the same screen position as the end of Beat 3 (pageX(P0.x), pageY(P0.y)).
+  // At progress = 1: the scene has zoomed out so the warehouse fills most of
+  // the frame, with the robot kept near screen (320, 260) for the Beat 5
+  // handoff. Effective compound zoom at end = 0.43 * 0.82 ≈ 0.35 (matches
+  // the pre-notebook behaviour).
   const viewProgress = Math.max(0, (progress - 0.35) / 0.65);
   const viewEased = easeInOutCubic(viewProgress);
-  const zoomScale = 1.0 - 0.65 * viewEased;
-  const robotScreenX = 318 + (320 - 318) * viewEased;
-  const robotScreenY = 210 + (260 - 210) * viewEased;
-  const cameraTransform = `translate(${robotScreenX} ${robotScreenY}) scale(${zoomScale}) translate(${-currX} ${-currY})`;
+  const zoomScale = 1.0 - (1.0 - 0.43) * viewEased;
+  const robotStartScreenX = pageX(P0.x);
+  const robotStartScreenY = pageY(P0.y);
+  const robotEndScreenX = 320;
+  const robotEndScreenY = 260;
+  const robotScreenX =
+    robotStartScreenX + (robotEndScreenX - robotStartScreenX) * viewEased;
+  const robotScreenY =
+    robotStartScreenY + (robotEndScreenY - robotStartScreenY) * viewEased;
+  // Current robot position in PAGE coords (after the page xform).
+  const currPageX = pageX(currX);
+  const currPageY = pageY(currY);
+  const cameraTransform = `translate(${robotScreenX} ${robotScreenY}) scale(${zoomScale}) translate(${-currPageX} ${-currPageY})`;
 
   return (
     <svg
@@ -163,49 +171,59 @@ export function BeatDrive({ progress, active }: BeatProps) {
       height="100%"
       style={{ color: "var(--foreground)" }}
     >
-      {/* Pan+zoom group — world-space content tracks the robot and zooms out. */}
+      {/* Camera group — entire scene pans/zooms as the warehouse reveals. */}
       <g transform={cameraTransform}>
-        {/* Sketch bundle — blueprint grid + kinematic diagram + terminal.
-            Stay visible throughout; pan and scale with the world so they end
-            up small and left-of-robot at end-state. */}
-        <BlueprintGridSvg x={0} y={0} width={640} height={540} />
-        <SketchScaffold />
+        {/* Notebook sits inside the camera so it pans/scales with the
+            scene. At progress ≤ SPLIT it fills the viewport; by end it
+            has shrunk to the left-of-warehouse area. */}
+        <Notebook />
+
+        {/* Terminal — on the desk above the notebook. Inside the camera so
+            it pans/zooms with the scene, keeping the desk composition intact
+            as the view pulls back to the warehouse. */}
         <Terminal
-          x={80}
-          y={terminalY}
+          x={100}
+          y={20}
           width={440}
           height={110}
           lines={terminalLines}
           opacity={1}
         />
 
-        {/* Factory — large warehouse placed off the right edge of the sketch world.
-            Defaults: x=640, y=-250, width=1600, height=900. */}
-        <Factory opacity={factoryOpacity} />
+        {/* All world-coord content lives inside the page xform so the
+            sketch, robot, factory, and trail sit on/past the notebook page. */}
+        <g transform={`translate(${PAGE_TX} ${PAGE_TY}) scale(${PAGE_SX})`}>
+          <SketchScaffold />
 
-        {/* Trail behind the robot — fades in, then reveals along the path */}
-        <path
-          d={pathD}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth={1.5}
-          strokeDasharray="4 4"
-          strokeDashoffset={trailOffset}
-          pathLength={approxLen}
-          opacity={trailOpacity}
-        />
+          {/* Factory — large warehouse placed off the right edge of the
+              sketch world (past the page's right edge, post-page-xform). */}
+          <Factory opacity={factoryOpacity} />
 
-        {/* Robot — bay closes as it drives. All coords are world coords. */}
-        <RobotStatic
-          ledsOn={true}
-          lidarAngle={lidarAngle}
-          cameraRecording={cameraLedOn}
-          centerX={currX}
-          centerY={currY}
-          yawDeg={headingDeg}
-          bayOpen={bayOpen}
-        />
+          {/* Trail behind the robot — fades in, then reveals along the path */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="var(--accent)"
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
+            strokeDashoffset={trailOffset}
+            pathLength={approxLen}
+            opacity={trailOpacity}
+          />
+
+          {/* Robot — bay closes as it drives. All coords are world coords. */}
+          <RobotStatic
+            ledsOn={true}
+            lidarAngle={lidarAngle}
+            cameraRecording={cameraLedOn}
+            centerX={currX}
+            centerY={currY}
+            yawDeg={headingDeg}
+            bayOpen={bayOpen}
+          />
+        </g>
       </g>
+
     </svg>
   );
 }

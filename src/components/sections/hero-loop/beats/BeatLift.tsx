@@ -3,7 +3,7 @@
 import { ChromaticShift } from "../primitives/ChromaticShift";
 import type { BeatProps } from "../types";
 
-import { BlueprintGridSvg } from "./BlueprintGridSvg";
+import { Notebook } from "./Notebook";
 import { SketchScaffold } from "./SketchScaffold";
 
 /**
@@ -61,10 +61,14 @@ export function BeatLift({ progress, active }: BeatProps) {
       height="100%"
       style={{ color: "var(--foreground)" }}
     >
-      <BlueprintGridSvg />
-      <SketchScaffold />
+      <Notebook />
 
-      <ChromaticShift strength={chroma}>
+      {/* All sketch content lives inside the notebook page via this
+          transform — matches Beat 1's sketch placement. */}
+      <g transform="translate(84.4 147.6) scale(0.82)">
+        <SketchScaffold />
+
+        <ChromaticShift strength={chroma}>
         {/* Wheels — dark rubber with cylindrical shading (lighter at centre of
             rolling surface, darker at the rolling edges) */}
         <defs>
@@ -439,7 +443,8 @@ export function BeatLift({ progress, active }: BeatProps) {
             </>
           )}
         </g>
-      </ChromaticShift>
+        </ChromaticShift>
+      </g>
     </svg>
   );
 }
