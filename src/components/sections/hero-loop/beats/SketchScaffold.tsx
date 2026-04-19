@@ -20,91 +20,47 @@
 export function SketchScaffold() {
   return (
     <g style={{ color: "var(--foreground)" }}>
-      {/* World frame — Y axis */}
-      <path
-        d="M 80 320 L 80 115 M 76 123 L 80 115 L 84 123"
+      {/* Shared stroke attrs inherit via presentation attributes. */}
+      <g
         fill="none"
         stroke="currentColor"
         strokeWidth={1.75}
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
-      />
-      {/* World frame — X axis */}
-      <path
-        d="M 80 320 L 520 320 M 512 316 L 520 320 L 512 324"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.75}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
+      >
+        {/* World frame — Y axis */}
+        <path d="M 80 320 L 80 115 M 76 123 L 80 115 L 84 123" />
+        {/* World frame — X axis */}
+        <path d="M 80 320 L 520 320 M 512 316 L 520 320 L 512 324" />
 
-      {/* Straight dashed θ-reference line */}
-      <path
-        d="M 80 320 L 300 218"
-        stroke="currentColor"
-        strokeWidth={1.25}
-        strokeLinecap="round"
-        strokeDasharray="5 6"
-        fill="none"
-        vectorEffect="non-scaling-stroke"
-      />
+        {/* Straight dashed θ-reference line — thinner stroke, dashed */}
+        <path
+          d="M 80 320 L 300 218"
+          strokeWidth={1.25}
+          strokeDasharray="5 6"
+        />
 
-      {/* Heading-angle θ */}
-      <path
-        d="M 130 320 A 50 50 0 0 0 125.3 298.9 M 130.6 303.0 L 125.3 298.9 L 125.1 305.6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.75}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
+        {/* Heading-angle θ */}
+        <path d="M 130 320 A 50 50 0 0 0 125.3 298.9 M 130.6 303.0 L 125.3 298.9 L 125.1 305.6" />
 
-      {/* Body-x axis */}
-      <path
-        d="M 300 218 L 408.8 167.3 M 403.2 174.3 L 408.8 167.3 L 399.8 167.0"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.75}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      {/* Body-y axis */}
-      <path
-        d="M 300 218 L 262.0 136.4 M 269.0 142.0 L 262.0 136.4 L 261.7 145.4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.75}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
+        {/* Body-x axis */}
+        <path d="M 300 218 L 408.8 167.3 M 403.2 174.3 L 408.8 167.3 L 399.8 167.0" />
+        {/* Body-y axis */}
+        <path d="M 300 218 L 262.0 136.4 M 269.0 142.0 L 262.0 136.4 L 261.7 145.4" />
 
-      {/* Velocity vector V */}
-      <path
-        d="M 300 218 L 445.0 150.4 M 439.4 157.4 L 445.0 150.4 L 436.1 150.1"
-        fill="none"
-        stroke="var(--accent)"
-        strokeWidth={1.75}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
+        {/* Velocity vector V */}
+        <path
+          d="M 300 218 L 445.0 150.4 M 439.4 157.4 L 445.0 150.4 L 436.1 150.1"
+          stroke="var(--accent)"
+        />
 
-      {/* Angular velocity ω */}
-      <path
-        d="M 122 200 A 28 28 0 1 0 150 172 M 156 169 L 150 172 L 156 175"
-        fill="none"
-        stroke="var(--accent)"
-        strokeWidth={1.75}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
+        {/* Angular velocity ω */}
+        <path
+          d="M 122 200 A 28 28 0 1 0 150 172 M 156 169 L 150 172 L 156 175"
+          stroke="var(--accent)"
+        />
+      </g>
 
       {/* Labels — hand-tuned positions (do not regenerate procedurally) */}
       <g

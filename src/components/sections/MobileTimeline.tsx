@@ -17,6 +17,8 @@ import {
 } from "@/data/timeline";
 import { smoothstep } from "@/lib/math";
 
+import { OVERVIEW_TEXT } from "./timeline/scroll-math";
+
 // ─── Animation variants ───────────────────────────────────────────────
 
 const fadeUp = {
@@ -29,9 +31,6 @@ const fadeUp = {
 };
 
 // ─── Constants ────────────────────────────────────────────────────────
-
-const OVERVIEW_TEXT =
-  "From workshop tinkerer to mechatronics engineer — a journey shaped by curiosity, rigour, and a drive to build things that work. Whether it's autonomous vehicles, industrial automation, or the web app you're reading this on, I bring the same hands-on engineering mindset to every problem. Let's build something together.";
 
 const DOT_LEFT = -31;
 const STEM_ML = -24;
