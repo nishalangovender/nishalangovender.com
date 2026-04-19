@@ -176,8 +176,8 @@ export function BeatDrive({ progress, active }: BeatProps) {
         <Notebook />
 
         {/* Terminal — on the desk above the notebook. Inside the camera so
-            it pans/zooms with the scene, keeping the desk composition intact
-            as the view pulls back to the warehouse. */}
+            it pans with the scene and naturally exits the frame to the left
+            as the camera follows the robot east into the warehouse. */}
         <Terminal
           x={100}
           y={20}
