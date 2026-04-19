@@ -31,14 +31,13 @@ const MON_START = { x: 80, y: 40, w: 480, h: 300 };
 const MON_END = { x: 130, y: 20, w: 380, h: 240 };
 
 // ── Notebook desk position (Phase A end) ──────────────────────────────────
-// Small notebook on the desk to the left of the keyboard, rotated and
-// slightly skewed for desk perspective.
-const NB_DESK_SCALE = 0.24;
-const NB_DESK_ROT = -6; // degrees, CCW
-const NB_DESK_SKEW = 3; // degrees of Y-skew for perspective
-// Anchor point (where the notebook's centre ends up on screen).
-// Left of the keyboard (keyboard starts at x=185). Notebook half-width at
-// scale 0.24 ≈ 70px plus rotation/skew budget, so centre x ≤ 100 to clear.
+// Small notebook on the desk to the left of the keyboard. Uses the same
+// "viewed from in-front-and-slightly-above" perspective convention as the
+// keyboard: vertical foreshortening (Y scale < X scale) so the notebook
+// reads as lying flat on the tilted desk surface. No in-plane rotation or
+// skew — keeps the perspective convention consistent across desk objects.
+const NB_DESK_SCALE_X = 0.24;
+const NB_DESK_SCALE_Y = 0.22; // Y/X ≈ 0.92, matches keyboard back/front ratio
 const NB_DESK_CX = 90;
 const NB_DESK_CY = 430;
 // The notebook's internal layout centre is at (320, 270).
@@ -67,26 +66,20 @@ export function BeatReturn({ progress, active }: BeatProps) {
   const monFadeOut = 1 - zoomT;
 
   // ── Notebook transform (Phase A end → Phase B end) ──────────────────────
-  // Phase A: notebook appears at its desk position (small, angled).
-  // Phase B: scales up to full viewport + rotates/skews to 0.
-  //
-  // Target at progress=1 must match Beat 1's notebook-fills-viewport frame
-  // exactly:
-  //   Notebook at scale 1, no rotation, no skew, internal centre (320, 270)
-  //   at screen centre (320, 270) — i.e. identity.
-  //
-  // Phase A target: scale NB_DESK_SCALE, rotate NB_DESK_ROT, skewY
-  // NB_DESK_SKEW, centre at (NB_DESK_CX, NB_DESK_CY).
-  const nbScale = NB_DESK_SCALE + (1 - NB_DESK_SCALE) * zoomT;
-  const nbRot = NB_DESK_ROT * (1 - zoomT);
-  const nbSkew = NB_DESK_SKEW * (1 - zoomT);
+  // Phase A: notebook sits flat on the desk with vertical foreshortening
+  // (Y scale < X scale). No rotation, no skew — matches the desk's
+  // perspective convention.
+  // Phase B: both X and Y scales grow to 1, centre moves to viewport
+  // centre, landing on Beat 1's identity transform at progress=1.
+  const nbScaleX =
+    NB_DESK_SCALE_X + (1 - NB_DESK_SCALE_X) * zoomT;
+  const nbScaleY =
+    NB_DESK_SCALE_Y + (1 - NB_DESK_SCALE_Y) * zoomT;
   const nbCx = NB_DESK_CX + (320 - NB_DESK_CX) * zoomT;
   const nbCy = NB_DESK_CY + (270 - NB_DESK_CY) * zoomT;
   const notebookTransform =
     `translate(${nbCx} ${nbCy}) ` +
-    `rotate(${nbRot}) ` +
-    `skewY(${nbSkew}) ` +
-    `scale(${nbScale}) ` +
+    `scale(${nbScaleX} ${nbScaleY}) ` +
     `translate(-320 -270)`;
   // Notebook is visible once it's appeared on the desk AND during the entire
   // zoom-in. So: fade-in during Phase A, fully visible through Phase B.
@@ -99,6 +92,17 @@ export function BeatReturn({ progress, active }: BeatProps) {
       height="100%"
       style={{ color: "var(--foreground)" }}
     >
+      <defs>
+        {/* Subtle recession gradient on the desk — darker at the back edge
+            (y=290, near the monitor), lighter toward the front (y=540).
+            Reinforces "camera looking at the desk from slightly above" for
+            the perspective convention. */}
+        <linearGradient id="deskRecession" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgb(70, 62, 52)" />
+          <stop offset="100%" stopColor="rgb(100, 92, 82)" />
+        </linearGradient>
+      </defs>
+
       {/* Wall / background behind the desk — matches Beat 5's end state
           (background colour) so the Beat 5→6 seam is invisible. */}
       <rect x={0} y={0} width={640} height={540} fill="var(--background)" />
@@ -112,7 +116,7 @@ export function BeatReturn({ progress, active }: BeatProps) {
             y={290}
             width={640}
             height={250}
-            fill="rgb(90, 82, 72)"
+            fill="url(#deskRecession)"
           />
           {/* Front edge shadow */}
           <line
@@ -183,6 +187,7 @@ export function BeatReturn({ progress, active }: BeatProps) {
             y={monY + 4}
             w={monW - 8}
             h={monH - 8}
+            progress={progress}
           />
         </g>
       )}
@@ -322,12 +327,15 @@ interface DashboardSnapshotProps {
   y: number;
   w: number;
   h: number;
+  /** Beat 6 progress — drives the robot-dot drift so the dashboard stays
+   *  "live" as the camera pulls back to the desk. Phase matches Beat 5. */
+  progress: number;
 }
 
 /** Settled dashboard snapshot — matches Beat 5's end-state layout at
  *  monitor-fills-viewport size (472×292). Rendered inside a group that
  *  scales Beat 5's native coords to fit the current monitor dimensions. */
-function DashboardSnapshot({ x, y, w, h }: DashboardSnapshotProps) {
+function DashboardSnapshot({ x, y, w, h, progress }: DashboardSnapshotProps) {
   // Beat 5's native screen dimensions
   const NATIVE_W = 472;
   const NATIVE_H = 292;
@@ -363,13 +371,14 @@ function DashboardSnapshot({ x, y, w, h }: DashboardSnapshotProps) {
     { label: "ALERTS", value: "1", alert: true },
   ];
 
-  const robots: [number, number, string][] = [
-    [MM_X + 35, MM_Y + 65, "rgb(80, 220, 110)"],
-    [MM_X + 160, MM_Y + 55, "rgb(80, 220, 110)"],
-    [MM_X + 80, MM_Y + 130, "rgb(230, 160, 40)"],
-    [MM_X + 180, MM_Y + 170, "rgb(80, 220, 110)"],
-    [MM_X + 55, MM_Y + 200, "rgb(220, 80, 70)"],
-    [MM_X + 190, MM_Y + 215, "rgb(80, 220, 110)"],
+  // [x, y, colour, battery 0..1] — matches Beat 5's robots array.
+  const robots: [number, number, string, number][] = [
+    [MM_X + 35, MM_Y + 65, "rgb(80, 220, 110)", 0.85],
+    [MM_X + 160, MM_Y + 55, "rgb(80, 220, 110)", 0.72],
+    [MM_X + 80, MM_Y + 130, "rgb(230, 160, 40)", 0.35],
+    [MM_X + 180, MM_Y + 170, "rgb(80, 220, 110)", 0.9],
+    [MM_X + 55, MM_Y + 200, "rgb(220, 80, 70)", 0.12],
+    [MM_X + 190, MM_Y + 215, "rgb(80, 220, 110)", 0.68],
   ];
 
   return (
@@ -430,23 +439,63 @@ function DashboardSnapshot({ x, y, w, h }: DashboardSnapshotProps) {
           return <line key={`h-${i}`} x1={MM_X} y1={gy} x2={MM_X + MM_W} y2={gy} />;
         })}
       </g>
-      {/* Robot dots with battery */}
-      {robots.map(([rx, ry, col], i) => (
-        <g key={`r-${i}`}>
-          <circle cx={rx} cy={ry} r={8} fill={col} opacity={0.22} />
-          <circle cx={rx} cy={ry} r={4.5} fill={col} />
-        </g>
-      ))}
-      {/* Tracked-robot accent ring */}
-      <circle
-        cx={robots[0][0]}
-        cy={robots[0][1]}
-        r={9}
-        fill="none"
-        stroke="var(--accent)"
-        strokeWidth={1.2}
-        strokeDasharray="2.5 2.5"
-      />
+      {/* Robot dots with drift + battery indicator — keeps the dashboard
+          "live" as the camera pulls back. Phase matches Beat 5 so the
+          Beat 5→6 seam is seamless. */}
+      {robots.map(([rx, ry, col, battery], i) => {
+        const { dx, dy } = dotOffset(progress, i);
+        const cx = rx + dx;
+        const cy = ry + dy;
+        const fillW = battery * 9;
+        return (
+          <g key={`r-${i}`}>
+            <circle cx={cx} cy={cy} r={8} fill={col} opacity={0.22} />
+            <circle cx={cx} cy={cy} r={4.5} fill={col} />
+            {/* Battery body */}
+            <rect
+              x={cx - 6}
+              y={cy - 14}
+              width={12}
+              height={5.5}
+              rx={1.2}
+              stroke="var(--muted)"
+              strokeWidth={0.5}
+              fill="var(--background)"
+            />
+            {/* Terminal nub */}
+            <rect
+              x={cx + 6}
+              y={cy - 13}
+              width={1.2}
+              height={3.5}
+              fill="var(--muted)"
+            />
+            {/* Fill level */}
+            <rect
+              x={cx - 5}
+              y={cy - 13}
+              width={fillW}
+              height={3.5}
+              fill={col}
+            />
+          </g>
+        );
+      })}
+      {/* Tracked-robot accent ring — drifts with robots[0]. */}
+      {(() => {
+        const { dx, dy } = dotOffset(progress, 0);
+        return (
+          <circle
+            cx={robots[0][0] + dx}
+            cy={robots[0][1] + dy}
+            r={9}
+            fill="none"
+            stroke="var(--accent)"
+            strokeWidth={1.2}
+            strokeDasharray="2.5 2.5"
+          />
+        );
+      })()}
 
       {/* Sidebar stat cards */}
       {stats.map((stat, i) => {
@@ -504,4 +553,13 @@ function clamp01(n: number): number {
 
 function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+/** Robot-dot drift offset for the dashboard — matches Beat 5's formula so
+ *  the Beat 5→6 seam has continuous dot motion. */
+function dotOffset(progress: number, i: number): { dx: number; dy: number } {
+  const phase = (i * 1.37) % (Math.PI * 2);
+  const dx = Math.cos(progress * Math.PI * 2 + phase) * (i === 0 ? 3 : 4);
+  const dy = Math.sin(progress * Math.PI * 2 + phase * 1.7) * (i === 0 ? 2 : 3);
+  return { dx, dy };
 }

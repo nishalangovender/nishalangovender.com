@@ -67,7 +67,12 @@ export function BeatDashboard({ progress, active }: BeatProps) {
   const HERO_TARGET_Y = MM_Y0 + 65; // 145
 
   // ── Beat 4 end state (continuity anchor) ───────────────────────────────
-  const ROBOT_END_HEADING_DEG = 0.83;
+  // Beat 4 ended with the robot at world (1800, 150), heading tangent
+  // of the bezier (M→C→E) where E=(1800,150), C=(426.8,159.3):
+  //   atan2(150-159.3, 1800-426.8) ≈ -0.39°
+  const ROBOT_END_HEADING_DEG = -0.39;
+  const ROBOT_END_WORLD_X = 1800;
+  const ROBOT_END_WORLD_Y = 150;
   const headingRad = (ROBOT_END_HEADING_DEG * Math.PI) / 180;
 
   // ── Warehouse transform (compression + pullback combined) ──────────────
@@ -82,14 +87,17 @@ export function BeatDashboard({ progress, active }: BeatProps) {
   const endScale = 0.295;
   const whScale = startScale + (endScale - startScale) * cameraT;
 
-  // Hero robot continuity drift — keeps motion across the Beat 4→5 seam
-  // without a jump-cut stop. Beat 4 decelerates via easeInOutCubic to rest
-  // at t=1. Beat 5 gently re-accelerates and carries the robot forward a
-  // further 140 world units over the first 70% of the beat.
-  const driftT = easeInOutCubic(clamp01(progress / 0.7));
-  const continueDist = 140 * driftT;
-  const heroWorldX = 820 + continueDist * Math.cos(headingRad);
-  const heroWorldY = 165 + continueDist * Math.sin(headingRad);
+  // Hero robot continuity drift — linear motion from Beat 4's end velocity.
+  // Beat 4 uses linear interpolation, so it ends with non-zero velocity;
+  // Beat 5's drift also uses linear progress so velocity is continuous at
+  // the seam. Drift distance chosen so the robot is still clearly moving
+  // as it compresses toward the tracked-robot dot.
+  const driftT = clamp01(progress / 0.7);
+  const continueDist = 180 * driftT;
+  const heroWorldX =
+    ROBOT_END_WORLD_X + continueDist * Math.cos(headingRad);
+  const heroWorldY =
+    ROBOT_END_WORLD_Y + continueDist * Math.sin(headingRad);
 
   // Hero must land at screen (320, 260) at t=0 (matches Beat 4 end) and at
   // HERO_TARGET at t=1. Linearly interpolate the anchor screen position.
@@ -98,11 +106,18 @@ export function BeatDashboard({ progress, active }: BeatProps) {
   const warehouseTransform = `translate(${anchorScreenX} ${anchorScreenY}) scale(${whScale}) translate(${-heroWorldX} ${-heroWorldY})`;
 
   // ── Beat 4 handoff — notebook + terminal carry through the seam ────────
-  // Beat 4 ended with its camera transform `translate(-5.42 138.35) scale(0.43)`
-  // applied to a full-viewport 640×540 scene that contained the Notebook and
-  // the Terminal. Reproduce that transform here so Beat 5 opens with the
-  // exact same composition, then fade them out over 0.00–0.40.
-  const handoffTransform = "translate(-5.42 138.35) scale(0.43)";
+  // With Beat 4's extended robot path (end at world x=1800), the camera
+  // has panned far enough right that the notebook + terminal are almost
+  // entirely off-screen left by Beat 4 end. Reproduce that transform here
+  // so the last sliver of each fades cleanly away.
+  //
+  // Transform derivation: Beat 4 camera at t=1 is
+  //   translate(320, 260) scale(0.43) translate(-pageX(1800), -pageY(150))
+  // = translate(320 - 0.43 * pageX(1800), 260 - 0.43 * pageY(150)) scale(0.43)
+  // where pageX(1800) = 84.4 + 0.82*1800 = 1560.4,
+  //       pageY(150)  = 147.6 + 0.82*150 = 270.6.
+  // So translate = (320 - 670.97, 260 - 116.36) = (-350.97, 143.64).
+  const handoffTransform = "translate(-350.97 143.64) scale(0.43)";
   const handoffOpacity = 1 - clamp01(progress / 0.4);
   const beat4TerminalLines = [
     { prompt: "$ ", text: "ros2 launch nish_bot bringup.launch.py" },

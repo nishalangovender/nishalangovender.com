@@ -66,15 +66,21 @@ export function BeatDrive({ progress, active }: BeatProps) {
     y: M.y + CTRL_OFFSET * Math.sin(START_HEADING_RAD),
   };
 
-  // End of curve — robot drives well into the factory lane (world y=165 is the lane centre-line).
-  const E = { x: 820, y: 165 };
+  // End of curve — robot drives deep into the factory lane to push the
+  // notebook + terminal off the left edge of the frame by beat end,
+  // creating a clear "prototype → production" separation between the
+  // notebook zone and the warehouse zone.
+  const E = { x: 1800, y: 150 };
 
   // Split progress between the two segments.
   //   0.00–0.35 maps to straight 0→1
   //   0.35–1.00 maps to curve 0→1
   const SPLIT = 0.35;
 
-  const tEased = easeInOutCubic(progress);
+  // Linear progress (constant velocity) — continuous motion across the
+  // Beat 4 → Beat 5 seam. Beat 5's hero-robot drift also uses linear
+  // motion so velocity is continuous.
+  const tEased = progress;
   let currX: number;
   let currY: number;
   let headingDeg: number;
@@ -96,15 +102,6 @@ export function BeatDrive({ progress, active }: BeatProps) {
     headingDeg = (Math.atan2(tanY, tanX) * 180) / Math.PI;
   }
 
-  // Trail path: straight from P0 to M, then quadratic curve M→C→E.
-  const pathD = `M ${P0.x} ${P0.y} L ${M.x} ${M.y} Q ${C.x} ${C.y} ${E.x} ${E.y}`;
-  const approxLen =
-    Math.hypot(M.x - P0.x, M.y - P0.y) + bezierLength(M, C, E);
-  const trailOffset = approxLen * (1 - tEased);
-
-  // Fade the trail in over the first 15% of the beat so it doesn't pop in
-  const trailFadeIn = Math.min(1, progress / 0.15);
-  const trailOpacity = 0.65 * trailFadeIn;
 
   // LIDAR: 720 deg/s — matches Beat 3's post-boot sweep rate for continuity.
   // Beat 4 is 4.5s → 720 × 4.5 = 3240° = 9 revolutions.
@@ -199,18 +196,6 @@ export function BeatDrive({ progress, active }: BeatProps) {
               sketch world (past the page's right edge, post-page-xform). */}
           <Factory opacity={factoryOpacity} />
 
-          {/* Trail behind the robot — fades in, then reveals along the path */}
-          <path
-            d={pathD}
-            fill="none"
-            stroke="var(--accent)"
-            strokeWidth={1.5}
-            strokeDasharray="4 4"
-            strokeDashoffset={trailOffset}
-            pathLength={approxLen}
-            opacity={trailOpacity}
-          />
-
           {/* Robot — bay closes as it drives. All coords are world coords. */}
           <RobotStatic
             ledsOn={true}
@@ -232,24 +217,3 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-/** Approximate quadratic Bezier arc length by sampling. */
-function bezierLength(
-  p0: { x: number; y: number },
-  p1: { x: number; y: number },
-  p2: { x: number; y: number },
-): number {
-  const N = 20;
-  let len = 0;
-  let prev = p0;
-  for (let i = 1; i <= N; i++) {
-    const tt = i / N;
-    const omt = 1 - tt;
-    const pt = {
-      x: omt * omt * p0.x + 2 * omt * tt * p1.x + tt * tt * p2.x,
-      y: omt * omt * p0.y + 2 * omt * tt * p1.y + tt * tt * p2.y,
-    };
-    len += Math.hypot(pt.x - prev.x, pt.y - prev.y);
-    prev = pt;
-  }
-  return len;
-}
