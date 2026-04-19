@@ -1,8 +1,8 @@
 // src/app/projects/pen-plotter/demo/page.tsx
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import PenPlotterDemo from "@/components/demos/pen-plotter/PenPlotterDemo";
+import { BackLink } from "@/components/ui/BackLink";
 import { PageSection } from "@/components/ui/PageSection";
 
 export const metadata: Metadata = {
@@ -15,12 +15,7 @@ export const metadata: Metadata = {
 export default function PenPlotterDemoPage() {
   return (
     <PageSection>
-      <Link
-        href="/projects/pen-plotter"
-        className="inline-flex items-center font-mono text-xs tracking-wider uppercase text-muted transition-colors hover:text-accent"
-      >
-        &larr; Back To Pen Plotter
-      </Link>
+      <BackLink href="/projects/pen-plotter">Back To Pen Plotter</BackLink>
       <header className="mt-8 mb-6">
         <p className="font-mono text-xs tracking-widest uppercase text-accent">
           Interactive Demo

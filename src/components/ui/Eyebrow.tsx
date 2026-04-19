@@ -4,9 +4,11 @@ type EyebrowProps = {
   as?: ElementType;
   /**
    * "default" = text-sm (page headers), "small" = text-xs (section labels),
-   * "xsmall" = text-[11px] (in-section category labels, card meta).
+   * "xsmall" = text-[11px] (in-section category labels),
+   * "xxsmall" = text-[10px] (dense UI: card meta, demo panel labels),
+   * "xxxsmall" = text-[9px] (ultra-dense: inline badge-row status flags).
    */
-  size?: "default" | "small" | "xsmall";
+  size?: "default" | "small" | "xsmall" | "xxsmall" | "xxxsmall";
   /** Optional colour override — defaults to accent. */
   tone?: "accent" | "muted";
   className?: string;
@@ -17,6 +19,8 @@ const SIZES = {
   default: "text-sm",
   small: "text-xs",
   xsmall: "text-[11px]",
+  xxsmall: "text-[10px]",
+  xxxsmall: "text-[9px]",
 } as const;
 
 const TONES = {

@@ -1,5 +1,7 @@
 "use client";
 
+import { clamp01 } from "@/lib/math";
+
 import type { BeatProps } from "../types";
 
 import { Notebook } from "./Notebook";
@@ -81,6 +83,3 @@ export function BeatBoot({ progress, active }: BeatProps) {
   );
 }
 
-function clamp01(n: number): number {
-  return Math.max(0, Math.min(1, n));
-}

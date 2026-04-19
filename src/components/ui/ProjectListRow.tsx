@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+import { Eyebrow } from "@/components/ui/Eyebrow";
 import ProjectBadges from "@/components/ui/ProjectBadges";
 import { TechPill } from "@/components/ui/TechPill";
 import { splitProjectTags, type Project } from "@/data/projects";
@@ -37,9 +38,7 @@ export default function ProjectListRow({
         {/* ── Left: discipline + title + description ────────────────────── */}
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center justify-between gap-3 min-h-[1.25rem]">
-            <p className="font-mono text-[10px] tracking-wider uppercase text-accent">
-              {discipline ?? ""}
-            </p>
+            <Eyebrow size="xxsmall">{discipline ?? ""}</Eyebrow>
             <ProjectBadges project={project} />
           </div>
           {hasCaseStudy ? (

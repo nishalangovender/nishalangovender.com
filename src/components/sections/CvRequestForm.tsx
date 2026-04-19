@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { siteConfig } from "@/lib/constants";
 
@@ -179,13 +180,9 @@ export default function CvRequestForm() {
         />
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="submit"
-            disabled={status === "submitting"}
-            className="inline-flex items-center justify-center rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" size="sm" disabled={status === "submitting"}>
             {status === "submitting" ? "Sending…" : "Request CV"}
-          </button>
+          </Button>
 
           <p
             role="status"

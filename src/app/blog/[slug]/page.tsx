@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import rehypePrettyCode from "rehype-pretty-code";
 import remarkGfm from "remark-gfm";
 
+import { BackLink } from "@/components/ui/BackLink";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
 import { formatPostDate, getAllSlugs, getPostBySlug } from "@/lib/blog";
@@ -56,12 +56,7 @@ export default async function BlogPostPage({
 
   return (
     <PageSection maxWidth="max-w-3xl">
-      <Link
-        href="/blog"
-        className="inline-flex items-center font-mono text-xs tracking-wider uppercase text-muted transition-colors hover:text-accent"
-      >
-        &larr; All Posts
-      </Link>
+      <BackLink href="/blog">All Posts</BackLink>
 
       <header className="mt-8">
         <Eyebrow>Article</Eyebrow>
@@ -113,12 +108,7 @@ export default async function BlogPostPage({
       </article>
 
       <div className="mt-20 border-t border-border/60 pt-8">
-        <Link
-          href="/blog"
-          className="inline-flex items-center font-mono text-xs tracking-wider uppercase text-muted transition-colors hover:text-accent"
-        >
-          &larr; Back To All Posts
-        </Link>
+        <BackLink href="/blog">Back To All Posts</BackLink>
       </div>
     </PageSection>
   );

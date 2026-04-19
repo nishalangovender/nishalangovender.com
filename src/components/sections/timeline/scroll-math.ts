@@ -3,6 +3,8 @@
 // viewBox controller. Keeping this separate from React state and refs so
 // the maths is independently testable and easy to tweak.
 
+import { easeInOutCubic } from "@/lib/easing";
+
 import {
   PRESENT_YEAR,
   STRIP_X_MAX,
@@ -45,16 +47,6 @@ export const CHAPTER_CENTERS = CHAPTER_BOUNDS.map(
 const CHAPTER_END_X = CHAPTER_BOUNDS.map(
   (b) => yearToPosition(b.to) * STRIP_X_MAX,
 );
-
-// ─── Easing helpers ─────────────────────────────────────────────────────
-
-export function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
-
-export function smoothstep(x: number): number {
-  return x * x * (3 - 2 * x);
-}
 
 // ─── Waypoint-based scroll interpolation ────────────────────────────────
 //

@@ -1,8 +1,8 @@
 // src/app/projects/path-following/demo/page.tsx
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import PathFollowingDemo from "@/components/demos/path-following/PathFollowingDemo";
+import { BackLink } from "@/components/ui/BackLink";
 import { PageSection } from "@/components/ui/PageSection";
 
 export const metadata: Metadata = {
@@ -15,12 +15,7 @@ export const metadata: Metadata = {
 export default function PathFollowingDemoPage() {
   return (
     <PageSection>
-      <Link
-        href="/projects/path-following"
-        className="inline-flex items-center font-mono text-xs tracking-wider uppercase text-muted transition-colors hover:text-accent"
-      >
-        &larr; Back To Path Following
-      </Link>
+      <BackLink href="/projects/path-following">Back To Path Following</BackLink>
       <header className="mt-8 mb-6">
         <p className="font-mono text-xs tracking-widest uppercase text-accent">
           Interactive Demo

@@ -1,5 +1,7 @@
 "use client";
 
+import { clamp01 } from "@/lib/math";
+
 import { ChromaticShift } from "../primitives/ChromaticShift";
 import type { BeatProps } from "../types";
 
@@ -456,6 +458,3 @@ function triangle(p: number, peak: number): number {
   return Math.max(0, 1 - dist / width);
 }
 
-function clamp01(n: number): number {
-  return Math.max(0, Math.min(1, n));
-}

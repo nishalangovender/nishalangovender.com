@@ -15,6 +15,7 @@ import {
   timelineYears,
   type TimelineYear,
 } from "@/data/timeline";
+import { smoothstep } from "@/lib/math";
 
 // ─── Animation variants ───────────────────────────────────────────────
 
@@ -349,8 +350,7 @@ export default function MobileTimeline() {
     [scrollOffset, zoomT] as const,
     ([offset, zt]: number[]) => {
       if (zt <= 0) return -offset;
-      const eased = zt * zt * (3 - 2 * zt); // smoothstep
-      return -maxScroll * (1 - eased);
+      return -maxScroll * (1 - smoothstep(zt));
     },
   );
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import { LinkButton } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
 
@@ -36,18 +36,10 @@ export default function NotFound() {
         </pre>
 
         <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/"
-            className="inline-flex items-center px-6 py-3 bg-accent text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
-          >
-            Back To Home
-          </Link>
-          <Link
-            href="/projects"
-            className="inline-flex items-center px-6 py-3 border border-border text-foreground font-medium rounded-lg hover:bg-surface transition-colors"
-          >
+          <LinkButton href="/">Back To Home</LinkButton>
+          <LinkButton href="/projects" variant="outline">
             View Projects
-          </Link>
+          </LinkButton>
         </div>
       </div>
     </PageSection>

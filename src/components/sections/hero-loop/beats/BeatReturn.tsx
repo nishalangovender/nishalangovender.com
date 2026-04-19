@@ -1,6 +1,9 @@
 // src/components/sections/hero-loop/beats/BeatReturn.tsx
 "use client";
 
+import { easeInOutCubic } from "@/lib/easing";
+import { clamp01 } from "@/lib/math";
+
 import type { BeatProps } from "../types";
 
 import { Notebook } from "./Notebook";
@@ -546,14 +549,6 @@ function DashboardSnapshot({ x, y, w, h, progress }: DashboardSnapshotProps) {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function clamp01(n: number): number {
-  return Math.max(0, Math.min(1, n));
-}
-
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
 
 /** Robot-dot drift offset for the dashboard — matches Beat 5's formula so
  *  the Beat 5→6 seam has continuous dot motion. */

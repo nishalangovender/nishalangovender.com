@@ -1,6 +1,9 @@
 // src/components/sections/hero-loop/beats/BeatDashboard.tsx
 "use client";
 
+import { easeInOutCubic } from "@/lib/easing";
+import { clamp01 } from "@/lib/math";
+
 import type { BeatProps } from "../types";
 
 import { Factory } from "./Factory";
@@ -496,12 +499,3 @@ export function BeatDashboard({ progress, active }: BeatProps) {
   );
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function clamp01(n: number): number {
-  return Math.max(0, Math.min(1, n));
-}
-
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}

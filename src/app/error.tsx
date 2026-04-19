@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
 
+import { Button, LinkButton } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
 
@@ -40,19 +40,10 @@ export default function Error({
         )}
 
         <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={reset}
-            className="inline-flex items-center px-6 py-3 bg-accent text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
-          >
-            Try Again
-          </button>
-          <Link
-            href="/"
-            className="inline-flex items-center px-6 py-3 border border-border text-foreground font-medium rounded-lg hover:bg-surface transition-colors"
-          >
+          <Button onClick={reset}>Try Again</Button>
+          <LinkButton href="/" variant="outline">
             Back To Home
-          </Link>
+          </LinkButton>
         </div>
       </div>
     </PageSection>

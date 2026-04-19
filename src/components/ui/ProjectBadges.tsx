@@ -4,8 +4,8 @@ import Link from "next/link";
 
 import type { Project } from "@/data/projects";
 
-const BADGE_BASE =
-  "font-mono text-[9px] tracking-wider uppercase rounded-full px-2 py-0.5";
+import { Badge } from "./Badge";
+import { Eyebrow } from "./Eyebrow";
 
 /**
  * Shared badge row for ProjectCard and ProjectListRow. Reserves a fixed-height
@@ -19,32 +19,22 @@ export default function ProjectBadges({ project }: { project: Project }) {
   return (
     <div className="flex flex-wrap items-center gap-2 min-h-[1.25rem]">
       {project.featured && (
-        <span className="font-mono text-[9px] tracking-wider uppercase text-accent">
+        <Eyebrow as="span" size="xxxsmall">
           Featured
-        </span>
+        </Eyebrow>
       )}
-      {project.confidential && (
-        <span
-          className={`${BADGE_BASE} border border-border bg-surface text-muted`}
-        >
-          Confidential
-        </span>
-      )}
+      {project.confidential && <Badge>Confidential</Badge>}
       {demoLink && (
-        <Link
-          href={demoLink}
-          className={`${BADGE_BASE} relative z-10 border border-accent bg-accent text-surface hover:bg-accent-dark`}
-        >
-          Live Demo &rarr;
+        <Link href={demoLink} className="relative z-10">
+          <Badge
+            variant="accentSolid"
+            className="transition-colors hover:bg-accent-dark"
+          >
+            Live Demo &rarr;
+          </Badge>
         </Link>
       )}
-      {demoComing && (
-        <span
-          className={`${BADGE_BASE} border border-accent/30 bg-accent-light text-accent`}
-        >
-          Demo Coming
-        </span>
-      )}
+      {demoComing && <Badge variant="accentSoft">Demo Coming</Badge>}
     </div>
   );
 }

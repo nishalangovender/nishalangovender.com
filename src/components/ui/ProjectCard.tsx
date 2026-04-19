@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+import { Eyebrow } from "@/components/ui/Eyebrow";
 import ProjectBadges from "@/components/ui/ProjectBadges";
 import { TechPill } from "@/components/ui/TechPill";
 import { splitProjectTags, type Project } from "@/data/projects";
@@ -39,9 +40,7 @@ export default function ProjectCard({
     >
       {/* Discipline eyebrow + status badges — shared metadata row */}
       <div className="mb-2 flex items-center justify-between gap-3 min-h-[1.25rem]">
-        <p className="font-mono text-[10px] tracking-wider uppercase text-accent">
-          {discipline ?? ""}
-        </p>
+        <Eyebrow size="xxsmall">{discipline ?? ""}</Eyebrow>
         <ProjectBadges project={project} />
       </div>
 

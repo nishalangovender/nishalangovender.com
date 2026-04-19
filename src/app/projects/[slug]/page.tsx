@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/ui/BackLink";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
 import { Reveal } from "@/components/ui/Reveal";
@@ -58,12 +59,7 @@ export default async function ProjectCaseStudyPage({
   return (
     <PageSection>
       {/* ── Back link ───────────────────────────────────────────────────── */}
-      <Link
-        href="/projects"
-        className="inline-flex items-center font-mono text-xs tracking-wider uppercase text-muted transition-colors hover:text-accent"
-      >
-        &larr; All Projects
-      </Link>
+      <BackLink href="/projects">All Projects</BackLink>
 
       {/* ── Hero ────────────────────────────────────────────────────────── */}
       <header className="mt-8">
@@ -162,12 +158,7 @@ export default async function ProjectCaseStudyPage({
 
       {/* ── Footer nav ──────────────────────────────────────────────────── */}
       <div className="mt-20 border-t border-border/60 pt-8">
-        <Link
-          href="/projects"
-          className="inline-flex items-center font-mono text-xs tracking-wider uppercase text-muted transition-colors hover:text-accent"
-        >
-          &larr; Back To All Projects
-        </Link>
+        <BackLink href="/projects">Back To All Projects</BackLink>
       </div>
     </PageSection>
   );

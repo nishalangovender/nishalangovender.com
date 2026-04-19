@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
 import { fadeUp, staggerContainer } from "@/lib/animations";
@@ -164,13 +165,9 @@ export default function ContactPage() {
           />
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              type="submit"
-              disabled={status === "submitting"}
-              className="inline-flex items-center justify-center rounded-lg bg-accent px-6 py-3 font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
+            <Button type="submit" disabled={status === "submitting"}>
               {status === "submitting" ? "Sending…" : "Send Message"}
-            </button>
+            </Button>
 
             <p
               role="status"

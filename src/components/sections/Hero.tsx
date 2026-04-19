@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
 
 import HeroLoop from "@/components/sections/hero-loop/HeroLoop";
+import { LinkButton } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { fadeUp, staggerContainer } from "@/lib/animations";
 
@@ -47,18 +47,10 @@ export default function Hero() {
             className="flex items-center justify-center md:justify-start gap-4"
             variants={fadeUp}
           >
-            <Link
-              href="/projects"
-              className="inline-flex items-center px-6 py-3 bg-accent text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
-            >
-              View My Work
-            </Link>
-            <Link
-              href="/cv"
-              className="inline-flex items-center px-6 py-3 border border-border text-foreground font-medium rounded-lg hover:bg-surface transition-colors"
-            >
+            <LinkButton href="/projects">View My Work</LinkButton>
+            <LinkButton href="/cv" variant="outline">
               View Profile
-            </Link>
+            </LinkButton>
           </motion.div>
         </motion.div>
 

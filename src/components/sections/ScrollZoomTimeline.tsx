@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { timelineChapters } from "@/data/timeline";
+import { smoothstep } from "@/lib/math";
 
 import { ChapterOverlay } from "./timeline/ChapterOverlay";
 import { ReducedMotionFallback } from "./timeline/ReducedMotionFallback";
@@ -26,7 +27,6 @@ import {
   panEndT,
   panStartT,
   presentX,
-  smoothstep,
 } from "./timeline/scroll-math";
 import { STRIP_X_MAX, TimelineStripSVG } from "./timeline/TimelineStrip";
 
