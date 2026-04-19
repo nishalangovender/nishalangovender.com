@@ -15,8 +15,8 @@ describe("hero-loop timeline", () => {
     expect(BEATS).toHaveLength(7);
   });
 
-  it("totals 12 seconds", () => {
-    expect(TOTAL_DURATION).toBe(12);
+  it("totals 20 seconds", () => {
+    expect(TOTAL_DURATION).toBe(20);
   });
 
   it("gives every beat a strictly positive duration", () => {
