@@ -121,7 +121,6 @@ const PROJECT_DEFINITIONS: Project[] = [
     tags: ["Web", "Next.js", "Supabase", "PostgreSQL"],
     link: "https://app.nishalangovender.com",
     featured: true,
-    interactiveDemoPlanned: true,
     caseStudy: {
       problem:
         "Off-the-shelf productivity tools (Notion, Todoist, Apple Notes, a calendar, a gym app, a meal tracker) each solve one slice of life and none of them talk to each other. The same human — me — was fragmented across a dozen apps with no single place to see what mattered, and no way for an AI assistant to reason over the whole picture.\n\nNishOS is the replacement: one Postgres schema modelling tasks, projects, goals, career pipeline, fitness, nutrition, scheduling and a markdown knowledge wiki, with a Next.js frontend and deep MCP integration so Claude Code can read and write the whole system directly.",
@@ -130,7 +129,7 @@ const PROJECT_DEFINITIONS: Project[] = [
       technicalDetails:
         "Supabase (Postgres, Auth, RLS, Storage) as the backend. Schema spans 30+ tables: areas with self-referential hierarchy, goals → projects → tasks, career_companies → career_applications → career_interviews, time_blocks with Google Calendar sync, workout_sessions / workout_sets / personal_records, nutrition_entries / nutrition_targets, notes / resources / entity_links / ingestion_log. Every table has RLS enforcing user_id scoping, and most carry tsvector columns for full-text search.\n\nFrontend is Next.js 15 (App Router) with server components for read views and client components for interactive editors. TanStack Query handles data fetching and optimistic updates; tailwind for styling; Framer Motion for transitions. Weekly templates auto-populate time blocks; workout sessions roll up into personal records automatically; nutrition entries link back to the time block they were logged against.\n\nThe MCP layer exposes the entire database to Claude Code — ingest workflows write a markdown file locally, upsert a `notes` row, and create `entity_links` for every wikilink in a single session. An append-only `ingestion_log` table keeps a chronological record of every AI-driven operation.",
       outcome:
-        "Live at app.nishalangovender.com and replacing Notion, Apple Notes, Capacities and Obsidian as the canonical system. Handles day-to-day task management, weekly reviews, the entire Netherlands/Germany job-search pipeline, workout logging, nutrition tracking and a growing personal knowledge wiki — all with a single AI assistant fluent in every domain.\n\nA sanitised interactive demo is planned for Milestone 5 so visitors to this portfolio can click through the task/project/goal hierarchy, the weekly planner and the knowledge wiki without needing a login.",
+        "Live at app.nishalangovender.com and replacing Notion, Apple Notes, Capacities and Obsidian as the canonical system. Handles day-to-day task management, weekly reviews, the entire Netherlands/Germany job-search pipeline, workout logging, nutrition tracking and a growing personal knowledge wiki — all with a single AI assistant fluent in every domain.",
       techStack: [
         "Next.js 15",
         "React",
@@ -250,7 +249,6 @@ const PROJECT_DEFINITIONS: Project[] = [
     tags: ["Web", "Next.js", "Supabase"],
     link: "https://mergensworkshop.co.za",
     featured: true,
-    interactiveDemoPlanned: true,
     caseStudy: {
       problem:
         "A 20+ year family workshop business was running on handwritten invoices, scattered client records, and ad-hoc WhatsApp messages. Every quote, invoice and service reminder was manual, and there was no single place to look up what a given vehicle had previously had done to it.\n\nThe brief was to replace all of that with a single system that did two jobs well: a public marketing site that made the business look as serious online as it is in person, and a private invoicing app that the owner could actually enjoy using day-to-day.",
@@ -259,7 +257,7 @@ const PROJECT_DEFINITIONS: Project[] = [
       technicalDetails:
         "Next.js 15 (App Router) frontend with server components for the marketing pages and client components only where interactivity is needed (the admin dashboard, forms). Tailwind for styling, light/dark theme. Supabase handles auth, data and storage; Postgres schema covers clients, vehicles (with full service history), invoices, line items and the service catalogue, with RLS policies gating access to the owner's account.\n\nInvoice rendering is PDF-on-demand from the structured records, which means the same data drives the dashboard, the emailed invoice and the client's history view. Payment integration is scoped through PayFast (South African gateway). Deployed on Vercel with preview environments per branch.",
       outcome:
-        "Live in production at mergensworkshop.co.za and actively used by the business. The owner has a real system of record instead of paper trails, vehicle history is one click away during a service, and invoicing that used to be a chore is now a couple of clicks.\n\nThe app is behind login, so an interactive mock of both the owner and client views is planned as the Milestone 5 demo — so visitors to this site can click through a sanitised version of the dashboard without credentials.",
+        "Live in production at mergensworkshop.co.za and actively used by the business. The owner has a real system of record instead of paper trails, vehicle history is one click away during a service, and invoicing that used to be a chore is now a couple of clicks.",
       techStack: [
         "Next.js 15",
         "React",
