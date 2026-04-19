@@ -1,53 +1,22 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Suspense } from "react";
 
 import ProjectsExplorer from "@/components/sections/ProjectsExplorer";
-import { Eyebrow } from "@/components/ui/Eyebrow";
+import { PageHero } from "@/components/ui/PageHero";
 import { PageSection } from "@/components/ui/PageSection";
-import { fadeUp, staggerContainer } from "@/lib/animations";
 
 export default function ProjectsPage() {
   return (
     <PageSection>
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
+      <PageHero
+        eyebrow="Projects"
+        title="What I've Built"
+        description="A collection of engineering projects across robotics, embedded systems, controls, and web development. Filter by discipline to find what you're looking for."
       >
-        <motion.div variants={fadeUp}>
-          <Eyebrow>Projects</Eyebrow>
-        </motion.div>
-
-        <motion.h1
-          className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight leading-tight"
-          variants={fadeUp}
-        >
-          What I&apos;ve Built
-        </motion.h1>
-
-        <motion.div
-          className="circuit-divider max-w-xs mt-6"
-          variants={fadeUp}
-        />
-
-        <motion.p
-          className="mt-6 text-muted text-lg leading-relaxed max-w-2xl"
-          variants={fadeUp}
-        >
-          A collection of engineering projects across robotics, embedded
-          systems, controls, and web development. Filter by discipline to
-          find what you&apos;re looking for.
-        </motion.p>
-
-        <motion.div className="mt-16" variants={fadeUp}>
-          {/* Suspense boundary required by Next.js 15 for useSearchParams */}
-          <Suspense fallback={<ProjectsExplorerFallback />}>
-            <ProjectsExplorer />
-          </Suspense>
-        </motion.div>
-      </motion.div>
+        {/* Suspense boundary required by Next.js 15 for useSearchParams */}
+        <Suspense fallback={<ProjectsExplorerFallback />}>
+          <ProjectsExplorer />
+        </Suspense>
+      </PageHero>
     </PageSection>
   );
 }
