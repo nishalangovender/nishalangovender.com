@@ -11,8 +11,8 @@ describe("hero-loop timeline", () => {
     }
   });
 
-  it("has exactly 7 beats", () => {
-    expect(BEATS).toHaveLength(7);
+  it("has exactly 6 beats", () => {
+    expect(BEATS).toHaveLength(6);
   });
 
   it("totals 20 seconds", () => {

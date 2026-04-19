@@ -2,7 +2,6 @@ export type Seconds = number;
 
 export type BeatId =
   | "sketch"
-  | "math"
   | "lift"
   | "boot"
   | "drive"

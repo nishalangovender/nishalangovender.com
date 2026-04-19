@@ -7,7 +7,6 @@ import { BeatBoot } from "./beats/BeatBoot";
 import { BeatDashboard } from "./beats/BeatDashboard";
 import { BeatDrive } from "./beats/BeatDrive";
 import { BeatLift } from "./beats/BeatLift";
-import { BeatMath } from "./beats/BeatMath";
 import { BeatReturn } from "./beats/BeatReturn";
 import { BeatSketch } from "./beats/BeatSketch";
 import { HeroLoopStatic } from "./HeroLoopStatic";
@@ -16,7 +15,6 @@ import type { BeatId } from "./types";
 
 const BEAT_COMPONENTS: Record<BeatId, ComponentType<{ progress: number; active: boolean }>> = {
   sketch: BeatSketch,
-  math: BeatMath,
   lift: BeatLift,
   boot: BeatBoot,
   drive: BeatDrive,
