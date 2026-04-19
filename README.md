@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# nishalangovender.com
 
-## Getting Started
+Personal site and engineering portfolio for [Nishalan Govender](https://nishalangovender.com) — mechatronics engineer working across robotics, embedded systems, and the web.
 
-First, run the development server:
+Live at [**nishalangovender.com**](https://nishalangovender.com).
+
+## Stack
+
+- **Next.js 16** (App Router, React 19, TypeScript strict)
+- **Tailwind CSS v4** — design tokens via CSS variables, light/dark theme
+- **Framer Motion** — page transitions and hero animation
+- **MDX** — blog posts (`next-mdx-remote`, `rehype-pretty-code`, `shiki`)
+- **Vitest + Testing Library** — unit tests for the interactive demos
+- **Vercel** — hosting, preview deployments per branch
+- **Formspree** — contact and CV-request form backend
+
+No database. All content is static — typed data files and MDX.
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The dev server runs at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script               | What it does                         |
+| -------------------- | ------------------------------------ |
+| `npm run dev`        | Next.js dev server                   |
+| `npm run build`      | Production build                     |
+| `npm run start`      | Serve the production build           |
+| `npm run lint`       | ESLint (Next config + import plugin) |
+| `npm run typecheck`  | TypeScript type check (no emit)      |
+| `npm run test`       | Run the Vitest suite once            |
+| `npm run test:watch` | Vitest in watch mode                 |
 
-## Learn More
+### Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+Set `NEXT_PUBLIC_FORMSPREE_ID` to enable the contact and CV-request forms. Without it, the forms render a graceful fallback message.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/            # Routes (App Router) — pages, metadata, OG images, sitemap, robots
+├── components/
+│   ├── layout/     # Navbar, Footer, ThemeProvider
+│   ├── sections/   # Page-specific sections (Hero, Timeline, EngineeringProcess, …)
+│   ├── ui/         # Reusable primitives (cards, headings, reveal wrappers)
+│   └── demos/      # Interactive project demos (park-bot, path-following, pen-plotter)
+├── content/blog/   # MDX blog posts
+├── data/           # Typed content: projects, skills, timeline, CV
+└── lib/            # Site config, animation presets, demo simulation logic
+```
 
-## Deploy on Vercel
+## Highlights worth poking at
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Interactive robotics demos** — `src/components/demos/` and `src/lib/` house standalone simulations (4WS path-following controller, pen-plotter, Park Bot) that share a common rendering and test harness.
+- **Skills Venn** — `src/components/sections/SkillsVenn.tsx` visualises three disciplines (software, electronics, mechanical) and their intersections, with a grid listing underneath.
+- **Hero loop** — `src/components/sections/hero-loop/` is the animated homepage sequence.
+- **Dynamic OG images** — per-project and per-post Open Graph images via edge-runtime `opengraph-image.tsx` routes.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+Pushes to `main` deploy to production via Vercel. Every branch gets a preview URL. DNS is on Cloudflare.
+
+## License
+
+[MIT](./LICENSE) — feel free to borrow patterns if anything here helps you.

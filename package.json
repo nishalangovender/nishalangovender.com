@@ -2,11 +2,23 @@
   "name": "nishalangovender.com",
   "version": "0.1.0",
   "private": true,
+  "description": "Personal site and engineering portfolio for Nishalan Govender — mechatronics engineer working across robotics, embedded systems, and the web.",
+  "author": "Nishalan Govender <nish@nishalangovender.com> (https://nishalangovender.com)",
+  "homepage": "https://nishalangovender.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nishalangovender/nishalangovender.com.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nishalangovender/nishalangovender.com/issues"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
