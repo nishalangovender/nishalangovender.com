@@ -138,30 +138,6 @@ function buildMobileTimeline(): TimelineYear[] {
 
 const mobileYears = buildMobileTimeline();
 
-// ─── Growing vertical line ────────────────────────────────────────────
-
-function GrowingLine({
-  containerRef,
-}: {
-  containerRef: React.RefObject<HTMLElement | null>;
-}) {
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start 80%", "end 80%"],
-  });
-  const height = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-
-  return (
-    <>
-      <div className="absolute left-[7px] top-0 bottom-0 w-[2px] bg-accent/10" />
-      <motion.div
-        className="absolute left-[7px] top-0 w-[2px] bg-accent/40"
-        style={{ height }}
-      />
-    </>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────
 //
 // Architecture (mirrors desktop ScrollZoomTimeline):
@@ -365,6 +341,27 @@ export default function MobileTimeline() {
   const scale = useTransform(zoomT, [0, 1], [1, minScale]);
   const timelineOpacity = useTransform(zoomT, [0, 0.6, 1], [1, 0.85, 0.3]);
 
+  // Translate-Y for the inner timeline. During normal scroll: translateY moves
+  // content up. During zoom-out: smoothly interpolate y from -maxScroll back
+  // to 0 so the view slides from Freelance up to show the full timeline as it
+  // shrinks.
+  const innerY = useTransform(
+    [scrollOffset, zoomT] as const,
+    ([offset, zt]: number[]) => {
+      if (zt <= 0) return -offset;
+      const eased = zt * zt * (3 - 2 * zt); // smoothstep
+      return -maxScroll * (1 - eased);
+    },
+  );
+
+  // Growing accent line height, keyed to content-end so the line fills over
+  // the scrolled portion only.
+  const innerLineHeight = useTransform(
+    scrollYProgress,
+    [0, contentEnd],
+    ["0%", "100%"],
+  );
+
   // ── Reduced motion: simple scrolling page ──
   if (prefersReducedMotion) {
     return (
@@ -429,28 +426,14 @@ export default function MobileTimeline() {
               style={{
                 scale,
                 opacity: timelineOpacity,
-                // During normal scroll: translateY moves content up.
-                // During zoom-out: smoothly interpolate y from -maxScroll
-                // back to 0, so the view slides from Freelance up to show
-                // the full timeline as it shrinks.
-                y: useTransform(
-                  [scrollOffset, zoomT] as const,
-                  ([offset, zt]: number[]) => {
-                    if (zt <= 0) return -offset;
-                    // Lerp from current max scroll back to 0
-                    const eased = zt * zt * (3 - 2 * zt); // smoothstep
-                    return -maxScroll * (1 - eased);
-                  },
-                ),
+                y: innerY,
                 transformOrigin: "top left",
               }}
             >
               <div className="absolute left-[7px] top-0 bottom-0 w-[2px] bg-accent/10" />
               <motion.div
                 className="absolute left-[7px] top-0 w-[2px] bg-accent/40"
-                style={{
-                  height: useTransform(scrollYProgress, [0, contentEnd], ["0%", "100%"]),
-                }}
+                style={{ height: innerLineHeight }}
               />
               <TimelineYears Item={Item} />
             </motion.div>

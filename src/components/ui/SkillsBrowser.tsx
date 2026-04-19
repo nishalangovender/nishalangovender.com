@@ -64,16 +64,15 @@ export default function SkillsBrowser() {
 
   // Compute filtered zones + total match count
   const { filteredZones, totalMatches } = useMemo(() => {
-    let total = 0;
     const result = zones.map(({ key, data }) => {
       const zoneHaystack =
         `${data.label} ${data.subtitle ?? ""}`.toLowerCase();
       const visibleSkills = data.skills.filter((s) =>
         matches(s, zoneHaystack, query),
       );
-      total += visibleSkills.length;
       return { key, data, visibleSkills };
     });
+    const total = result.reduce((sum, z) => sum + z.visibleSkills.length, 0);
     return { filteredZones: result, totalMatches: total };
   }, [query]);
 
@@ -88,7 +87,7 @@ export default function SkillsBrowser() {
         </h2>
         <p className="text-muted text-base leading-relaxed max-w-2xl">
           The full toolkit, grouped by discipline. Search by skill name or
-          discipline (try "ROS", "embedded", "CAD").
+          discipline (try &ldquo;ROS&rdquo;, &ldquo;embedded&rdquo;, &ldquo;CAD&rdquo;).
         </p>
       </div>
 

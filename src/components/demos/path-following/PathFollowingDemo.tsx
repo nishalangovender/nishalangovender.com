@@ -39,6 +39,7 @@ export default function PathFollowingDemo() {
   }, []);
 
   // Divergence watchdog — if the covariance trace blows up, reset + toast.
+  // Defer the state update out of the effect body to avoid cascading renders.
   useEffect(() => {
     if (!sim.latest) return;
     const trace =
@@ -46,8 +47,10 @@ export default function PathFollowingDemo() {
       sim.latest.covariance[12] + sim.latest.covariance[18] +
       sim.latest.covariance[24];
     if (!Number.isFinite(trace) || trace > 1e5) {
-      setToast("Filter diverged — resetting.");
-      sim.reset(config);
+      queueMicrotask(() => {
+        setToast("Filter diverged — resetting.");
+        sim.reset(config);
+      });
     }
   }, [sim.latest, sim, config]);
 

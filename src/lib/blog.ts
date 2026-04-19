@@ -54,7 +54,11 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
 
   return posts
     .filter((p): p is BlogPost => p !== null && !p.draft)
-    .map(({ content: _content, ...meta }) => meta)
+    .map((p) => {
+      const { content, ...meta } = p;
+      void content;
+      return meta;
+    })
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
