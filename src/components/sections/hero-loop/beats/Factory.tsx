@@ -21,18 +21,20 @@ interface FactoryProps {
   opacity?: number;
 }
 
-// Palette — solid warehouse colours. Reads consistently in light/dark mode.
-const FLOOR_FILL = "rgb(220, 218, 210)";                // solid concrete floor
-const GRID_STROKE = "rgba(100, 100, 100, 0.35)";        // painted grid lines
-const WALL_STROKE = "rgba(50, 50, 50, 0.9)";
-const RACK_FILL = "rgb(170, 140, 85)";
-const RACK_STROKE = "rgba(60, 40, 20, 0.8)";
-const PALLET_FILL = "rgb(160, 130, 80)";
-const PALLET_STROKE = "rgba(60, 40, 20, 0.75)";
-const PALLET_PLANK = "rgba(85, 60, 35, 0.65)";           // plank lines on pallets
-const LANE_STROKE = "rgba(220, 170, 30, 0.8)";
-const ROOM_FILL = "rgb(190, 188, 180)";
-const ROOM_STROKE = "rgba(60, 60, 60, 0.7)";
+// Palette — theme-reactive via CSS vars declared in globals.css. Light
+// mode = concrete/warehouse daylight; dark mode = dim night-shift tones.
+// Forklifts keep vivid industrial-orange in both themes (no var).
+const FLOOR_FILL = "var(--factory-floor)";
+const GRID_STROKE = "var(--factory-grid)";
+const WALL_STROKE = "var(--factory-wall)";
+const RACK_FILL = "var(--factory-rack)";
+const RACK_STROKE = "var(--factory-rack-edge)";
+const PALLET_FILL = "var(--factory-pallet)";
+const PALLET_STROKE = "var(--factory-pallet-edge)";
+const PALLET_PLANK = "var(--factory-pallet-plank)";
+const LANE_STROKE = "var(--factory-lane)";
+const ROOM_FILL = "var(--factory-room)";
+const ROOM_STROKE = "var(--factory-room-edge)";
 const FORKLIFT_BODY = "rgb(230, 130, 30)";              // classic industrial orange
 const FORKLIFT_DARK = "rgb(30, 30, 30)";
 
