@@ -8,7 +8,7 @@ export function HeroLoopStatic() {
     <svg
       role="img"
       aria-label="Hand-drawn kinematic diagram of a differential-drive robot with labelled velocity and angular velocity vectors, on a blueprint grid."
-      viewBox="0 0 640 400"
+      viewBox="0 0 640 540"
       width="100%"
       height="100%"
       style={{ color: "var(--foreground)" }}
@@ -23,7 +23,7 @@ export function HeroLoopStatic() {
         {Array.from({ length: 16 }).map((_, i) => (
           <line key={`v-${i}`} x1={i * 40} y1={0} x2={i * 40} y2={400} />
         ))}
-        {Array.from({ length: 10 }).map((_, i) => (
+        {Array.from({ length: 14 }).map((_, i) => (
           <line key={`h-${i}`} x1={0} y1={i * 40} x2={640} y2={i * 40} />
         ))}
       </g>

@@ -2,13 +2,15 @@
 
 /**
  * Shared end-state composition of Beat 1's kinematic diagram — rendered as
- * static paths (no stroke-along animation). Used by BeatLift and any later
- * beat that wants the diagram to stay visible as background context.
+ * static paths (no stroke-along animation). Used by BeatLift, BeatBoot and
+ * (in frozen form) BeatDrive to keep the diagram visible as background.
  *
- * Geometry is identical to BeatSketch at progress = 1.
+ * Positions and labels are hand-tuned values from Beat 1's approved layout.
+ * Do NOT regenerate these procedurally (see BodyFrame for the parameterised
+ * equivalent used only by BeatDrive's moving overlay).
  *
  * Does NOT render the chassis + drive wheels — those are handled by the
- * consumer (BeatLift) because the robot is the element that changes.
+ * consumer because the robot is the element that changes.
  */
 export function SketchScaffold() {
   return (
@@ -91,7 +93,7 @@ export function SketchScaffold() {
         strokeLinejoin="round"
       />
 
-      {/* Labels */}
+      {/* Labels — hand-tuned positions (do not regenerate procedurally) */}
       <g
         fontFamily="var(--font-jetbrains-mono), monospace"
         fontSize={14}

@@ -25,8 +25,7 @@ export function BeatFrame({ title, window, Beat, children }: BeatFrameProps) {
         <p className="font-mono text-sm text-muted">{window}</p>
       </header>
       <div className="w-full max-w-3xl">
-        <div className="relative aspect-[16/10] w-full">
-          <div className="absolute inset-0 blueprint-grid pointer-events-none" />
+        <div className="relative w-full" style={{ aspectRatio: "640 / 540" }}>
           <div className="absolute inset-0">
             <Beat progress={1} active={true} />
           </div>

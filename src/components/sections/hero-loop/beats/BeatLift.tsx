@@ -3,6 +3,7 @@
 import { ChromaticShift } from "../primitives/ChromaticShift";
 import type { BeatProps } from "../types";
 
+import { BlueprintGridSvg } from "./BlueprintGridSvg";
 import { SketchScaffold } from "./SketchScaffold";
 
 /**
@@ -55,11 +56,12 @@ export function BeatLift({ progress, active }: BeatProps) {
 
   return (
     <svg
-      viewBox="0 0 640 400"
+      viewBox="0 0 640 540"
       width="100%"
       height="100%"
       style={{ color: "var(--foreground)" }}
     >
+      <BlueprintGridSvg />
       <SketchScaffold />
 
       <ChromaticShift strength={chroma}>

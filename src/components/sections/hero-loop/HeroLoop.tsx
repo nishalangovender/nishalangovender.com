@@ -36,7 +36,7 @@ export default function HeroLoop() {
 
   if (reducedMotion) {
     return (
-      <div className="aspect-[16/10] w-full">
+      <div className="w-full" style={{ aspectRatio: "640 / 540" }}>
         <HeroLoopStatic />
       </div>
     );
@@ -44,12 +44,14 @@ export default function HeroLoop() {
 
   return (
     <div
-      className="relative aspect-[16/10] w-full"
+      className="relative w-full"
+      style={{ aspectRatio: "640 / 540" }}
       role="img"
       aria-label="Animated engineering sketch: a hand-drawn kinematic diagram comes alive into a robot operating in a workshop, then pulls back to a fleet dashboard and closes the loop on the desk."
     >
-      {/* Always-visible blueprint substrate — the world of the loop */}
-      <div className="absolute inset-0 blueprint-grid pointer-events-none" aria-hidden="true" />
+      {/* Blueprint-grid substrate is rendered INSIDE each beat's SVG (so it
+          can be transformed / clipped to the sketch area when the camera
+          pans into non-sketch regions like the warehouse in Beat 4). */}
       {BEATS.map((beat) => {
         const progress = beatProgressAt(elapsed, beat);
         const active = progress !== null;

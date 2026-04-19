@@ -4,6 +4,8 @@ import { StrokePath } from "../primitives/StrokePath";
 import { Typewriter } from "../primitives/Typewriter";
 import type { BeatProps } from "../types";
 
+import { BlueprintGridSvg } from "./BlueprintGridSvg";
+
 /**
  * Beat 1 (0.0–2.0s): top-down differential-drive kinematic diagram rendered
  * as if drawn by hand — one stroke at a time, with pen-lift gaps between
@@ -13,7 +15,7 @@ import type { BeatProps } from "../types";
  *   World origin         (80, 320)
  *   Axle (body origin)   (300, 218)    — visual centre of the world-frame plot
  *   Robot centre         (318, 210)    — axle + 20 forward along heading
- *   Chassis              120 × 70 rounded, rotated -25° screen
+ *   Chassis              120 × 70 sharp-cornered, rotated -25° screen
  *   Drive wheels         34 × 14 rounded, body-frame x = −20 (rearward)
  *   Body-x axis          length 120, from axle
  *   Body-y axis          length 90, from axle
@@ -44,11 +46,12 @@ export function BeatSketch({ progress, active }: BeatProps) {
 
   return (
     <svg
-      viewBox="0 0 640 400"
+      viewBox="0 0 640 540"
       width="100%"
       height="100%"
       style={{ color: "var(--foreground)" }}
     >
+      <BlueprintGridSvg />
       {/* World frame — Y axis */}
       <StrokePath
         d="M 80 320 L 80 115 M 76 123 L 80 115 L 84 123"
@@ -62,9 +65,9 @@ export function BeatSketch({ progress, active }: BeatProps) {
 
       {/* Robot — rounded corners, rotated -25° around the robot centre */}
       <g transform="rotate(-25 318 210)">
-        {/* Chassis */}
+        {/* Chassis — sharp corners for engineering-sketch honesty */}
         <StrokePath
-          d="M 266 175 h 104 q 8 0 8 8 v 54 q 0 8 -8 8 h -104 q -8 0 -8 -8 v -54 q 0 -8 8 -8 Z"
+          d="M 258 175 h 120 v 70 h -120 Z"
           progress={stroke(p, 0.22, 0.35)}
         />
         {/* Top drive wheel */}
