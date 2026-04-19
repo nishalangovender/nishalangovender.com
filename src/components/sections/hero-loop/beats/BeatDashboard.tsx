@@ -4,7 +4,9 @@
 import type { BeatProps } from "../types";
 
 import { Factory } from "./Factory";
+import { Notebook } from "./Notebook";
 import { RobotStatic } from "./RobotStatic";
+import { Terminal, BEAT4_OUTPUT_LINES } from "./Terminal";
 
 /**
  * Beat 5 (Dashboard, 13.5–16.5s): camera retreats from the warehouse; the
@@ -95,6 +97,21 @@ export function BeatDashboard({ progress, active }: BeatProps) {
   const anchorScreenY = 260 + (HERO_TARGET_Y - 260) * cameraT;
   const warehouseTransform = `translate(${anchorScreenX} ${anchorScreenY}) scale(${whScale}) translate(${-heroWorldX} ${-heroWorldY})`;
 
+  // ── Beat 4 handoff — notebook + terminal carry through the seam ────────
+  // Beat 4 ended with its camera transform `translate(-5.42 138.35) scale(0.43)`
+  // applied to a full-viewport 640×540 scene that contained the Notebook and
+  // the Terminal. Reproduce that transform here so Beat 5 opens with the
+  // exact same composition, then fade them out over 0.00–0.40.
+  const handoffTransform = "translate(-5.42 138.35) scale(0.43)";
+  const handoffOpacity = 1 - clamp01(progress / 0.4);
+  const beat4TerminalLines = [
+    { prompt: "$ ", text: "ros2 launch nish_bot bringup.launch.py" },
+    BEAT4_OUTPUT_LINES[0],
+    BEAT4_OUTPUT_LINES[1],
+    BEAT4_OUTPUT_LINES[2],
+    BEAT4_OUTPUT_LINES[3],
+  ];
+
   // ── Chrome cascade opacity ─────────────────────────────────────────────
   const bezelOpacity = clamp01((progress - 0.2) / 0.25);
   const screenSurfaceOpacity = clamp01((progress - 0.3) / 0.25);
@@ -169,6 +186,22 @@ export function BeatDashboard({ progress, active }: BeatProps) {
 
       {/* Background — matches blueprint substrate at t=0 */}
       <rect x={0} y={0} width={640} height={540} fill="var(--background)" />
+
+      {/* ─── BEAT 4 HANDOFF — notebook + terminal at Beat 4 end position,
+          fading out over the first 40% of this beat. ─── */}
+      {handoffOpacity > 0 && (
+        <g opacity={handoffOpacity} transform={handoffTransform}>
+          <Notebook />
+          <Terminal
+            x={100}
+            y={20}
+            width={440}
+            height={110}
+            lines={beat4TerminalLines}
+            opacity={1}
+          />
+        </g>
+      )}
 
       {/* ─── WAREHOUSE — visible until the crossfade inside the monitor. ─── */}
       {warehouseOpacity > 0 && (

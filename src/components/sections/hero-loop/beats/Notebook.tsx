@@ -44,17 +44,26 @@ export const NOTEBOOK_LAYOUT = {
   bottomPage: BOTTOM_PAGE,
 } as const;
 
-export function Notebook() {
+interface NotebookProps {
+  /** When true (default), render a full-viewport background rect behind the
+   *  notebook. Pass false when rendering the notebook as a small object on
+   *  a desk (Beat 6) — the desk behind it should show through. */
+  backdrop?: boolean;
+}
+
+export function Notebook({ backdrop = true }: NotebookProps = {}) {
   return (
     <g aria-hidden="true">
       {/* Desk surround — neutral background behind the notebook. */}
-      <rect
-        x={0}
-        y={0}
-        width={640}
-        height={540}
-        fill="var(--background, #FAFAFA)"
-      />
+      {backdrop && (
+        <rect
+          x={0}
+          y={0}
+          width={640}
+          height={540}
+          fill="var(--background, #FAFAFA)"
+        />
+      )}
 
       {/* Hardcover slab — starts below the binding, wraps page + stack. Top
           edge is flush with the binding's bottom edge; bottom corners are
