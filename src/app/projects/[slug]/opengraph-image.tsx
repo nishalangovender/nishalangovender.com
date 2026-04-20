@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import { ImageResponse } from "next/og";
 
 import { getProjectBySlug, projects } from "@/data/projects";
@@ -5,6 +8,8 @@ import { getProjectBySlug, projects } from "@/data/projects";
 export const alt = "Project case study — Nishalan Govender";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const fontsDir = join(process.cwd(), "src/app/fonts");
 
 export function generateStaticParams() {
   return projects.filter((p) => p.caseStudy).map((p) => ({ slug: p.slug }));
@@ -19,6 +24,12 @@ export default async function ProjectOgImage({
   const title = project?.title ?? "Project Case Study";
   const description = project?.description ?? "";
   const tags = project?.tags ?? [];
+
+  const [spaceGrotesk700, spaceGrotesk400, jetBrainsMono400] = await Promise.all([
+    readFile(join(fontsDir, "SpaceGrotesk-Bold.ttf")),
+    readFile(join(fontsDir, "SpaceGrotesk-Regular.ttf")),
+    readFile(join(fontsDir, "JetBrainsMono-Regular.ttf")),
+  ]);
 
   return new ImageResponse(
     (
@@ -35,7 +46,7 @@ export default async function ProjectOgImage({
             "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
           color: "#E5E5E5",
-          fontFamily: "sans-serif",
+          fontFamily: "Space Grotesk",
         }}
       >
         <div
@@ -47,7 +58,7 @@ export default async function ProjectOgImage({
             color: "#3B82F6",
             letterSpacing: "0.2em",
             textTransform: "uppercase",
-            fontFamily: "monospace",
+            fontFamily: "JetBrains Mono",
           }}
         >
           <div
@@ -59,7 +70,7 @@ export default async function ProjectOgImage({
               alignItems: "center",
               justifyContent: "center",
               fontSize: 18,
-              fontWeight: 700,
+              fontWeight: 400,
               letterSpacing: 0,
             }}
           >
@@ -95,6 +106,7 @@ export default async function ProjectOgImage({
                 color: "#A3A3A3",
                 maxWidth: 1056,
                 lineHeight: 1.35,
+                fontWeight: 400,
                 display: "-webkit-box",
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: "vertical",
@@ -111,7 +123,7 @@ export default async function ProjectOgImage({
             display: "flex",
             flexWrap: "wrap",
             gap: "10px",
-            fontFamily: "monospace",
+            fontFamily: "JetBrains Mono",
             fontSize: "18px",
           }}
         >
@@ -141,6 +153,28 @@ export default async function ProjectOgImage({
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Space Grotesk",
+          data: spaceGrotesk700,
+          style: "normal",
+          weight: 700,
+        },
+        {
+          name: "Space Grotesk",
+          data: spaceGrotesk400,
+          style: "normal",
+          weight: 400,
+        },
+        {
+          name: "JetBrains Mono",
+          data: jetBrainsMono400,
+          style: "normal",
+          weight: 400,
+        },
+      ],
+    },
   );
 }

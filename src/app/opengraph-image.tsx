@@ -1,13 +1,26 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import { ImageResponse } from "next/og";
 
 import { siteConfig } from "@/lib/constants";
 
-export const runtime = "edge";
 export const alt = `${siteConfig.name} — ${siteConfig.tagline}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpengraphImage() {
+const fontsDir = join(process.cwd(), "src/app/fonts");
+
+export default async function OpengraphImage() {
+  const name = siteConfig.name;
+  const taglineLine = `${siteConfig.tagline} · Robotics, Embedded Systems, Controls`;
+
+  const [spaceGrotesk700, spaceGrotesk400, jetBrainsMono400] = await Promise.all([
+    readFile(join(fontsDir, "SpaceGrotesk-Bold.ttf")),
+    readFile(join(fontsDir, "SpaceGrotesk-Regular.ttf")),
+    readFile(join(fontsDir, "JetBrainsMono-Regular.ttf")),
+  ]);
+
   return new ImageResponse(
     (
       <div
@@ -23,7 +36,7 @@ export default function OpengraphImage() {
             "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
           color: "#E5E5E5",
-          fontFamily: "sans-serif",
+          fontFamily: "Space Grotesk",
         }}
       >
         <div
@@ -35,7 +48,7 @@ export default function OpengraphImage() {
             color: "#3B82F6",
             letterSpacing: "0.2em",
             textTransform: "uppercase",
-            fontFamily: "monospace",
+            fontFamily: "JetBrains Mono",
           }}
         >
           <div
@@ -47,7 +60,7 @@ export default function OpengraphImage() {
               alignItems: "center",
               justifyContent: "center",
               fontSize: 22,
-              fontWeight: 700,
+              fontWeight: 400,
               letterSpacing: 0,
             }}
           >
@@ -65,7 +78,7 @@ export default function OpengraphImage() {
               letterSpacing: "-0.02em",
             }}
           >
-            {siteConfig.name}
+            {name}
           </div>
           <div
             style={{
@@ -81,9 +94,10 @@ export default function OpengraphImage() {
               color: "#A3A3A3",
               maxWidth: 980,
               lineHeight: 1.3,
+              fontWeight: 400,
             }}
           >
-            {siteConfig.tagline} · Robotics, Embedded Systems, Controls
+            {taglineLine}
           </div>
         </div>
 
@@ -91,7 +105,7 @@ export default function OpengraphImage() {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            fontFamily: "monospace",
+            fontFamily: "JetBrains Mono",
             fontSize: "20px",
             color: "#737373",
             letterSpacing: "0.15em",
@@ -103,6 +117,28 @@ export default function OpengraphImage() {
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Space Grotesk",
+          data: spaceGrotesk700,
+          style: "normal",
+          weight: 700,
+        },
+        {
+          name: "Space Grotesk",
+          data: spaceGrotesk400,
+          style: "normal",
+          weight: 400,
+        },
+        {
+          name: "JetBrains Mono",
+          data: jetBrainsMono400,
+          style: "normal",
+          weight: 400,
+        },
+      ],
+    },
   );
 }
