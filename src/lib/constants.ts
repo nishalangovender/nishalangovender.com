@@ -26,7 +26,9 @@ export const siteConfig = {
   ],
   socials: {
     github: "https://github.com/nishalangovender",
+    githubWork: "https://github.com/ubunish",
     linkedin: "https://linkedin.com/in/nishalangovender",
+    company: "https://ubundi.com",
   },
   formspreeId: process.env.NEXT_PUBLIC_FORMSPREE_ID ?? "",
 } as const;

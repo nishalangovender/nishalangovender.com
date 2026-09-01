@@ -186,6 +186,45 @@ export default function ContactPage() {
             </p>
           </div>
         </motion.form>
+
+        <motion.div
+          className="mt-12 border-t border-border pt-6 font-mono text-sm text-muted"
+          variants={fadeUp}
+        >
+          <p>
+            Day job:{" "}
+            <a
+              href={siteConfig.socials.company}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:text-accent-dark transition-colors"
+            >
+              Ubundi
+            </a>{" "}
+            — robotics engineer, AI and Physical AI.
+          </p>
+          <p className="mt-2">
+            Work code lives at{" "}
+            <a
+              href={siteConfig.socials.githubWork}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:text-accent-dark transition-colors"
+            >
+              gh:ubunish
+            </a>
+            , personal work at{" "}
+            <a
+              href={siteConfig.socials.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:text-accent-dark transition-colors"
+            >
+              gh:nishalangovender
+            </a>
+            .
+          </p>
+        </motion.div>
       </motion.div>
     </PageSection>
   );

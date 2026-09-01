@@ -73,7 +73,16 @@ const personJsonLd = {
   email: `mailto:${siteConfig.email}`,
   jobTitle: siteConfig.tagline,
   description: siteConfig.description,
-  sameAs: [siteConfig.socials.github, siteConfig.socials.linkedin],
+  sameAs: [
+    siteConfig.socials.github,
+    siteConfig.socials.githubWork,
+    siteConfig.socials.linkedin,
+  ],
+  worksFor: {
+    "@type": "Organization",
+    name: "Ubundi",
+    url: siteConfig.socials.company,
+  },
   knowsAbout: [
     "Robotics",
     "Physical AI",
