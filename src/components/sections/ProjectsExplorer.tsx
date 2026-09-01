@@ -208,7 +208,7 @@ function ViewToggleButton({
       aria-label={`${label} view`}
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] tracking-wider uppercase transition-colors ${
         active
-          ? "bg-accent text-white"
+          ? "bg-accent text-background"
           : "text-muted hover:text-foreground"
       }`}
     >

@@ -219,7 +219,9 @@ button, a, [role="button"] {
   z-index: 100;
   padding: 0.625rem 1rem;
   background: var(--accent);
-  color: white;
+  /* Text on an accent fill takes the page background, not white — the dark
+     theme's cyan accent leaves white text at roughly 1.4:1. */
+  color: var(--background);
   font-family: var(--font-jetbrains-mono), monospace;
   font-size: 0.75rem;
   letter-spacing: 0.1em;
@@ -396,7 +398,7 @@ button, a, [role="button"] {
 /* ── Selection colour ── */
 ::selection {
   background-color: var(--accent);
-  color: white;
+  color: var(--background);
 }
 
 /* ── Typewriter cursor blink ── */

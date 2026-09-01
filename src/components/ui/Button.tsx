@@ -17,7 +17,7 @@ const sizeClasses: Record<Size, string> = {
 };
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:opacity-90",
+  primary: "bg-accent text-background hover:opacity-90",
   outline:
     "border border-border text-foreground hover:bg-surface",
 };
