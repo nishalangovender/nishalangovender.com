@@ -33,12 +33,16 @@ export const siteConfig = {
   formspreeId: process.env.NEXT_PUBLIC_FORMSPREE_ID ?? "",
 } as const;
 
+/**
+ * Primary navigation. `/blog` is deliberately absent — the route is live and
+ * listed in the sitemap, but it stays out of the nav until there are enough
+ * posts to be worth a click.
+ */
 export const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Skills", href: "/skills" },
   { label: "Projects", href: "/projects" },
   { label: "CV", href: "/cv" },
-  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ] as const;
