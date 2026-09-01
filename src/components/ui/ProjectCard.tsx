@@ -32,7 +32,7 @@ export default function ProjectCard({
         delay: Math.min(index * 0.05, 0.4),
         layout: { duration: 0.3, ease: "easeOut" },
       }}
-      className={`group relative flex h-full flex-col rounded-xl border border-border/60 bg-surface p-6 transition-[border-color,box-shadow] duration-300 ${
+      className={`group relative flex h-full flex-col pane rounded-xl border border-border/60 p-6 transition-[border-color,box-shadow] duration-300 ${
         project.confidential
           ? "opacity-90"
           : "hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5"

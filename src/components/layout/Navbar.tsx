@@ -45,7 +45,10 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+      <header
+        role="banner"
+        className="pane fixed top-0 left-0 right-0 z-50 border-b border-border"
+      >
         <nav
           aria-label="Primary"
           className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between"
