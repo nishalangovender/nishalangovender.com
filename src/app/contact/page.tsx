@@ -88,9 +88,10 @@ export default function ContactPage() {
           className="mt-6 text-muted text-lg leading-relaxed max-w-xl"
           variants={fadeUp}
         >
-          Whether it&apos;s a robotics role, an embedded systems problem, or a
-          full-stack build, I&apos;d love to hear from you. Send a message
-          below or reach out directly.
+          I&apos;m at Ubundi full time and no longer taking freelance work, but
+          I&apos;m always up for a technical conversation — robotics, Physical
+          AI, agents, or anything worth building together. Send a message below
+          or reach out directly.
         </motion.p>
 
         <motion.form

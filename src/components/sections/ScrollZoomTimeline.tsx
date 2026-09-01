@@ -5,11 +5,12 @@ import {
   useReducedMotion,
   useScroll,
   useTransform,
+  type MotionValue,
 } from "framer-motion";
 import { useCallback, useEffect, useRef } from "react";
 
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { timelineChapters } from "@/data/timeline";
+import { timelineChapters, type TimelineChapter } from "@/data/timeline";
 import { smoothstep } from "@/lib/math";
 
 import { ChapterOverlay } from "./timeline/ChapterOverlay";
@@ -232,21 +233,6 @@ export default function ScrollZoomTimeline() {
     return unsub;
   }, [scrollYProgress, updateViewBox]);
 
-  // Chapter opacities still use Framer Motion for the HTML overlays
-  const ch0Opacity = useTransform(scrollYProgress, (t) =>
-    computeChapterOpacity(t, 0),
-  );
-  const ch1Opacity = useTransform(scrollYProgress, (t) =>
-    computeChapterOpacity(t, 1),
-  );
-  const ch2Opacity = useTransform(scrollYProgress, (t) =>
-    computeChapterOpacity(t, 2),
-  );
-  const ch3Opacity = useTransform(scrollYProgress, (t) =>
-    computeChapterOpacity(t, 3),
-  );
-  const chOpacities = [ch0Opacity, ch1Opacity, ch2Opacity, ch3Opacity];
-
   if (prefersReducedMotion) {
     return <ReducedMotionFallback />;
   }
@@ -302,18 +288,48 @@ export default function ScrollZoomTimeline() {
 
         {/* Chapter detail overlays — fade in/out, translated to track SVG pan */}
         {timelineChapters.map((chapter, i) => (
-          <motion.div
+          <ChapterLayer
             key={chapter.id}
-            ref={(el) => {
+            chapter={chapter}
+            index={i}
+            scrollYProgress={scrollYProgress}
+            overlayRef={(el) => {
               overlayRefs.current[i] = el;
             }}
-            className="absolute inset-0 will-change-transform"
-            style={{ opacity: chOpacities[i] }}
-          >
-            <ChapterOverlay chapter={chapter} chapterIndex={i} />
-          </motion.div>
+          />
         ))}
       </div>
     </section>
+  );
+}
+
+/**
+ * One chapter's overlay layer. Lives in its own component so each chapter
+ * owns exactly one `useTransform` call — adding a chapter to `timelineChapters`
+ * needs no matching hook here.
+ */
+function ChapterLayer({
+  chapter,
+  index,
+  scrollYProgress,
+  overlayRef,
+}: {
+  chapter: TimelineChapter;
+  index: number;
+  scrollYProgress: MotionValue<number>;
+  overlayRef: (el: HTMLDivElement | null) => void;
+}) {
+  const opacity = useTransform(scrollYProgress, (t) =>
+    computeChapterOpacity(t, index),
+  );
+
+  return (
+    <motion.div
+      ref={overlayRef}
+      className="absolute inset-0 will-change-transform"
+      style={{ opacity }}
+    >
+      <ChapterOverlay chapter={chapter} chapterIndex={index} />
+    </motion.div>
   );
 }

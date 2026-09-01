@@ -76,6 +76,11 @@ const personJsonLd = {
   sameAs: [siteConfig.socials.github, siteConfig.socials.linkedin],
   knowsAbout: [
     "Robotics",
+    "Physical AI",
+    "Vision-Language-Action Models",
+    "World Action Models",
+    "Large Language Models",
+    "AI Agents",
     "Embedded Systems",
     "Control Systems",
     "ROS2",

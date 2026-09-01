@@ -8,6 +8,7 @@ import { easeInOutCubic } from "@/lib/easing";
 import {
   PRESENT_YEAR,
   STRIP_X_MAX,
+  UBUNDI_START_YEAR,
   yearToPosition,
 } from "./TimelineStrip";
 
@@ -18,12 +19,14 @@ export const SCROLL_SCREENS = 6;
 export const OVERVIEW_TEXT =
   "From workshop tinkerer to mechatronics engineer — a journey shaped by curiosity, rigour, and a drive to build things that work. Whether it's autonomous vehicles, industrial automation, or the web app you're reading this on, I bring the same hands-on engineering mindset to every problem. Let's build something together.";
 
-/** Year boundaries used for chapter centering. */
+/** Year boundaries used for chapter centering. One entry per chapter in
+ *  `timelineChapters`, in the same order — the overlay lookup is by index. */
 export const CHAPTER_BOUNDS: { from: number; to: number }[] = [
   { from: 2000, to: 2019 },
   { from: 2019, to: 2024 },
   { from: 2024, to: 2026 },
-  { from: 2026, to: PRESENT_YEAR },
+  { from: 2026, to: UBUNDI_START_YEAR },
+  { from: UBUNDI_START_YEAR, to: PRESENT_YEAR },
 ];
 
 /** How much of the viewport a chapter fills. Lower = more zoomed out. */

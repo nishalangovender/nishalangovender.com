@@ -2,6 +2,7 @@
 
 import {
   PRESENT_YEAR,
+  UBUNDI_START_YEAR,
   yearToPosition,
 } from "@/components/sections/timeline/TimelineStrip";
 
@@ -202,24 +203,43 @@ export const timelineChapters: TimelineChapter[] = [
     id: "present",
     title: "Freelance Mechatronics Engineer",
     subtitle: "Independent",
-    yearRange: "2026 – Present",
+    yearRange: "Jan – Apr 2026",
     description:
-      "Now available for full-time and freelance/contract work — production robotics systems, embedded development, industrial automation, and full-stack web applications. Based in South Africa and open to relocation.",
-    stripPosition: yearToPosition((2026 + PRESENT_YEAR) / 2), // midpoint of 2026–Present
+      "Four months of independent contract work between BATTALION and Ubundi — a website and invoicing system for a workshop client, industrial IoT, and factory automation.",
+    stripPosition: yearToPosition((2026 + UBUNDI_START_YEAR) / 2), // midpoint of Jan–Apr 2026
     commits: [
       {
         prefix: "feat:",
         message: "Industrial IoT\nDelivered Website \n& Invoicing System",
-        year: "2026.4",
+        year: "2026.2",
         displayYear: "Mar 2026",
         anchor: "left",
       },
       {
         prefix: "feat:",
         message: "Industrial Automation",
-        year: "2027.2",
+        year: "2026.3",
         displayYear: "Apr 2026",
         anchor: "center",
+      },
+    ],
+  },
+  {
+    id: "ubundi",
+    title: "Ubundi",
+    subtitle: "Robotics Engineer",
+    logo: "/images/logos/ubundi.png",
+    yearRange: "May 2026 – Present",
+    description:
+      "Joined a South African venture studio building human-centred AI products, agents and infrastructure. Working across both halves of the field: LLMs and agent systems inside the studio, and Physical AI — vision-language-action models, world action models, model training and bimanual manipulation.",
+    stripPosition: yearToPosition((UBUNDI_START_YEAR + PRESENT_YEAR) / 2), // midpoint of May 2026–Present
+    commits: [
+      {
+        prefix: "feat:",
+        message: "Robotics Engineer\nAI & Physical AI\nStellenbosch · Hybrid",
+        year: "2026.5",
+        displayYear: "May 2026",
+        anchor: "left",
       },
     ],
   },
@@ -381,10 +401,18 @@ export const timelineYears: TimelineYear[] = [
     year: "2026",
     events: [
       {
-        month: "February",
+        month: "January",
         text: "Freelance Mechatronics Engineer",
         subtitle: "Independent",
+        logo: "/images/logos/ng-freelance.svg",
         isTitle: true,
+        side: "left",
+      },
+      {
+        month: "May",
+        text: "Ubundi",
+        subtitle: "Robotics Engineer",
+        logo: "/images/logos/ubundi.png",
         side: "left",
       },
     ],

@@ -4,7 +4,7 @@ export const siteConfig = {
   shortTitle: "Nishalan Govender",
   tagline: "Mechatronics Engineer",
   description:
-    "Mechatronics engineer specialising in end-to-end production robotics systems, low-level C++ embedded interfaces, CI/CD, and control systems. Based in South Africa, open to international work.",
+    "Robotics engineer working across AI and Physical AI — LLMs and agents, vision-language-action models, and end-to-end production robotics systems. Based in South Africa.",
   url: "https://nishalangovender.com",
   email: "nish@nishalangovender.com",
   locale: "en_ZA",
@@ -18,6 +18,10 @@ export const siteConfig = {
     "C++",
     "Autonomous Systems",
     "AGV",
+    "Physical AI",
+    "Vision-Language-Action Models",
+    "World Action Models",
+    "LLM Agents",
     "South Africa",
   ],
   socials: {

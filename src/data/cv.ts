@@ -46,9 +46,24 @@ export interface LanguageEntry {
   level: string;
 }
 
-export const profileSummary = `Mechatronics engineer with hands-on experience designing, deploying and maintaining production robotics systems in a fast-paced startup environment. Technical lead across software architecture, embedded systems, controls, DevOps infrastructure and client-facing engagement. Specialising in ROS2 robotics software, low-level C++ embedded interfaces, CI/CD pipelines and control systems. Strengths in systems-level thinking, abstracting complex layers and creatively solving black-box problems under tight deadlines. A fast learner who thrives on picking up unfamiliar technologies, applying them in production and iterating until they work — what matters is not what I already know, but how quickly I can close the gap.`;
+export const profileSummary = `Robotics engineer working across AI and Physical AI — LLMs and agent systems on one side, vision-language-action models, world action models and bimanual manipulation on the other. Mechatronics engineer with hands-on experience designing, deploying and maintaining production robotics systems in a fast-paced startup environment. Technical lead across software architecture, embedded systems, controls, DevOps infrastructure and client-facing engagement. Specialising in ROS2 robotics software, low-level C++ embedded interfaces, CI/CD pipelines and control systems. Strengths in systems-level thinking, abstracting complex layers and creatively solving black-box problems under tight deadlines. A fast learner who thrives on picking up unfamiliar technologies, applying them in production and iterating until they work — what matters is not what I already know, but how quickly I can close the gap.`;
 
 export const experience: ExperienceEntry[] = [
+  {
+    role: "Robotics Engineer",
+    company: "Ubundi",
+    companyUrl: "https://ubundi.com",
+    location: "Stellenbosch, South Africa · Hybrid",
+    dates: "May 2026 – Present",
+    context:
+      "South African venture studio building human-centred AI products, agents and infrastructure. Working across both halves of the field: LLMs and agent systems inside the studio, and Physical AI — teaching robots to act from demonstration rather than hand-written control.",
+    highlights: [
+      "Building Physical AI systems around vision-language-action models and world action models — data collection, model training and evaluation on real hardware",
+      "Working with bimanual arms: teleoperation rigs, imitation-learning datasets and policy training for manipulation tasks",
+      "Designing and shipping LLM agents for studio products — tool interfaces, memory, evaluation harnesses and prompt design",
+      "Bridging the robotics and software sides of the studio, carrying production robotics practice into an AI-first codebase",
+    ],
+  },
   {
     role: "Mechatronics Engineer",
     company: "BATTALION Technologies",

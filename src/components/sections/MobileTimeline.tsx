@@ -37,12 +37,20 @@ const STEM_ML = -24;
 /** Extra vh of scroll after the content for the zoom-out phase. */
 const ZOOM_OUT_VH = 6;
 
+/** Mobile collapses the timeline to whole years, so each year block types one
+ *  chapter description. 2026 holds two chapters — the freelance interlude and
+ *  Ubundi — and Ubundi wins because it is the chapter still running. */
+const CHAPTER_BY_LAST_YEAR: { throughYear: number; id: string }[] = [
+  { throughYear: 2018, id: "formative-years" },
+  { throughYear: 2023, id: "stellenbosch" },
+  { throughYear: 2025, id: "battalion" },
+  { throughYear: Infinity, id: "ubundi" },
+];
+
 function yearToChapterIndex(year: string): number {
   const y = parseInt(year, 10);
-  if (y <= 2018) return 0;
-  if (y <= 2023) return 1;
-  if (y <= 2025) return 2;
-  return 3;
+  const match = CHAPTER_BY_LAST_YEAR.find((entry) => y <= entry.throughYear);
+  return timelineChapters.findIndex((chapter) => chapter.id === match?.id);
 }
 
 // ─── Build augmented mobile data ──────────────────────────────────────
@@ -115,18 +123,20 @@ function buildMobileTimeline(): TimelineYear[] {
     });
   }
 
-  const freelanceChapter = timelineChapters[3];
+  // 2026 holds two chapters — the freelance interlude and the Ubundi role —
+  // so both sets of commits collapse into the same mobile year block.
   const y2026 = years.find((y) => y.year === "2026");
-  if (y2026 && freelanceChapter) {
-    freelanceChapter.commits.filter((c) => c.message).forEach((c) => {
-      c.message.split("\n").filter(Boolean).forEach((line) => {
-        y2026.events.push({ month: c.displayYear || "", text: line, side: "right" });
+  const chapters2026 = timelineChapters.filter(
+    (c) => c.id === "present" || c.id === "ubundi",
+  );
+  if (y2026) {
+    chapters2026.forEach((chapter) => {
+      chapter.commits.filter((c) => c.message).forEach((c) => {
+        c.message.split("\n").filter(Boolean).forEach((line) => {
+          y2026.events.push({ month: c.displayYear || "", text: line, side: "right" });
+        });
       });
     });
-    const freelanceInst = y2026.events.find((e) => e.side === "left");
-    if (freelanceInst && !freelanceInst.logo) {
-      freelanceInst.logo = "/images/logos/ng-freelance.svg";
-    }
   }
 
   // Keep the 2000 anchor even though it has no events — it renders as a bare

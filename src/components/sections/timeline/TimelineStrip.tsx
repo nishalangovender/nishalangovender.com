@@ -26,7 +26,7 @@
 //   Segment 3: 2014 → 2019  (Maritzburg College)       — moderate,          17.5%
 //   Segment 4: 2019 → 2024  (Stellenbosch University)  — expanded,          22.5%
 //   Segment 5: 2024 → 2026  (BATTALION Technologies)   — expanded,          22.5%
-//   Segment 6: 2026 → 2028  (Freelance)                — expanded,          17.5%
+//   Segment 6: 2026 → 2028  (Freelance → Ubundi)        — expanded,          17.5%
 //
 // Pre-school and Cordwalles are compressed (less relevant professionally).
 // Space saved is redistributed equally to Stellenbosch and BATTALION.
@@ -52,6 +52,10 @@ const SHARE_6 = SPAN - SHARE_1 - SHARE_2 - SHARE_3 - SHARE_4 - SHARE_5; // 2026�
 
 /** "Present" maps to this year for positioning purposes */
 export const PRESENT_YEAR = 2028;
+
+/** Fractional year for May 2026 — the freelance → Ubundi handover. Shared by
+ *  the institution bands here and the chapter positions in `data/timeline`. */
+export const UBUNDI_START_YEAR = 2026.33;
 
 export function yearToPosition(y: number): number {
   if (y <= PIVOT_1) {
@@ -83,7 +87,7 @@ export function yearToPosition(y: number): number {
 // 2014        Cordwalles → Maritzburg College
 // 2019        Maritzburg College → Stellenbosch University
 // 2024        Stellenbosch → BATTALION
-// 2026        BATTALION → Freelance
+// 2026        BATTALION → Freelance → Ubundi
 // Present     timeline continues…
 
 interface BoundaryDot {
@@ -116,7 +120,8 @@ export const institutions: InstitutionPeriod[] = [
   { label: "Maritzburg College", subtitle: "National Senior Certificate", fromYear: 2014, toYear: 2019, logo: "/images/logos/maritzburg-college.png" },
   { label: "Stellenbosch University", subtitle: "Bachelor of Engineering in Mechatronics", fromYear: 2019, toYear: 2024, logo: "/images/logos/stellenbosch-university.jpg" },
   { label: "BATTALION Technologies", subtitle: "Mechatronics Engineer", fromYear: 2024, toYear: 2026, logo: "/images/logos/battalion-technologies.jpeg" },
-  { label: "Freelance", subtitle: "Mechatronics Engineer", fromYear: 2026, toYear: PRESENT_YEAR, logo: "/images/logos/ng-freelance.svg" },
+  { label: "Freelance", subtitle: "Independent", fromYear: 2026, toYear: UBUNDI_START_YEAR, logo: "/images/logos/ng-freelance.svg" },
+  { label: "Ubundi", subtitle: "Robotics Engineer", fromYear: UBUNDI_START_YEAR, toYear: PRESENT_YEAR, logo: "/images/logos/ubundi.png" },
 ];
 
 // ─── Transition arcs (scholarships/bursaries bridging institutions) ───
