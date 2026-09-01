@@ -68,11 +68,11 @@ export function Terminal({
         width={width}
         height={height}
         rx={4}
-        fill="rgb(15, 15, 15)"
-        stroke="rgba(255,255,255,0.12)"
+        fill="var(--terminal-bg)"
+        stroke="var(--terminal-border)"
         strokeWidth={1}
       />
-      {/* Traffic-light dots */}
+      {/* Traffic-light dots — literal macOS chrome, not theme colour. */}
       <circle cx={x + 14} cy={y + 12} r={3} fill="rgb(220, 95, 85)" />
       <circle cx={x + 24} cy={y + 12} r={3} fill="rgb(230, 190, 80)" />
       <circle cx={x + 34} cy={y + 12} r={3} fill="rgb(120, 200, 110)" />
@@ -82,7 +82,7 @@ export function Terminal({
         y1={y + 20}
         x2={x + width}
         y2={y + 20}
-        stroke="rgba(255,255,255,0.1)"
+        stroke="var(--terminal-border)"
         strokeWidth={0.5}
       />
 
@@ -98,13 +98,13 @@ export function Terminal({
             stroke="none"
           >
             {line.prompt && (
-              <tspan x={textStartX} fill="rgb(120, 200, 110)">
+              <tspan x={textStartX} fill="var(--terminal-prompt)">
                 {line.prompt}
               </tspan>
             )}
             <tspan
               x={line.prompt ? undefined : textStartX}
-              fill={line.color ?? "rgb(220, 220, 220)"}
+              fill={line.color ?? "var(--terminal-text)"}
             >
               {line.text}
             </tspan>
@@ -119,7 +119,7 @@ export function Terminal({
           y={cursorY}
           width={CHAR_W * 0.75}
           height={fontSize}
-          fill="rgb(220, 220, 220)"
+          fill="var(--terminal-text)"
         />
       )}
     </g>

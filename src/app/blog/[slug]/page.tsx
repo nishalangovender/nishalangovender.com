@@ -8,6 +8,7 @@ import { BackLink } from "@/components/ui/BackLink";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { PageSection } from "@/components/ui/PageSection";
 import { formatPostDate, getAllSlugs, getPostBySlug } from "@/lib/blog";
+import { nishArc } from "@/lib/shiki/nish-arc";
 
 type RouteParams = { slug: string };
 
@@ -97,7 +98,7 @@ export default async function BlogPostPage({
                 [
                   rehypePrettyCode,
                   {
-                    theme: { light: "github-light", dark: "github-dark" },
+                    theme: { light: "github-light", dark: nishArc },
                     keepBackground: false,
                   },
                 ],

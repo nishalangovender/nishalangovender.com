@@ -9,8 +9,14 @@
   --accent-dark: #0047B3;
   --surface: #FFFFFF;
   --muted: #6B6B6B;
+  --muted-dim: #8A8A8A;
   --border: #E5E7EB;
+  --focus: #0066FF;
   --blueprint-line: rgba(0, 102, 255, 0.06);
+  --terminal-bg: #0F0F0F;
+  --terminal-border: rgba(255, 255, 255, 0.12);
+  --terminal-text: #DCDCDC;
+  --terminal-prompt: #78C86E;
   --notebook-page: #F5EFE0;
   --notebook-page-dot: rgba(60, 45, 20, 0.22);
   --notebook-page-shadow: rgba(60, 45, 20, 0.18);
@@ -37,15 +43,21 @@
 
 /* ── Dark theme (explicit toggle) ── */
 [data-theme="dark"] {
-  --background: #0A0A0A;
-  --foreground: #E5E5E5;
-  --accent: #3B82F6;
-  --accent-light: #1E3A5F;
-  --accent-dark: #60A5FA;
-  --surface: #141414;
-  --muted: #8A8A8A;
-  --border: #262626;
-  --blueprint-line: rgba(59, 130, 246, 0.08);
+  --background: #05070D;
+  --foreground: #DDE7F0;
+  --accent: #33E1FF;
+  --accent-light: #0E2A33;
+  --accent-dark: #7BEBFF;
+  --surface: #0B1017;
+  --muted: #8A9BB0;
+  --muted-dim: #5C6B7D;
+  --border: #16202B;
+  --focus: #2F81FF;
+  --blueprint-line: rgba(51, 225, 255, 0.07);
+  --terminal-bg: #05070D;
+  --terminal-border: rgba(221, 231, 240, 0.14);
+  --terminal-text: #DDE7F0;
+  --terminal-prompt: #2EE6A8;
   --notebook-page: #1F1C18;
   --notebook-page-dot: rgba(200, 180, 150, 0.22);
   --notebook-page-shadow: rgba(0, 0, 0, 0.5);
@@ -64,24 +76,30 @@
   --factory-lane: rgba(220, 170, 30, 0.7);
   --factory-room: #3A3834;
   --factory-room-edge: rgba(200, 200, 200, 0.5);
-  --prof-advanced: #34D399;
-  --prof-proficient: #38BDF8;
-  --prof-competent: #FBBF24;
-  --prof-familiar: #CBD5E1;
+  --prof-advanced: #2EE6A8;
+  --prof-proficient: #33E1FF;
+  --prof-competent: #FFB339;
+  --prof-familiar: #8A9BB0;
 }
 
 /* ── Dark theme (system preference fallback before JS loads) ── */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: #0A0A0A;
-    --foreground: #E5E5E5;
-    --accent: #3B82F6;
-    --accent-light: #1E3A5F;
-    --accent-dark: #60A5FA;
-    --surface: #141414;
-    --muted: #8A8A8A;
-    --border: #262626;
-    --blueprint-line: rgba(59, 130, 246, 0.08);
+    --background: #05070D;
+    --foreground: #DDE7F0;
+    --accent: #33E1FF;
+    --accent-light: #0E2A33;
+    --accent-dark: #7BEBFF;
+    --surface: #0B1017;
+    --muted: #8A9BB0;
+    --muted-dim: #5C6B7D;
+    --border: #16202B;
+    --focus: #2F81FF;
+    --blueprint-line: rgba(51, 225, 255, 0.07);
+    --terminal-bg: #05070D;
+    --terminal-border: rgba(221, 231, 240, 0.14);
+    --terminal-text: #DDE7F0;
+    --terminal-prompt: #2EE6A8;
     --notebook-page: #1F1C18;
     --notebook-page-dot: rgba(200, 180, 150, 0.22);
     --notebook-page-shadow: rgba(0, 0, 0, 0.5);
@@ -100,10 +118,10 @@
     --factory-lane: rgba(220, 170, 30, 0.7);
     --factory-room: #3A3834;
     --factory-room-edge: rgba(200, 200, 200, 0.5);
-    --prof-advanced: #34D399;
-    --prof-proficient: #38BDF8;
-    --prof-competent: #FBBF24;
-    --prof-familiar: #CBD5E1;
+    --prof-advanced: #2EE6A8;
+    --prof-proficient: #33E1FF;
+    --prof-competent: #FFB339;
+    --prof-familiar: #8A9BB0;
   }
 }
 
@@ -115,7 +133,9 @@
   --color-accent-dark: var(--accent-dark);
   --color-surface: var(--surface);
   --color-muted: var(--muted);
+  --color-muted-dim: var(--muted-dim);
   --color-border: var(--border);
+  --color-focus: var(--focus);
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-jetbrains-mono);
 }
@@ -155,9 +175,14 @@ button, a, [role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── Focus-visible: consistent accent ring across the site ── */
+/* ── Focus-visible: consistent focus ring across the site ──
+ * The ring uses `--focus` rather than `--accent` because the dark theme's cyan
+ * accent reads as decoration against the near-black background; the focus blue
+ * stays legible in both themes. In light mode `--focus` is the light accent, so
+ * the ring is unchanged there.
+ */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -316,14 +341,20 @@ button, a, [role="button"] {
   color: var(--muted);
 }
 /* Light/dark code theme switch via rehype-pretty-code */
-.prose-blog [data-theme="dark"] {
-  display: none;
+/* rehype-pretty-code with a light+dark theme pair emits both colours as custom
+   properties on every token (`--shiki-light` / `--shiki-dark`) rather than two
+   duplicate blocks, so the theme switch is a variable pick, not a display
+   toggle. Without these rules the tokens carry no `color` at all. */
+.prose-blog [data-theme] span {
+  color: var(--shiki-light);
 }
-[data-theme="dark"] .prose-blog [data-theme="light"] {
-  display: none;
+[data-theme="dark"] .prose-blog [data-theme] span {
+  color: var(--shiki-dark);
 }
-[data-theme="dark"] .prose-blog [data-theme="dark"] {
-  display: initial;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .prose-blog [data-theme] span {
+    color: var(--shiki-dark);
+  }
 }
 
 /* ── Reduced motion: shut down lingering transitions/animations ── */
@@ -374,12 +405,20 @@ button, a, [role="button"] {
     --background: #ffffff;
     --foreground: #000000;
     --muted: #444444;
+    --muted-dim: #666666;
     --surface: #ffffff;
     --border: #cccccc;
+    --focus: #000000;
     --accent: #000000;
     --accent-light: #ffffff;
     --accent-dark: #000000;
     --blueprint-line: transparent;
+    /* The hero-loop terminal is an illustration, not chrome — on paper it
+       inverts to black-on-white like everything else. */
+    --terminal-bg: #ffffff;
+    --terminal-border: #cccccc;
+    --terminal-text: #000000;
+    --terminal-prompt: #000000;
   }
 
   html,
