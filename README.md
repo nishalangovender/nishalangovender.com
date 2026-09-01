@@ -1,13 +1,13 @@
 # nishalangovender.com
 
-Personal site and engineering portfolio for [Nishalan Govender](https://nishalangovender.com) — mechatronics engineer working across robotics, embedded systems, and the web.
+Personal site and engineering portfolio for [Nishalan Govender](https://nishalangovender.com) — robotics engineer at [Ubundi](https://ubundi.com), working across AI, Physical AI, embedded systems, and the web.
 
 Live at [**nishalangovender.com**](https://nishalangovender.com).
 
 ## Stack
 
 - **Next.js 16** (App Router, React 19, TypeScript strict)
-- **Tailwind CSS v4** — design tokens via CSS variables, light/dark theme
+- **Tailwind CSS v4** — design tokens via CSS variables; light theme plus a dark theme built from `nish-arc`, a terminal palette kept outside this repo and shared with ghostty and starship
 - **Framer Motion** — page transitions and hero animation
 - **MDX** — blog posts (`next-mdx-remote`, `rehype-pretty-code`, `shiki`)
 - **Vitest + Testing Library** — unit tests for the interactive demos
@@ -53,15 +53,16 @@ src/
 │   └── demos/      # Interactive project demos (park-bot, path-following, pen-plotter)
 ├── content/blog/   # MDX blog posts
 ├── data/           # Typed content: projects, skills, timeline, CV
-└── lib/            # Site config, animation presets, demo simulation logic
+└── lib/            # Site config, animation presets, shiki theme, demo simulation logic
 ```
 
 ## Highlights worth poking at
 
 - **Interactive robotics demos** — `src/components/demos/` and `src/lib/` house standalone simulations (4WS path-following controller, pen-plotter, Park Bot) that share a common rendering and test harness.
-- **Skills Venn** — `src/components/sections/SkillsVenn.tsx` visualises three disciplines (software, electronics, mechanical) and their intersections, with a grid listing underneath.
+- **Skills Venn** — `src/components/ui/SkillsVenn.tsx` visualises three disciplines (software, electronics, mechanical) and their intersections, with a grid listing underneath. The centre zone covers mechatronics and Physical AI.
 - **Hero loop** — `src/components/sections/hero-loop/` is the animated homepage sequence.
-- **Dynamic OG images** — per-project and per-post Open Graph images via edge-runtime `opengraph-image.tsx` routes.
+- **Dynamic OG images** — per-project and per-post Open Graph images via edge-runtime `opengraph-image.tsx` routes. The site card embeds the avatar inline as a data URI, since Satori resolves no local paths.
+- **Terminal motifs** — starship-style prompt chips on page heroes, a right-prompt footer status line, and a `command not found` 404. Code blocks use a custom shiki theme built from the same palette (`src/lib/shiki/nish-arc.ts`).
 
 ## Deployment
 
