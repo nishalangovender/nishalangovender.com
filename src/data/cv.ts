@@ -153,6 +153,21 @@ export const education: EducationEntry[] = [
  */
 export const skillCategories: SkillCategory[] = [
   {
+    label: "AI & Physical AI",
+    items: [
+      "LLMs / Claude",
+      "Agent Design (Skills, Hooks, MCP)",
+      "Prompt Engineering",
+      "Agent Memory & Evals",
+      "VLAs (Vision-Language-Action Models)",
+      "World Action Models",
+      "Imitation Learning / Teleop Data",
+      "Policy Training",
+      "Bimanual Manipulation",
+      "Sim-to-Real Transfer",
+    ],
+  },
+  {
     label: "Robotics & Controls",
     items: [
       "ROS2",

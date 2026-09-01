@@ -55,40 +55,23 @@ const activeStrokes: Record<CircleId, string> = {
 
 // ─── Hit regions — position/size for each clickable Venn zone ───────────────
 
+/** Geometry only — the accessible name comes from `zoneMap[key].label`, so a
+ *  zone rename in `data/skills` never leaves a stale label behind here. */
 type HitRegion = {
   key: ZoneKey;
   cx: number;
   cy: number;
   r: number;
-  label: string;
 };
 
 const hitRegions: HitRegion[] = [
-  { key: "software", cx: 250, cy: 110, r: 55, label: "Software Engineering" },
-  { key: "hardware", cx: 125, cy: 340, r: 55, label: "Mechanical Engineering" },
-  { key: "electronics", cx: 375, cy: 340, r: 55, label: "Electronics & Embedded" },
-  {
-    key: "software-hardware",
-    cx: 195,
-    cy: 215,
-    r: 35,
-    label: "Simulation & Digital Twins",
-  },
-  {
-    key: "software-electronics",
-    cx: 305,
-    cy: 215,
-    r: 35,
-    label: "Embedded Software",
-  },
-  {
-    key: "electronics-hardware",
-    cx: 250,
-    cy: 330,
-    r: 35,
-    label: "Electromechanical Systems",
-  },
-  { key: "center", cx: 250, cy: 260, r: 32, label: "Mechatronics & Robotics" },
+  { key: "software", cx: 250, cy: 110, r: 55 },
+  { key: "hardware", cx: 125, cy: 340, r: 55 },
+  { key: "electronics", cx: 375, cy: 340, r: 55 },
+  { key: "software-hardware", cx: 195, cy: 215, r: 35 },
+  { key: "software-electronics", cx: 305, cy: 215, r: 35 },
+  { key: "electronics-hardware", cx: 250, cy: 330, r: 35 },
+  { key: "center", cx: 250, cy: 260, r: 32 },
 ];
 
 // ─── Which base circles are "involved" in a given zone ──────────────────────
@@ -182,7 +165,7 @@ export default function SkillsVenn() {
                 }
                 role="button"
                 tabIndex={0}
-                aria-label={region.label}
+                aria-label={zoneMap[region.key].label}
                 aria-pressed={isActive}
                 focusable="true"
                 className="cursor-pointer outline-none transition-colors duration-300 focus-visible:stroke-accent"
@@ -246,7 +229,7 @@ export default function SkillsVenn() {
               fontWeight: 600,
             }}
           >
-            &amp; ROBOTICS
+            &amp; PHYSICAL AI
           </text>
         </svg>
       </div>
