@@ -7,7 +7,7 @@ import type { BeatProps } from "../types";
 import { Notebook } from "./Notebook";
 import { RobotStatic } from "./RobotStatic";
 import { SketchScaffold } from "./SketchScaffold";
-import { Terminal } from "./Terminal";
+import { Terminal, TERMINAL_PROMPT } from "./Terminal";
 
 /**
  * Beat 3 (6.5–9.0s): boot sequence.
@@ -39,7 +39,7 @@ export function BeatBoot({ progress, active }: BeatProps) {
   const cameraRecording = progress >= 0.70;
   const cameraLedOn = cameraRecording && Math.floor(progress * 30) % 2 === 0;
 
-  const PROMPT = "$ ";
+  const PROMPT = TERMINAL_PROMPT;
   const COMMAND = "ros2 launch nish_bot bringup.launch.py";
   const CMD = PROMPT + COMMAND;
   const charsShown = Math.ceil(typeProgress * CMD.length);

@@ -8,7 +8,7 @@ import { Factory } from "./Factory";
 import { Notebook } from "./Notebook";
 import { RobotStatic } from "./RobotStatic";
 import { SketchScaffold } from "./SketchScaffold";
-import { Terminal, BEAT4_OUTPUT_LINES } from "./Terminal";
+import { Terminal, TERMINAL_PROMPT, BEAT4_OUTPUT_LINES } from "./Terminal";
 
 /**
  * Beat 4 (9.0–13.5s): drive.
@@ -122,7 +122,7 @@ export function BeatDrive({ progress, active }: BeatProps) {
 
   // Terminal: command line always visible, output lines appear progressively
   const terminalLines = [
-    { prompt: "$ ", text: "ros2 launch nish_bot bringup.launch.py" },
+    { prompt: TERMINAL_PROMPT, text: "ros2 launch nish_bot bringup.launch.py" },
     ...(progress >= 0.05 ? [BEAT4_OUTPUT_LINES[0]] : []),
     ...(progress >= 0.25 ? [BEAT4_OUTPUT_LINES[1]] : []),
     ...(progress >= 0.45 ? [BEAT4_OUTPUT_LINES[2]] : []),

@@ -63,7 +63,7 @@ export default async function ProjectCaseStudyPage({
 
       {/* ── Hero ────────────────────────────────────────────────────────── */}
       <header className="mt-8">
-        <Eyebrow>Case Study</Eyebrow>
+        <Eyebrow variant="chip">Case Study</Eyebrow>
 
         <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
           {project.title}

@@ -20,9 +20,11 @@ export default function Error({
   return (
     <PageSection maxWidth="max-w-3xl">
       <div className="text-center">
-        <Eyebrow>Error · Runtime</Eyebrow>
+        <div className="flex justify-center">
+          <Eyebrow variant="chip">Error · Runtime</Eyebrow>
+        </div>
 
-        <h1 className="mt-3 text-5xl sm:text-6xl font-bold tracking-tight leading-tight">
+        <h1 className="mt-4 text-5xl sm:text-6xl font-bold tracking-tight leading-tight">
           Something Broke
         </h1>
 

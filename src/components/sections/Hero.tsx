@@ -18,7 +18,7 @@ export default function Hero() {
           animate="visible"
         >
           <motion.div variants={fadeUp}>
-            <Eyebrow>Design &middot; Iterate &middot; Deploy</Eyebrow>
+            <Eyebrow variant="chip">Design &middot; Iterate &middot; Deploy</Eyebrow>
           </motion.div>
 
           <motion.h1

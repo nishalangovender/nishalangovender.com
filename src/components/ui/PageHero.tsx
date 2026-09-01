@@ -40,7 +40,7 @@ export function PageHero({
       animate="visible"
     >
       <motion.div variants={fadeUp}>
-        <Eyebrow>{eyebrow}</Eyebrow>
+        <Eyebrow variant="chip">{eyebrow}</Eyebrow>
       </motion.div>
 
       <motion.h1

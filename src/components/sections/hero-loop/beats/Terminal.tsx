@@ -126,6 +126,10 @@ export function Terminal({
   );
 }
 
+/** Starship-style prompt shared by every beat that shows the terminal — a
+ *  directory chip and a `❯`, matching the prompt chips on the page heroes. */
+export const TERMINAL_PROMPT = "~/nish_bot ❯ ";
+
 export const BEAT4_OUTPUT_LINES: TerminalLine[] = [
   { text: "[INFO] [controller_manager]: Loaded nish_bot_controllers" },
   { text: "[INFO] [slam_toolbox]: Initialising pose graph" },

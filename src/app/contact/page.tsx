@@ -69,7 +69,7 @@ export default function ContactPage() {
         animate="visible"
       >
         <motion.div variants={fadeUp}>
-          <Eyebrow>Get In Touch</Eyebrow>
+          <Eyebrow variant="chip">Get In Touch</Eyebrow>
         </motion.div>
 
         <motion.h1

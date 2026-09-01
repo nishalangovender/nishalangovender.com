@@ -9,7 +9,7 @@ import type { BeatProps } from "../types";
 import { Factory } from "./Factory";
 import { Notebook } from "./Notebook";
 import { RobotStatic } from "./RobotStatic";
-import { Terminal, BEAT4_OUTPUT_LINES } from "./Terminal";
+import { Terminal, TERMINAL_PROMPT, BEAT4_OUTPUT_LINES } from "./Terminal";
 
 /**
  * Beat 5 (Dashboard, 13.5–16.5s): camera retreats from the warehouse; the
@@ -123,7 +123,7 @@ export function BeatDashboard({ progress, active }: BeatProps) {
   const handoffTransform = "translate(-350.97 143.64) scale(0.43)";
   const handoffOpacity = 1 - clamp01(progress / 0.4);
   const beat4TerminalLines = [
-    { prompt: "$ ", text: "ros2 launch nish_bot bringup.launch.py" },
+    { prompt: TERMINAL_PROMPT, text: "ros2 launch nish_bot bringup.launch.py" },
     BEAT4_OUTPUT_LINES[0],
     BEAT4_OUTPUT_LINES[1],
     BEAT4_OUTPUT_LINES[2],

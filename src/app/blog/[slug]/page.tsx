@@ -60,7 +60,7 @@ export default async function BlogPostPage({
       <BackLink href="/blog">All Posts</BackLink>
 
       <header className="mt-8">
-        <Eyebrow>Article</Eyebrow>
+        <Eyebrow variant="chip">Article</Eyebrow>
         <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
           {post.title}
         </h1>
