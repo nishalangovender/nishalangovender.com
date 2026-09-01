@@ -3,6 +3,10 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
+import { Avatar } from "@/components/ui/Avatar";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { siteConfig } from "@/lib/constants";
+
 const ScrollZoomTimeline = dynamic(
   () => import("@/components/sections/ScrollZoomTimeline"),
   { ssr: false },
@@ -32,7 +36,28 @@ export default function AboutPage() {
 
   // SSR: render MobileTimeline as fallback (works without JS, correct for most visitors)
   // Client: swap to desktop if viewport is wide enough
-  if (isDesktop === null) return <MobileTimeline />;
+  return (
+    <>
+      <AboutHeader />
+      {isDesktop ? <ScrollZoomTimeline /> : <MobileTimeline />}
+    </>
+  );
+}
 
-  return isDesktop ? <ScrollZoomTimeline /> : <MobileTimeline />;
+/** Short identity block above the timeline — who is talking, and from where. */
+function AboutHeader() {
+  return (
+    <header className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8 flex items-center gap-5">
+      <Avatar size={72} alt={siteConfig.name} />
+      <div className="min-w-0">
+        <Eyebrow size="small">Robotics Engineer · Ubundi</Eyebrow>
+        <p className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">
+          {siteConfig.name}
+        </p>
+        <p className="mt-1 text-sm text-muted">
+          AI and Physical AI, from Stellenbosch.
+        </p>
+      </div>
+    </header>
+  );
 }

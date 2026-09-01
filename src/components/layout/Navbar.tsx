@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { useTheme } from "@/components/layout/ThemeProvider";
-import { navLinks } from "@/lib/constants";
+import { Avatar } from "@/components/ui/Avatar";
+import { navLinks, siteConfig } from "@/lib/constants";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -51,9 +52,7 @@ export function Navbar() {
         >
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <span className="flex items-center justify-center w-8 h-8 rounded-md bg-accent text-white font-bold text-sm">
-              NG
-            </span>
+            <Avatar size={32} alt={siteConfig.name} />
             <span className="font-semibold text-foreground hidden sm:block">
               Nishalan Govender
             </span>
