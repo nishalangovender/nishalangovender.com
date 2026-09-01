@@ -145,7 +145,7 @@ export const timelineChapters: TimelineChapter[] = [
         prefix: "feat:",
         message: "Ford & VW Demo",
         year: "2024.6",
-        displayYear: "Oct-Dec 2025",
+        displayYear: "Oct-Dec 2024",
         anchor: "center",
       },
       {
@@ -162,13 +162,6 @@ export const timelineChapters: TimelineChapter[] = [
           "Isuzu & S4 Demo\nTechnical Lead\nToyota Africa Parts Centre\nNetwork Upgrade",
         year: "2025.2",
         displayYear: "Apr-Jun 2025",
-        anchor: "center",
-      },
-      {
-        prefix: "feat:",
-        message: "",
-        year: "2025.5",
-        displayYear: "Jul-Sep 2025",
         anchor: "center",
       },
       {
