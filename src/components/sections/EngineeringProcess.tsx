@@ -1,60 +1,35 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { phases, PHASE_DURATION } from "@/data/engineering-process";
 
-// Auto-cycling hero-style section with large wire-art SVG icons,
-// two-column layout (icon left, text right), and a horizontal progress track.
+/** nish-os status glyphs: done, running, planned. */
+const GLYPH = { done: "▮", active: "▶", todo: "·" } as const;
+
+// A numbered terminal list: one row per phase, the active row expanded with
+// its sentence and a progress rule. The rule is a single transform tween per
+// phase, so the only React update per phase is the timer that advances it.
 export default function EngineeringProcess() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  // Lazily initialised inside the rAF tick so the ref is not assigned an
-  // impure value at render time (React purity rule).
-  const startTimeRef = useRef<number | null>(null);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    let rafId: number;
+    if (reduceMotion) return;
+    const id = window.setTimeout(
+      () => setActiveIndex((i) => (i + 1) % phases.length),
+      PHASE_DURATION,
+    );
+    return () => window.clearTimeout(id);
+  }, [activeIndex, reduceMotion]);
 
-    const tick = () => {
-      if (startTimeRef.current == null) {
-        startTimeRef.current = performance.now();
-      }
-      const elapsed = performance.now() - startTimeRef.current;
-      const p = Math.min(elapsed / PHASE_DURATION, 1);
-      setProgress(p);
-
-      if (p >= 1) {
-        setActiveIndex((prev) => (prev + 1) % phases.length);
-        startTimeRef.current = performance.now();
-        setProgress(0);
-      }
-
-      rafId = requestAnimationFrame(tick);
-    };
-
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-
-  const activePhase = phases[activeIndex];
-  const Icon = activePhase.icon;
+  const Icon = phases[activeIndex].icon;
 
   return (
-    <section className="relative py-24 px-4 flex items-center justify-center overflow-hidden blueprint-grid">
-      {/* Background accent glow */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 50% at 65% 50%, rgba(0, 102, 255, 0.04) 0%, transparent 70%)",
-        }}
-      />
-
+    <section className="relative py-24 px-4 flex items-center justify-center blueprint-grid">
       <div className="relative z-10 mx-auto max-w-5xl w-full">
-        {/* Section header */}
         <div className="mb-12">
           <Eyebrow className="mb-2">Engineering Process</Eyebrow>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -62,43 +37,55 @@ export default function EngineeringProcess() {
           </h2>
         </div>
 
-        {/* ── Phase selector strip ────────────────────────── */}
-        <div className="flex gap-1 mb-4">
-          {phases.map((phase, i) => (
-            <button
-              key={phase.number}
-              onClick={() => {
-                setActiveIndex(i);
-                setProgress(0);
-                startTimeRef.current = performance.now();
-              }}
-              className={`flex-1 relative py-3 text-center transition-colors ${
-                i === activeIndex
-                  ? "text-accent"
-                  : "text-muted hover:text-foreground"
-              }`}
-            >
-              <span className="font-mono text-xs block">{phase.number}</span>
-              <span className="font-mono text-xs sm:text-sm font-medium block">
-                {phase.label}
-              </span>
-              {/* Progress bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-border">
-                {i === activeIndex && (
-                  <motion.div
-                    className="h-full bg-accent"
-                    style={{ width: `${progress * 100}%` }}
-                  />
-                )}
-                {i < activeIndex && <div className="h-full bg-accent w-full" />}
-              </div>
-            </button>
-          ))}
-        </div>
+        <div className="flex items-center gap-8">
+          <div className="pane flex-[2] min-w-0 rounded-lg border border-border font-mono text-sm">
+            <div className="flex items-center gap-2 border-b border-border px-4 py-2 text-xs text-muted">
+              <span className="text-accent">❯</span> how-i-work --pipeline
+            </div>
 
-        {/* ── SVG + Card layout ───────────────────────���── */}
-        <div className="flex items-center gap-6">
-          {/* SVG — desktop only, takes ~1/3 */}
+            <ol className="py-2">
+              {phases.map((phase, i) => {
+                const active = i === activeIndex;
+                const glyph =
+                  i < activeIndex ? GLYPH.done : active ? GLYPH.active : GLYPH.todo;
+                return (
+                  <li key={phase.number}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveIndex(i)}
+                      aria-current={active ? "step" : undefined}
+                      className={`w-full grid grid-cols-[2ch_2ch_9ch_1fr] gap-x-3 px-4 py-2 text-left transition-colors ${
+                        active ? "text-foreground" : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      <span className="text-muted-dim">{phase.number}</span>
+                      <span className={active ? "text-accent" : ""}>{glyph}</span>
+                      <span className={active ? "text-accent" : ""}>{phase.label}</span>
+                      <span className="font-sans truncate">{phase.title}</span>
+                    </button>
+
+                    {active && (
+                      <div className="pr-4 pb-3 pl-[calc(1rem+4ch+1.5rem)] sm:pl-[calc(1rem+13ch+2.25rem)]">
+                        <p className="font-sans text-muted leading-relaxed">
+                          {phase.description}
+                        </p>
+                        <div className="mt-3 h-px bg-border overflow-hidden">
+                          <motion.div
+                            key={activeIndex}
+                            className="h-full bg-accent origin-left"
+                            initial={{ scaleX: reduceMotion ? 1 : 0 }}
+                            animate={{ scaleX: 1 }}
+                            transition={{ duration: PHASE_DURATION / 1000, ease: "linear" }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+
           <div className="hidden sm:flex flex-[1] justify-center">
             <AnimatePresence mode="wait">
               <motion.div
@@ -113,41 +100,6 @@ export default function EngineeringProcess() {
               </motion.div>
             </AnimatePresence>
           </div>
-
-          {/* White card */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeIndex}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.3 }}
-              className="flex-[2] min-w-0 p-6 rounded-lg border border-border bg-surface"
-            >
-              <h3 className="text-xl font-semibold mb-2">
-                {activePhase.title}
-              </h3>
-              <p className="text-muted leading-relaxed">
-                {activePhase.description}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* ── Mobile SVG — full width below the card ── */}
-        <div className="sm:hidden flex justify-center mt-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeIndex}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4 }}
-              className="w-full max-w-[240px] aspect-square text-foreground/50"
-            >
-              <Icon />
-            </motion.div>
-          </AnimatePresence>
         </div>
       </div>
     </section>

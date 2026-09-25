@@ -10,6 +10,7 @@ export interface EngineeringPhase {
   number: string;
   label: string;
   title: string;
+  /** One sentence. */
   description: string;
   icon: ComponentType;
 }
@@ -23,7 +24,7 @@ export const phases: EngineeringPhase[] = [
     label: "DEFINE",
     title: "Understand the Problem",
     description:
-      "Walk the shop floor, sit down with stakeholders, and unpack the brief. Every project starts with scoping the constraints, assessing feasibility, and defining what success looks like.",
+      "Walk the floor, talk to the people who run it, and pin down the constraints and what success looks like.",
     icon: PhaseDefine,
   },
   {
@@ -31,7 +32,7 @@ export const phases: EngineeringPhase[] = [
     label: "DESIGN",
     title: "Architect the Solution",
     description:
-      "Start with a blank page and map the system — black boxes, interfaces, data flows. Modular and scalable from day one, whether it's an embedded controller or a web platform.",
+      "Map the system on a blank page — black boxes, interfaces, data flows — modular from day one.",
     icon: PhaseDesign,
   },
   {
@@ -39,7 +40,7 @@ export const phases: EngineeringPhase[] = [
     label: "DEVELOP",
     title: "Build the Software",
     description:
-      "Write clean, testable code across the stack — from low-level C++ and ROS2 nodes to Python services and React front-ends. Every module documented and ready to integrate.",
+      "Write tested code across the stack, from C++ drivers and ROS2 nodes to Python services and React front-ends.",
     icon: PhaseDevelop,
   },
   {
@@ -47,7 +48,7 @@ export const phases: EngineeringPhase[] = [
     label: "INTEGRATE",
     title: "Wire It All Together",
     description:
-      "Connect every layer — CAN buses to cloud dashboards, sensor pipelines to state machines, APIs to front-ends. Calibrate, validate, and make sure nothing falls through the gaps.",
+      "Wire every layer together — CAN bus to cloud dashboard — then calibrate and validate until nothing falls through.",
     icon: PhaseIntegrate,
   },
   {
@@ -55,7 +56,7 @@ export const phases: EngineeringPhase[] = [
     label: "DEPLOY",
     title: "Ship to Production",
     description:
-      "Prove it works as a prototype, then harden it for production. Fleet management, CI/CD pipelines, monitoring, and fail-safes — built to run reliably at scale.",
+      "Prove it as a prototype, then harden it with CI/CD, monitoring and fail-safes to run in production.",
     icon: PhaseDeploy,
   },
 ];
