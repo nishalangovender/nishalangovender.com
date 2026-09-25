@@ -39,8 +39,10 @@ export default function EngineeringProcess() {
 
         <div className="flex items-center gap-8">
           <div className="pane flex-[2] min-w-0 rounded-lg border border-border font-mono text-sm">
-            <div className="flex items-center gap-2 border-b border-border px-4 py-2 text-xs text-muted">
-              <span className="text-accent">❯</span> how-i-work --pipeline
+            {/* nish-os head line: uppercase chrome, count on the right. */}
+            <div className="flex items-center justify-between border-b border-border px-4 py-2 text-xs uppercase tracking-wider">
+              <span className="text-accent">Pipeline</span>
+              <span className="text-muted">{phases.length} Phases</span>
             </div>
 
             <ol className="py-2">
