@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import type { PerspectiveCamera } from "three";
+import { NeutralToneMapping, type PerspectiveCamera } from "three";
 
 import { HeroAgv } from "./Agv";
 import { BEATS, parseBeatParam, parseTimeParam } from "./beats";
@@ -14,7 +14,6 @@ import { DeskRig } from "./DeskRig";
 import { FactoryFloor } from "./FactoryFloor";
 import { Fleet } from "./Fleet";
 import { InkSketch } from "./InkSketch";
-import { Lidar } from "./Lidar";
 import { Lights } from "./Lights";
 import { missionPose } from "./mission";
 import { Monitor } from "./Monitor";
@@ -101,14 +100,15 @@ export default function HeroCanvas({ active }: { active: boolean }) {
   });
   return (
     <Canvas
-        // No tone mapping: TTY tokens render as the exact hex values.
-        flat
         // Soft shadows on the factory floor; phones skip them to keep frame rate.
         shadows={typeof window !== "undefined" && window.innerWidth >= 768}
         // Full device resolution up to 2×, so the monitor's text stays sharp on high-DPI screens.
         dpr={[1, 2]}
         frameloop={active ? "always" : "never"}
-        gl={{ antialias: true, alpha: true }}
+        // Neutral tone mapping keeps lit surfaces' hues true while taming
+        // highlights; screens, ink and overlays opt out (toneMapped: false) so
+        // TTY tokens still render as their exact hex values.
+        gl={{ antialias: true, alpha: true, toneMapping: NeutralToneMapping }}
         camera={{ fov: 40, near: 0.1, far: 100, position: cameraAt(0).position }}
         aria-hidden="true"
       >
@@ -129,7 +129,6 @@ export default function HeroCanvas({ active }: { active: boolean }) {
             <PointCloud />
             <HeroAgv />
             <Fleet />
-            <Lidar />
             <NavGoal />
           </PaletteProvider>
         </SceneProvider>

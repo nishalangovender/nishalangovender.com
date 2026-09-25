@@ -22,7 +22,7 @@ const MAX_DELAY = 0.35;
 /** 0 = flat dot grid on the desk, 1 = factory point cloud. */
 export function cloudMorph(t: number): number {
   const id = beatAt(t).id;
-  if (id === "deploy") return smoothstep(clamp01(beatProgress(t, "deploy") / 0.45));
+  if (id === "deploy") return smoothstep(clamp01(beatProgress(t, "deploy") / 0.28));
   if (id === "system") return 1;
   if (id === "return") return 1 - smoothstep(clamp01(beatProgress(t, "return") / 0.7));
   return 0;
@@ -84,8 +84,8 @@ const fragmentShader = /* glsl */ `
     vec3 cloud = mix(uLow, uHigh, clamp(vH / 2.6, 0.0, 1.0));
     // The desk grid only shows while the factory is forming or standing.
     float show = smoothstep(0.0, 0.12, uMorph);
-    // Once the solid factory stands, the scan stays as a faint RViz overlay.
-    gl_FragColor = vec4(mix(uDot, cloud, vK), mix(0.4, 0.8, vK) * show * (1.0 - 0.75 * uReal));
+    // Once the solid factory stands, the scan stays over it as an RViz overlay.
+    gl_FragColor = vec4(mix(uDot, cloud, vK), mix(0.4, 0.8, vK) * show * (1.0 - 0.4 * uReal));
   }
 `;
 

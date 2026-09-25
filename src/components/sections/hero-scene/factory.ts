@@ -128,24 +128,3 @@ export function costAt(x: number, y: number, radius = 0.9): number {
   return c >= radius ? 0 : Math.exp(-4 * (c / radius)) * (1 - c / radius);
 }
 
-/** Range along a ray from (x, y) at `angle` to the first wall or obstacle. */
-export function raycast(x: number, y: number, angle: number, maxRange: number): number {
-  const dx = Math.cos(angle);
-  const dy = Math.sin(angle);
-  // Walls: north, south and east (the west side is open).
-  let t = maxRange;
-  if (dx > 0) t = Math.min(t, (FLOOR.maxX - x) / dx);
-  if (dy > 0) t = Math.min(t, (FLOOR.maxY - y) / dy);
-  if (dy < 0) t = Math.min(t, (FLOOR.minY - y) / dy);
-  // Obstacles: 2D slab test.
-  for (const o of OBSTACLES) {
-    const tx1 = (o.x - o.w / 2 - x) / dx;
-    const tx2 = (o.x + o.w / 2 - x) / dx;
-    const ty1 = (o.y - o.d / 2 - y) / dy;
-    const ty2 = (o.y + o.d / 2 - y) / dy;
-    const near = Math.max(Math.min(tx1, tx2), Math.min(ty1, ty2));
-    const far = Math.min(Math.max(tx1, tx2), Math.max(ty1, ty2));
-    if (far >= near && near > 0) t = Math.min(t, near);
-  }
-  return Math.max(0, t);
-}

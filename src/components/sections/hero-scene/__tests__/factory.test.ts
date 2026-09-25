@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { BEATS, TOTAL_DURATION } from "../beats";
-import { FACTORY_CENTRE, FLOOR, OBSTACLES, clearance, costAt, factoryPoints, raycast } from "../factory";
+import { FACTORY_CENTRE, FLOOR, OBSTACLES, clearance, costAt, factoryPoints } from "../factory";
 import { LEAD_IN_LENGTH, LOOP, LOOP_LENGTH, loopPose, missionDistance, missionPose } from "../mission";
 import { buildCloud, cloudMorph } from "../PointCloud";
 import { PAGE } from "../sketch";
@@ -32,12 +32,6 @@ describe("factory", () => {
     expect(costAt(rack.x, rack.y - rack.d / 2 - 0.3)).toBeGreaterThan(0);
   });
 
-  it("raycasts to the nearest rack face", () => {
-    const rack = OBSTACLES[0];
-    const fromY = rack.y - rack.d / 2 - 2;
-    expect(raycast(rack.x, fromY, Math.PI / 2, 20)).toBeCloseTo(2, 6);
-    expect(raycast(FACTORY_CENTRE.x, 0.9, 0, 20)).toBeLessThanOrEqual(FLOOR.maxX - FACTORY_CENTRE.x);
-  });
 });
 
 describe("mission", () => {

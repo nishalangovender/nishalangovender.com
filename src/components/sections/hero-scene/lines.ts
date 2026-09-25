@@ -27,6 +27,8 @@ export function fatLines(
     transparent: true,
     vertexColors: Boolean(colors),
     depthWrite: false,
+    // Ink and overlays keep their exact colours under the scene's tone mapping.
+    toneMapped: false,
   });
   const line = new LineSegments2(geometry, material);
   // LineMaterial needs the viewport size to turn `linewidth` into pixels.

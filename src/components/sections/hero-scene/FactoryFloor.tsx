@@ -17,9 +17,11 @@ import {
 import { clamp01, smoothstep } from "@/lib/math";
 
 import { beatAt, beatProgress } from "./beats";
+import { DESK } from "./desk-layout";
 import { FACTORY_CENTRE, FLOOR, OBSTACLES, mulberry32, toWorld, type Rect } from "./factory";
 import { LOOP } from "./mission";
 import { useScene, useScenePalette } from "./scene-context";
+import { CONCRETE_TILE, cardboardTexture, concreteTexture } from "./textures";
 
 /**
  * How much of the solid factory stands at `t`: it rises out of the finished
@@ -27,7 +29,8 @@ import { useScene, useScenePalette } from "./scene-context";
  */
 export function factoryReveal(t: number): number {
   const id = beatAt(t).id;
-  if (id === "deploy") return smoothstep(clamp01((beatProgress(t, "deploy") - 0.4) / 0.35));
+  // Forms as the desk shrinks away, so the AGV lands on real concrete.
+  if (id === "deploy") return smoothstep(clamp01((beatProgress(t, "deploy") - 0.25) / 0.35));
   if (id === "system") return 1;
   if (id === "return") return 1 - smoothstep(clamp01(beatProgress(t, "return") / 0.35));
   return 0;
@@ -45,6 +48,8 @@ const COLOURS = {
   hazard: "#f0c030",
 } as const;
 
+/** How far the concrete apron runs west of the desk's edge, under the desk. */
+const APRON = 3;
 const WALL_THICKNESS = 0.15;
 const KICK_HEIGHT = 0.35;
 const CAP_HEIGHT = 0.03;
@@ -126,11 +131,17 @@ export function FactoryFloor() {
 
     const floorW = FLOOR.maxX - FLOOR.minX;
     const floorD = FLOOR.maxY - FLOOR.minY;
-    const floorMat = std("#000000");
+    // Polished concrete; it also runs west under the desk as an apron, so the
+    // AGV lands on concrete where the desk shrinks away.
+    const apronMinX = DESK.maxX - APRON;
+    const slabW = FLOOR.maxX - apronMinX;
+    const concrete = concreteTexture();
+    concrete.repeat.set(slabW / CONCRETE_TILE, floorD / CONCRETE_TILE);
+    const floorMat = new MeshStandardMaterial({ color: "#000000", map: concrete, roughness: 0.55, metalness: 0 });
     floorMat.transparent = true;
-    const floor = new Mesh(new PlaneGeometry(floorW, floorD), floorMat);
+    const floor = new Mesh(new PlaneGeometry(slabW, floorD), floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.set(...toWorld(FACTORY_CENTRE.x, FACTORY_CENTRE.y, 0.002));
+    floor.position.set(...toWorld((apronMinX + FLOOR.maxX) / 2, FACTORY_CENTRE.y, 0.002));
     floor.receiveShadow = true;
 
     const wallMat = std("#000000");
@@ -156,12 +167,13 @@ export function FactoryFloor() {
     wall(FACTORY_CENTRE.x, FLOOR.minY, floorW, WALL_THICKNESS);
     wall(FLOOR.maxX, FACTORY_CENTRE.y, WALL_THICKNESS, floorD);
 
+    const carton = new MeshStandardMaterial({ color: COLOURS.load, map: cardboardTexture(), roughness: 0.9, metalness: 0 });
     const stock = new Group();
     stock.add(
       instanced(new BoxGeometry(UPRIGHT, racks[0].h, UPRIGHT), std(COLOURS.upright), parts.uprights),
       instanced(new BoxGeometry(racks[0].w, 0.1, 0.06), std(COLOURS.beam), parts.beams),
       instanced(new BoxGeometry(PALLET.w, PALLET.h, PALLET.d), std(COLOURS.pallet), [...parts.pallets, ...looseStacks()]),
-      instanced(new BoxGeometry(LOAD.w, LOAD.h, LOAD.d), std(COLOURS.load), parts.loads.filter((l) => !l.wrapped).map((l) => l.m)),
+      instanced(new BoxGeometry(LOAD.w, LOAD.h, LOAD.d), carton, parts.loads.filter((l) => !l.wrapped).map((l) => l.m)),
       instanced(new BoxGeometry(LOAD.w, LOAD.h, LOAD.d), std(COLOURS.wrapped), parts.loads.filter((l) => l.wrapped).map((l) => l.m)),
       instanced(new BoxGeometry(columns[0].w, columns[0].h, columns[0].d), std(COLOURS.column), columns.map((c) => place(c.x, c.y, c.h / 2))),
       instanced(new BoxGeometry(columns[0].w + 0.04, 0.45, columns[0].d + 0.04), std(COLOURS.hazard), columns.map((c) => place(c.x, c.y, 0.225))),
@@ -194,7 +206,9 @@ export function FactoryFloor() {
       scene.group.traverse((o) => {
         const mesh = o as Mesh;
         mesh.geometry?.dispose();
-        (mesh.material as Material | undefined)?.dispose();
+        const material = mesh.material as (Material & { map?: { dispose(): void } | null }) | undefined;
+        material?.map?.dispose();
+        material?.dispose();
       });
     },
     [scene],

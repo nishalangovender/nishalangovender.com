@@ -41,7 +41,7 @@ export function Costmap() {
   const mesh = useMemo(() => {
     const mesh = new Mesh(
       new PlaneGeometry(FLOOR.maxX - FLOOR.minX, FLOOR.maxY - FLOOR.minY),
-      new MeshBasicMaterial({ alphaMap: costTexture(), transparent: true, depthWrite: false }),
+      new MeshBasicMaterial({ alphaMap: costTexture(), transparent: true, depthWrite: false, toneMapped: false }),
     );
     // Texture rows run along +y (map) = −z (world): lay the plane flat, facing up.
     mesh.rotation.x = -Math.PI / 2;

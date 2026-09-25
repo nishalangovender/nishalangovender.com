@@ -64,8 +64,8 @@ function monitorBody(): Group {
  * over the screen so they move smoothly without redrawing the texture.
  */
 function robotMarkers(): { layer: Object3D; robots: Object3D[]; dispose: () => void } {
-  const ok = new MeshBasicMaterial({ color: SCREEN.ok });
-  const accent = new MeshBasicMaterial({ color: SCREEN.accent });
+  const ok = new MeshBasicMaterial({ color: SCREEN.ok, toneMapped: false });
+  const accent = new MeshBasicMaterial({ color: SCREEN.accent, toneMapped: false });
   const dot = new CircleGeometry(MARKER.dot, 20);
   const tick = new PlaneGeometry(MARKER.tick, 3).translate(MARKER.tick / 2, 0, 0);
   const ring = new RingGeometry(MARKER.ring - 1.5, MARKER.ring + 1.5, 28);
@@ -105,7 +105,8 @@ export function Monitor() {
     texture.minFilter = LinearMipmapLinearFilter;
     const screen = new Mesh(
       new PlaneGeometry(MONITOR.width, MONITOR.screenHeight),
-      new MeshBasicMaterial({ map: texture }),
+      // A self-lit screen: its pixels are shown as drawn, not tone-mapped.
+      new MeshBasicMaterial({ map: texture, toneMapped: false }),
     );
     const body = monitorBody();
     const markers = robotMarkers();

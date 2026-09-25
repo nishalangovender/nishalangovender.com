@@ -8,13 +8,26 @@ import { smoothstep } from "@/lib/math";
 import { BEATS, TOTAL_DURATION, loopTime, type BeatId } from "./beats";
 import { DESK, PAGE_HEIGHT, PIVOT } from "./desk-layout";
 import { FACTORY_CENTRE, MONITOR, toWorld } from "./factory";
-import { SHRINK_START, SHRINK_TIME } from "./mission";
+import { SHRINK_START, SHRINK_TIME, missionDistance, missionPose } from "./mission";
 
 export type Vec3 = [number, number, number];
 
 export interface CameraPose {
   position: Vec3;
   target: Vec3;
+}
+
+/** A keyframe pose: fixed, or following something that moves (evaluated at the loop time). */
+type PoseAt = CameraPose | ((t: number) => CameraPose);
+
+/**
+ * Chase camera on the hero AGV: behind, to the left and above it, fixed in
+ * world orientation (it does not swing with the robot on the loop's turns).
+ */
+function chaseHero(t: number): CameraPose {
+  const { x, y } = missionPose(missionDistance(t));
+  const [ax, , az] = toWorld(x, y);
+  return { position: [ax - 4.6, 3.4, az + 5.2], target: [ax + 1.2, 0.4, az - 0.4] };
 }
 
 /** The factory floor's centre in world space, and a pose offset from it. */
@@ -43,8 +56,6 @@ const POSES = {
   // once the desk has shrunk away, looking on towards the factory.
   deskEdge: { position: [PIVOT.x - 3.6, DESK.height + 2.4, 3.4], target: [PIVOT.x + 1.2, DESK.height + 0.2, 0] },
   floorLevel: { position: [PIVOT.x - 3.2, 1.5, 2.6], target: [PIVOT.x + 3, 0.5, -0.2] },
-  factory: aroundCentre(7.5, 8, 10.5),
-  factoryTrack: aroundCentre(-6.5, 7.5, 10),
   system: aroundCentre(0, 17, 6),
   monitor: { position: [screen[0], screen[1], screen[2] + SCREEN_DISTANCE], target: screen },
 } satisfies Record<string, CameraPose>;
@@ -59,7 +70,7 @@ export const PAGE_LANDING = 0.6;
 export const FLY_IN_START = start("system") + 2.4;
 const FLY_IN_END = start("system") + 5.6;
 
-export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
+export const CAMERA_KEYFRAMES: readonly { t: number; pose: PoseAt }[] = [
   { t: 0, pose: POSES.page },
   { t: end("sketch"), pose: POSES.page },
   { t: end("design"), pose: POSES.design },
@@ -68,8 +79,9 @@ export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
   { t: end("code"), pose: POSES.code },
   { t: SHRINK_START, pose: POSES.deskEdge },
   { t: SHRINK_START + SHRINK_TIME, pose: POSES.floorLevel },
-  { t: SHRINK_START + SHRINK_TIME + 2.4, pose: POSES.factory },
-  { t: end("deploy"), pose: POSES.factoryTrack },
+  // Follow the AGV the story started with as it drives into the factory.
+  { t: SHRINK_START + SHRINK_TIME + 1.6, pose: chaseHero },
+  { t: end("deploy"), pose: chaseHero },
   { t: FLY_IN_START, pose: POSES.system },
   { t: FLY_IN_END, pose: POSES.monitor },
   { t: end("system"), pose: POSES.monitor },
@@ -84,13 +96,14 @@ function lerp3(a: Vec3, b: Vec3, k: number): Vec3 {
 /** Camera pose at loop time `t`. */
 export function cameraAt(t: number): CameraPose {
   const lt = loopTime(t);
+  const at = (pose: PoseAt) => (typeof pose === "function" ? pose(lt) : pose);
   const i = CAMERA_KEYFRAMES.findIndex((k) => k.t > lt);
-  if (i <= 0) return CAMERA_KEYFRAMES[0].pose;
-  const a = CAMERA_KEYFRAMES[i - 1];
-  const b = CAMERA_KEYFRAMES[i];
-  const k = smoothstep((lt - a.t) / (b.t - a.t));
+  if (i <= 0) return at(CAMERA_KEYFRAMES[0].pose);
+  const a = at(CAMERA_KEYFRAMES[i - 1].pose);
+  const b = at(CAMERA_KEYFRAMES[i].pose);
+  const k = smoothstep((lt - CAMERA_KEYFRAMES[i - 1].t) / (CAMERA_KEYFRAMES[i].t - CAMERA_KEYFRAMES[i - 1].t));
   return {
-    position: lerp3(a.pose.position, b.pose.position, k),
-    target: lerp3(a.pose.target, b.pose.target, k),
+    position: lerp3(a.position, b.position, k),
+    target: lerp3(a.target, b.target, k),
   };
 }
