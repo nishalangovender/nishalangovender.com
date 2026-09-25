@@ -11,6 +11,7 @@ import { CmdVel } from "./CmdVel";
 import { CodeTerminal } from "./CodeTerminal";
 import { Costmap } from "./Costmap";
 import { Desk } from "./Desk";
+import { FactoryFloor } from "./FactoryFloor";
 import { Fleet } from "./Fleet";
 import { InkSketch } from "./InkSketch";
 import { Lidar } from "./Lidar";
@@ -112,6 +113,8 @@ export default function HeroCanvas({ active }: { active: boolean }) {
       <Canvas
         // No tone mapping: TTY tokens render as the exact hex values.
         flat
+        // Soft shadows on the factory floor; phones skip them to keep frame rate.
+        shadows={typeof window !== "undefined" && window.innerWidth >= 768}
         dpr={[1, 1.5]}
         frameloop={active ? "always" : "never"}
         gl={{ antialias: true, alpha: true }}
@@ -124,6 +127,7 @@ export default function HeroCanvas({ active }: { active: boolean }) {
             <Framing />
             <Desk />
             <Notebook />
+            <FactoryFloor />
             <Costmap />
             <PointCloud />
             <InkSketch />

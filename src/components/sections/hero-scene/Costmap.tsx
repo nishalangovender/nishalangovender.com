@@ -5,6 +5,7 @@ import { useEffect, useMemo } from "react";
 import { DataTexture, LinearFilter, Mesh, MeshBasicMaterial, PlaneGeometry, RGBAFormat } from "three";
 
 import { FLOOR, costAt, toWorld } from "./factory";
+import { factoryReveal } from "./FactoryFloor";
 import { LAYER } from "./lines";
 import { cloudMorph } from "./PointCloud";
 import { useScene, useScenePalette } from "./scene-context";
@@ -65,7 +66,8 @@ export function Costmap() {
   useFrame(() => {
     const k = cloudMorph(sceneRef.current.t);
     mesh.visible = k > 0;
-    mesh.material.opacity = PEAK_OPACITY * k;
+    // Fainter once the solid factory stands: an overlay, not the floor.
+    mesh.material.opacity = PEAK_OPACITY * k * (1 - 0.5 * factoryReveal(sceneRef.current.t));
   });
 
   return <primitive object={mesh} />;

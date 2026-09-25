@@ -8,6 +8,7 @@ import { clamp01, smoothstep } from "@/lib/math";
 
 import { beatAt, beatProgress } from "./beats";
 import { FLOOR, factoryPoints, mulberry32, toWorld } from "./factory";
+import { factoryReveal } from "./FactoryFloor";
 import { LAYER } from "./lines";
 import { useScene, useScenePalette } from "./scene-context";
 
@@ -71,6 +72,7 @@ const vertexShader = /* glsl */ `
 
 const fragmentShader = /* glsl */ `
   uniform float uMorph;
+  uniform float uReal;
   uniform vec3 uDot;
   uniform vec3 uLow;
   uniform vec3 uHigh;
@@ -82,7 +84,8 @@ const fragmentShader = /* glsl */ `
     vec3 cloud = mix(uLow, uHigh, clamp(vH / 2.6, 0.0, 1.0));
     // The desk grid only shows while the factory is forming or standing.
     float show = smoothstep(0.0, 0.12, uMorph);
-    gl_FragColor = vec4(mix(uDot, cloud, vK), mix(0.4, 0.8, vK) * show);
+    // Once the solid factory stands, the scan stays as a faint RViz overlay.
+    gl_FragColor = vec4(mix(uDot, cloud, vK), mix(0.4, 0.8, vK) * show * (1.0 - 0.75 * uReal));
   }
 `;
 
@@ -105,6 +108,7 @@ export function PointCloud() {
       depthWrite: false,
       uniforms: {
         uMorph: { value: 0 },
+        uReal: { value: 0 },
         uSize: { value: 2 },
         uDot: { value: new Color() },
         uLow: { value: new Color() },
@@ -135,7 +139,9 @@ export function PointCloud() {
   );
 
   useFrame(() => {
-    points.material.uniforms.uMorph.value = cloudMorph(sceneRef.current.t);
+    const t = sceneRef.current.t;
+    points.material.uniforms.uMorph.value = cloudMorph(t);
+    points.material.uniforms.uReal.value = factoryReveal(t);
   });
 
   return <primitive object={points} />;
