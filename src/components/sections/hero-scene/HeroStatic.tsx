@@ -36,7 +36,7 @@ export function HeroStatic() {
         <circle cx="282" cy="170" r="7" />
         {/* turning arc about the ICR */}
         <path d="M 207 70 A 100 100 0 0 1 307 170" strokeDasharray="5 6" />
-        <line x1="207" y1="170" x2="207" y2="60" strokeDasharray="2 5" />
+        <line x1="207" y1="125" x2="207" y2="60" strokeDasharray="2 5" />
       </g>
       {/* TF axes at base_link */}
       <g strokeWidth="2.5" strokeLinecap="round">

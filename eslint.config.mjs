@@ -37,6 +37,15 @@ const eslintConfig = defineConfig([
       "import-x/newline-after-import": "warn",
     },
   },
+  {
+    // The hero scene builds three.js objects once and mutates them every
+    // frame inside `useFrame` — the standard react-three-fiber pattern, run
+    // outside React render, so the compiler's immutability rule does not apply.
+    files: ["src/components/sections/hero-scene/**/*.tsx"],
+    rules: {
+      "react-hooks/immutability": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

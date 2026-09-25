@@ -3,8 +3,11 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 
+import { HeroAgv } from "./Agv";
 import { BEATS, parseBeatParam } from "./beats";
 import { cameraAt } from "./camera";
+import { InkSketch } from "./InkSketch";
+import { Notebook } from "./Notebook";
 import {
   PaletteProvider,
   SceneProvider,
@@ -42,7 +45,9 @@ export default function HeroCanvas({ active }: { active: boolean }) {
 
   return (
     <Canvas
-      className="absolute inset-0"
+      className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_100%)]"
+      // No tone mapping: TTY tokens render as the exact hex values.
+      flat
       dpr={[1, 1.5]}
       frameloop={active ? "always" : "never"}
       gl={{ antialias: true, alpha: true }}
@@ -52,6 +57,9 @@ export default function HeroCanvas({ active }: { active: boolean }) {
       <SceneProvider value={sceneRef}>
         <PaletteProvider value={palette}>
           <Director />
+          <Notebook />
+          <InkSketch />
+          <HeroAgv />
         </PaletteProvider>
       </SceneProvider>
     </Canvas>
