@@ -4,16 +4,16 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 
 import { HeroAgv } from "./Agv";
-import { BEATS, LIVE_BEATS, beatAt, parseBeatParam, type BeatId } from "./beats";
+import { BEATS, beatAt, parseBeatParam, type BeatId } from "./beats";
 import { cameraAt } from "./camera";
 import { CmdVel } from "./CmdVel";
 import { CodeTerminal } from "./CodeTerminal";
 import { Costmap } from "./Costmap";
 import { Fleet } from "./Fleet";
-import { FleetStatus } from "./FleetStatus";
 import { InkSketch } from "./InkSketch";
 import { Lidar } from "./Lidar";
 import { missionPose } from "./mission";
+import { Monitor } from "./Monitor";
 import { REJOIN_TIME } from "./nav-goal";
 import { NavGoal } from "./NavGoal";
 import { Notebook } from "./Notebook";
@@ -99,14 +99,14 @@ export default function HeroCanvas({ active }: { active: boolean }) {
             <InkSketch />
             <HeroAgv />
             <Fleet />
+            <Monitor />
             <Lidar />
             <NavGoal readout={readoutRef} onLive={setLive} />
           </PaletteProvider>
         </SceneProvider>
       </Canvas>
       <CodeTerminal visible={beat === "code"} />
-      <FleetStatus visible={beat === "system"} />
-      <CmdVel visible={live || LIVE_BEATS.includes(beat)} live={live} readout={readoutRef} />
+      <CmdVel visible={live || beat === "deploy"} live={live} readout={readoutRef} />
     </>
   );
 }

@@ -27,6 +27,12 @@ export const OBSTACLES: readonly Rect[] = [
   { x: 5.2, y: 0.9, w: 0.4, d: 0.4, h: 2.6 },
 ];
 
+/**
+ * The production monitor, standing in the gap of the far rack row and facing
+ * down the aisle. Screen centre height and size in metres (16:10).
+ */
+export const MONITOR = { x: 0, y: 3.2, height: 1.6, width: 1.3, screenHeight: 0.8125 } as const;
+
 /** Centre of the factory floor in the map frame — where the camera looks. */
 export const FACTORY_CENTRE = {
   x: (FLOOR.minX + FLOOR.maxX) / 2,

@@ -4,10 +4,8 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import {
   BoxGeometry,
-  BufferGeometry,
   Color,
   CylinderGeometry,
-  EdgesGeometry,
   Group,
   Matrix4,
 } from "three";
@@ -18,7 +16,7 @@ import type { Pose } from "@/lib/path-following/types";
 
 import { beatAt, beatProgress } from "./beats";
 import { toWorld } from "./factory";
-import { LAYER, fatLines } from "./lines";
+import { LAYER, edgeSegments, fatLines } from "./lines";
 import { missionDistance, missionPose } from "./mission";
 import { blendPose } from "./nav-goal";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
@@ -30,15 +28,6 @@ const BODY_Y = AGV.wheelRadius + 0.04;
 export const AGV_LIDAR_OFFSET = AGV.offset + AGV.length / 2 - 0.2;
 export const LIDAR_HEIGHT = BODY_Y + AGV.height + 0.05;
 
-function edges(geometry: BufferGeometry, matrix: Matrix4): number[] {
-  geometry.applyMatrix4(matrix);
-  const e = new EdgesGeometry(geometry, 20);
-  const out = Array.from(e.attributes.position.array as Float32Array);
-  geometry.dispose();
-  e.dispose();
-  return out;
-}
-
 const at = (x: number, y: number, z: number) => new Matrix4().makeTranslation(x, y, z);
 const wheelAt = (z: number) =>
   at(0, AGV.wheelRadius, z).multiply(new Matrix4().makeRotationX(Math.PI / 2));
@@ -46,11 +35,11 @@ const wheelAt = (z: number) =>
 /** Wireframe edges of the AGV in its base_link frame (x forward, y up). */
 export function agvEdges(): number[] {
   return [
-    ...edges(new BoxGeometry(AGV.length, AGV.height, AGV.width), at(AGV.offset, BODY_Y + AGV.height / 2, 0)),
-    ...edges(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(-AGV.track / 2)),
-    ...edges(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(AGV.track / 2)),
-    ...edges(new CylinderGeometry(0.07, 0.07, 0.05, 10), at(AGV.castorX, 0.07, 0)),
-    ...edges(
+    ...edgeSegments(new BoxGeometry(AGV.length, AGV.height, AGV.width), at(AGV.offset, BODY_Y + AGV.height / 2, 0)),
+    ...edgeSegments(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(-AGV.track / 2)),
+    ...edgeSegments(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(AGV.track / 2)),
+    ...edgeSegments(new CylinderGeometry(0.07, 0.07, 0.05, 10), at(AGV.castorX, 0.07, 0)),
+    ...edgeSegments(
       new CylinderGeometry(AGV.lidarRadius, AGV.lidarRadius, 0.1, 12),
       at(AGV_LIDAR_OFFSET, LIDAR_HEIGHT, 0),
     ),

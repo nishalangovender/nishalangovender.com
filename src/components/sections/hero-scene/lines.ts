@@ -1,4 +1,4 @@
-import { Vector2 } from "three";
+import { EdgesGeometry, Vector2, type BufferGeometry, type Matrix4 } from "three";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
@@ -35,6 +35,19 @@ export function fatLines(
     material.resolution.copy(renderer.getSize(size));
   };
   return line;
+}
+
+/**
+ * Hard edges of `geometry` placed by `matrix`, as flat segment positions for
+ * `fatLines`. Consumes (disposes) the geometry.
+ */
+export function edgeSegments(geometry: BufferGeometry, matrix: Matrix4): number[] {
+  geometry.applyMatrix4(matrix);
+  const edges = new EdgesGeometry(geometry, 20);
+  const out = Array.from(edges.attributes.position.array as Float32Array);
+  geometry.dispose();
+  edges.dispose();
+  return out;
 }
 
 /** Draw order for the transparent layers, bottom to top. */

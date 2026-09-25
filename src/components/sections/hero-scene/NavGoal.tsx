@@ -4,7 +4,8 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, type RefObject } from "react";
 import { Group, Mesh, MeshBasicMaterial, PlaneGeometry } from "three";
 
-import { LIVE_BEATS, beatAt } from "./beats";
+import { LIVE_BEATS, beatAt, loopTime } from "./beats";
+import { FLY_IN_START } from "./camera";
 import { FLOOR, toWorld } from "./factory";
 import { LAYER, fatLines } from "./lines";
 import { isGoalValid, setGoal, shouldResume, stepNav } from "./nav-goal";
@@ -16,9 +17,12 @@ const RING_RADIUS = 0.3;
 /** /cmd_vel readout refresh interval, seconds. */
 const READOUT_PERIOD = 0.1;
 
-/** Goals are accepted in the live beats once the factory has fully formed. */
+/**
+ * Goals are accepted in the live beats while the floor is in view: once the
+ * factory has fully formed, until the camera heads for the monitor.
+ */
 export function acceptsGoals(t: number): boolean {
-  return LIVE_BEATS.includes(beatAt(t).id) && cloudMorph(t) >= 1;
+  return LIVE_BEATS.includes(beatAt(t).id) && cloudMorph(t) >= 1 && loopTime(t) < FLY_IN_START;
 }
 
 function ring(): number[] {

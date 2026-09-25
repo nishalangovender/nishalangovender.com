@@ -6,7 +6,7 @@
 import { smoothstep } from "@/lib/math";
 
 import { BEATS, TOTAL_DURATION, loopTime, type BeatId } from "./beats";
-import { FACTORY_CENTRE, toWorld } from "./factory";
+import { FACTORY_CENTRE, MONITOR, toWorld } from "./factory";
 
 export type Vec3 = [number, number, number];
 
@@ -22,6 +22,10 @@ const aroundCentre = (dx: number, y: number, dz: number): CameraPose => ({
   target: centre,
 });
 
+/** Distance from the screen at which it fills the view (fov 40°, 16:10 canvas). */
+const SCREEN_DISTANCE = 1.45;
+const screen = toWorld(MONITOR.x, MONITOR.y, MONITOR.height);
+
 const POSES = {
   page: { position: [0, 4.4, 2.8], target: [0, 0, 0.15] },
   design: { position: [2.6, 2.4, 2.9], target: [0, 0.35, 0] },
@@ -29,10 +33,15 @@ const POSES = {
   factory: aroundCentre(7.5, 8, 10.5),
   factoryTrack: aroundCentre(-6.5, 7.5, 10),
   system: aroundCentre(0, 17, 6),
+  monitor: { position: [screen[0], screen[1], screen[2] + SCREEN_DISTANCE], target: screen },
 } satisfies Record<string, CameraPose>;
 
 const start = (id: BeatId) => BEATS.find((b) => b.id === id)!.start;
 const end = (id: BeatId) => BEATS.find((b) => b.id === id)!.end;
+
+/** When the camera leaves the fleet overview for the monitor, and arrives. */
+export const FLY_IN_START = start("system") + 1.3;
+const FLY_IN_END = start("system") + 3.6;
 
 export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
   { t: 0, pose: POSES.page },
@@ -41,8 +50,9 @@ export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
   { t: end("code"), pose: POSES.code },
   { t: start("deploy") + 2.4, pose: POSES.factory },
   { t: end("deploy"), pose: POSES.factoryTrack },
-  { t: start("system") + 2, pose: POSES.system },
-  { t: end("system"), pose: POSES.system },
+  { t: FLY_IN_START, pose: POSES.system },
+  { t: FLY_IN_END, pose: POSES.monitor },
+  { t: end("system"), pose: POSES.monitor },
   { t: TOTAL_DURATION, pose: POSES.page },
 ];
 

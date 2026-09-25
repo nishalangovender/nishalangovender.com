@@ -22,7 +22,7 @@ const KIND_CLASS = { prompt: "text-[var(--terminal-text)]", log: "text-[var(--te
 /** Beat 3: a terminal session that builds and launches the stack. */
 export function CodeTerminal({ visible }: { visible: boolean }) {
   return (
-    <TerminalPanel visible={visible} corner="bottom-left">
+    <TerminalPanel visible={visible}>
       {TERMINAL_LINES.map((line, i) => (
         <motion.p
           key={line.text}

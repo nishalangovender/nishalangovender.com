@@ -23,7 +23,7 @@ const DURATIONS: [BeatId, number][] = [
   ["design", 3],
   ["code", 3],
   ["deploy", 6],
-  ["system", 3.5],
+  ["system", 5],
   ["return", 3],
 ];
 

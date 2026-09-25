@@ -18,7 +18,7 @@ export function CmdVel({
   readout: RefObject<HTMLSpanElement | null>;
 }) {
   return (
-    <TerminalPanel visible={visible} corner="bottom-left">
+    <TerminalPanel visible={visible}>
       <p className="text-[var(--terminal-text)]">
         <span className="text-[var(--terminal-prompt)]">❯ </span>
         {live ? "ros2 topic echo /cmd_vel" : "click the floor to send a nav goal"}
