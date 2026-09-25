@@ -22,8 +22,6 @@
 
   /* Notebook: paper page, teal ink. */
   --notebook-page: #ffffff;
-  --notebook-page-shadow: rgba(11, 16, 23, 0.14);
-  --factory-floor: var(--tty-surface);
 
   --background: var(--tty-bg);
   --foreground: var(--tty-fg);
@@ -45,21 +43,6 @@
   --notebook-ink: var(--tty-accent);
   --notebook-page-dot: color-mix(in srgb, var(--tty-dim) 40%, transparent);
   --notebook-page-edge: var(--tty-rule);
-  --notebook-cover: color-mix(in srgb, var(--tty-accent) 30%, #040405);
-  --notebook-cover-edge: color-mix(in srgb, var(--tty-accent) 20%, #040405);
-  --notebook-binding: color-mix(in srgb, var(--tty-accent) 12%, #040405);
-  --factory-grid: color-mix(in srgb, var(--tty-dim) 30%, transparent);
-  --factory-point: var(--tty-accent);
-  --factory-costmap: var(--tty-warn);
-  --factory-lane: var(--tty-warn);
-  --factory-wall: color-mix(in srgb, var(--tty-fg) 60%, transparent);
-  --factory-rack: color-mix(in srgb, var(--tty-warn) 45%, var(--tty-surface));
-  --factory-rack-edge: color-mix(in srgb, var(--tty-warn) 70%, transparent);
-  --factory-pallet: color-mix(in srgb, var(--tty-warn) 35%, var(--tty-surface));
-  --factory-pallet-edge: color-mix(in srgb, var(--tty-warn) 60%, transparent);
-  --factory-pallet-plank: color-mix(in srgb, var(--tty-warn) 50%, transparent);
-  --factory-room: color-mix(in srgb, var(--tty-rule) 70%, var(--tty-surface));
-  --factory-room-edge: color-mix(in srgb, var(--tty-dim) 60%, transparent);
   --prof-advanced: var(--tty-ok);
   --prof-proficient: var(--tty-accent);
   --prof-competent: var(--tty-warn);
@@ -85,7 +68,6 @@
 
   /* Notebook: charcoal page, cyan ink. */
   --notebook-page: #15171b;
-  --notebook-page-shadow: rgba(0, 0, 0, 0.5);
   --surface: var(--tty-surface);
   --accent-dark: #62e6fe;
 }
@@ -103,7 +85,6 @@
     --tty-error: #ff4d6d;
 
     --notebook-page: #15171b;
-    --notebook-page-shadow: rgba(0, 0, 0, 0.5);
     --surface: var(--tty-surface);
     --accent-dark: #62e6fe;
   }
@@ -423,8 +404,8 @@ button, a, [role="button"] {
     --accent-light: #ffffff;
     --accent-dark: #000000;
     --blueprint-line: transparent;
-    /* The hero-loop terminal is an illustration, not chrome — on paper it
-       inverts to black-on-white like everything else. */
+    /* The hero terminal panels are illustration, not chrome — on paper they
+       invert to black-on-white like everything else. */
     --terminal-bg: #ffffff;
     --terminal-border: #cccccc;
     --terminal-text: #000000;
