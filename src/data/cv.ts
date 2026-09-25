@@ -46,7 +46,7 @@ export interface LanguageEntry {
   level: string;
 }
 
-export const profileSummary = `Robotics engineer working across AI and Physical AI — LLMs and agent systems on one side, vision-language-action models, world action models and bimanual manipulation on the other. Mechatronics engineer with hands-on experience designing, deploying and maintaining production robotics systems in a fast-paced startup environment. Technical lead across software architecture, embedded systems, controls, DevOps infrastructure and client-facing engagement. Specialising in ROS2 robotics software, low-level C++ embedded interfaces, CI/CD pipelines and control systems. Strengths in systems-level thinking, abstracting complex layers and creatively solving black-box problems under tight deadlines. A fast learner who thrives on picking up unfamiliar technologies, applying them in production and iterating until they work — what matters is not what I already know, but how quickly I can close the gap.`;
+export const profileSummary = `Robotics engineer who has shipped production AGV fleets into Toyota South Africa, owning the full stack from embedded C++ and CANOpen drivers to ROS2, controls and fleet software. Led the technical practice at a robotics startup, from architecture to client delivery. Now lead robotics engineer at Ubundi, exploring Physical AI — vision-language-action models and bimanual manipulation.`;
 
 export const experience: ExperienceEntry[] = [
   {

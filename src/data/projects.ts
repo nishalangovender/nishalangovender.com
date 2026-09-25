@@ -75,7 +75,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "toyota-agv-fleet",
     title: "AGV Fleet System — Toyota SA Manufacturing",
     description:
-      "Designed and deployed an end-to-end AGV and fleet management system at Toyota SA Manufacturing, with a scalable architecture designed to support further line expansion. Built the full software stack including kinematic modelling, SMACC2 state machines, embedded Linux customisation, low-level C++ CANOpen drivers, IMU/LiDAR fusion, and Zenoh-based fleet communication.",
+      "Designed and deployed a production AGV fleet at Toyota SA Manufacturing, owning the stack from C++ CANOpen drivers to SMACC2 state machines and fleet comms.",
     tags: ["Robotics", "ROS2", "C++", "CANOpen"],
     featured: true,
     caseStudy: {
@@ -108,7 +108,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "agv-operator-dashboard",
     title: "AGV Operator Dashboard",
     description:
-      "Delivered a ReactJS operator dashboard in two weeks for an automotive AGV deployment, displaying real-time position, battery status, sensor health and fault diagnostics. Confidential client work — no detail page or imagery publicly available.",
+      "Shipped a React operator dashboard in two weeks, giving an automotive AGV deployment live position, battery, sensor health and fault views.",
     tags: ["Web", "React", "Real-Time"],
     featured: true,
     confidential: true,
@@ -117,7 +117,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "nishos",
     title: "NishOS — Personal Productivity System",
     description:
-      "A full personal productivity system built on Supabase: tasks, projects, goals, fitness, nutrition, scheduling, and a markdown wiki — all synced to a Next.js app. Deep MCP integration with Claude Code for agentic workflows.",
+      "Personal operating system on Supabase and Next.js — tasks, goals, fitness, nutrition and a wiki — driven by Claude Code through MCP.",
     tags: ["Web", "Next.js", "Supabase", "PostgreSQL"],
     link: "https://app.nishalangovender.com",
     featured: true,
@@ -150,7 +150,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "park-bot",
     title: "Automatic Parking — 4WS Vehicle",
     description:
-      "Final-year thesis (Cum Laude): implemented an autonomous parking system for a four-wheel steering vehicle in ROS2/Gazebo with forward and inverse kinematic modelling, LiDAR-SLAM, NAV2 with RPP controller, A* path planning, and AMCL.",
+      "Cum Laude thesis: autonomous parking for a four-wheel-steering vehicle in ROS2 and Gazebo, with LiDAR SLAM, AMCL, A* planning and NAV2 RPP control.",
     tags: ["Robotics", "ROS2", "NAV2", "SLAM"],
     github: "https://github.com/nishalangovender/park_bot",
     featured: true,
@@ -183,7 +183,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "path-following",
     title: "Path Following Control System",
     description:
-      "Developed an autonomous path-following system for a differential-drive wagon tracking predefined trajectories using noisy GPS/IMU sensor fusion via Extended Kalman Filter, achieving 325mm per-sample tracking error.",
+      "Path-following controller for a differential-drive wagon, fusing noisy GPS and IMU with an EKF to hold 325 mm per-sample tracking error.",
     tags: ["Controls", "Python", "EKF", "Sensor Fusion"],
     featured: true,
     interactiveDemoPlanned: true,
@@ -214,7 +214,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "pen-plotter",
     title: "Pen Plotter Control System",
     description:
-      "Built an automated pen plotter for whiteboard drawing: RP2040 firmware controlling stepper motors and actuator hardware, with a Python GUI for interactive path planning, Bezier curves, and SVG file import.",
+      "Whiteboard pen plotter with RP2040 stepper firmware and a Python GUI that plans paths, draws Bézier curves and imports SVGs.",
     tags: ["Embedded", "RP2040", "C++", "Python"],
     featured: true,
     interactiveDemoPlanned: true,
@@ -245,7 +245,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "mergens-workshop",
     title: "Mergen's Workshop — Business Website & Invoicing",
     description:
-      "Built the public business website and a private invoicing system for a family workshop business. Next.js marketing site with a Supabase-backed invoicing app for quotes, invoices, and client records.",
+      "Public website and private invoicing app for a family workshop — a Next.js marketing site plus Supabase-backed quotes, invoices and client records.",
     tags: ["Web", "Next.js", "Supabase"],
     link: "https://mergensworkshop.co.za",
     featured: true,
@@ -275,7 +275,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "nishalangovender-com",
     title: "nishalangovender.com — Personal Portfolio",
     description:
-      "This site. Built with Next.js 15 (App Router), TypeScript, Tailwind CSS, Framer Motion and MDX. Engineering-aesthetic design with blueprint grid, circuit-trace dividers, and a git-graph career timeline.",
+      "This site: Next.js, TypeScript, Tailwind and MDX, with in-browser robotics demos, a terminal palette and a git-graph career timeline.",
     tags: ["Web", "Next.js", "TypeScript", "Tailwind"],
     link: "https://nishalangovender.com",
     featured: false,
@@ -284,7 +284,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "smartshooter",
     title: "The SmartShooter",
     description:
-      "PLC-controlled mechatronic system (ping pong ball launcher) with pneumatics and PID-tuned motion control. Led a team of four through design, build, and test using Siemens TIA.",
+      "PLC-controlled pneumatic ball launcher with PID-tuned motion, built in Siemens TIA by a team of four I led from design to test.",
     tags: ["Mechatronics", "PLC", "Siemens TIA", "PID"],
     featured: false,
     caseStudy: {
@@ -311,7 +311,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "multi-functional-light",
     title: "Multi-Functional Light Source",
     description:
-      "STM32-controlled multi-functional light source with white LED flashlight/emergency modes and RGB mood lighting. Buttons, slider, and trackpad input with UART communication and a custom PCB in KiCAD.",
+      "STM32 light source with flashlight, emergency and RGB mood modes, driven by buttons, slider and trackpad on a custom KiCAD PCB.",
     tags: ["Embedded", "STM32", "KiCAD"],
     featured: false,
     caseStudy: {
@@ -340,7 +340,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "mellowvans-wheel-hub",
     title: "EV Wheel Hub Optimisation",
     description:
-      "Redesigned a wheel hub for MellowVans' electric delivery vehicle, achieving 50.2% mass reduction through FEA and fatigue analysis in Autodesk Inventor for EU compliance.",
+      "Redesigned an electric delivery van's wheel hub with FEA and fatigue analysis, cutting mass by 50.2% while meeting EU regulation.",
     tags: ["Mechanical", "CAD", "FEA"],
     featured: false,
     caseStudy: {
@@ -365,7 +365,7 @@ const PROJECT_DEFINITIONS: Project[] = [
     slug: "automation-lab",
     title: "Automation Lab Digital Twin",
     description:
-      "Built a CAD digital twin of Stellenbosch University's new automation lab incorporating robot and human models, then assessed machine positioning using VR for safety evaluation.",
+      "CAD digital twin of Stellenbosch University's automation lab, with robot and human models, used in VR to assess machine placement for safety.",
     tags: ["Simulation", "CAD", "VR", "Digital Twin"],
     featured: false,
     caseStudy: {

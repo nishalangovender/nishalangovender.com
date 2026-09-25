@@ -49,7 +49,7 @@ export const timelineChapters: TimelineChapter[] = [
     subtitle: "Cordwalles · Maritzburg College",
     yearRange: "2000 – 2018",
     description:
-      "Started taking things apart in my dad's workshop to understand how they worked. That curiosity grew into a love of maths and problem-solving, earning me a closed scholarship, leadership roles, and 8 distinctions with a 90% aggregate.",
+      "Started taking things apart in my dad's workshop to see how they worked. That curiosity became a love of maths and problem-solving — a closed scholarship, leadership roles, and 8 distinctions at a 90% aggregate.",
     stripPosition: (yearToPosition(2000) + yearToPosition(2019)) / 2, // midpoint of full formative span (2000 boundary to 2019 boundary)
     notes: [
       {
@@ -88,7 +88,7 @@ export const timelineChapters: TimelineChapter[] = [
     logo: "/images/logos/stellenbosch-university.jpg",
     yearRange: "2019 – 2023",
     description:
-      "Studied Mechatronics Engineering on a full academic scholarship, graduating with a Senior Merit Award in the top 5% of the engineering faculty. Interned in robotics research and autonomous vehicle development.",
+      "Studied Mechatronics Engineering on a full academic scholarship, graduating with a Senior Merit Award in the top 5% of the faculty. Interned in robotics research and autonomous vehicle development.",
     stripPosition: yearToPosition(2021.5), // midpoint of 2019–2024 boundary
     commits: [
       {
@@ -140,7 +140,7 @@ export const timelineChapters: TimelineChapter[] = [
     logo: "/images/logos/battalion-technologies.jpeg",
     yearRange: "2024 – 2025",
     description:
-      "Joined an industrial robotics startup building AGVs. Took ownership of the entire software stack — from low-level C++ CANOpen drivers to state machines, sensor fusion, and fleet communication. Led the end-to-end deployment of a production AGV fleet at Toyota SA Manufacturing, with a scalable architecture designed to support further line expansion.",
+      "Joined an industrial robotics startup building AGVs and came to own the whole stack — C++ CANOpen drivers, state machines, sensor fusion and fleet comms. Led the production AGV fleet deployment at Toyota SA Manufacturing.",
     stripPosition: yearToPosition(2025), // midpoint of 2024–2026 boundary
     commits: [
       {
@@ -245,7 +245,7 @@ export const timelineChapters: TimelineChapter[] = [
     logo: "/images/logos/ubundi.png",
     yearRange: "May 2026 – Present",
     description:
-      "Joined a South African venture studio building human-centred AI products, agents and infrastructure. Working across both halves of the field: LLMs and agent systems inside the studio, and Physical AI — vision-language-action models, world action models, model training and bimanual manipulation.",
+      "Lead robotics engineer at a South African venture studio building human-centred AI. Exploring Physical AI — vision-language-action models and bimanual manipulation — alongside the studio's LLM and agent work.",
     stripPosition: yearToPosition((UBUNDI_START_YEAR + PRESENT_YEAR) / 2), // midpoint of May 2026–Present
     commits: [
       {
