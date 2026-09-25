@@ -1,7 +1,9 @@
 /**
  * The production dashboard shown on the factory monitor: the screen a
- * production manager watches. Stats and minimap maths are pure; drawing goes
- * to a 2D canvas that the monitor uses as a texture.
+ * production manager watches. Stats and minimap maths are pure; the static
+ * screen (title, map, cards) goes to a 2D canvas that the monitor uses as a
+ * texture, redrawn only when a value changes. The robots move over it as
+ * meshes, so they glide every frame without re-uploading the texture.
  */
 import type { Pose } from "@/lib/path-following/types";
 
@@ -19,7 +21,7 @@ export const DASH_SCALE = 2;
  * A monitor is dark in both site themes, so the dashboard always draws in
  * the nish-os dark TTY values, on a near-black screen.
  */
-const SCREEN = {
+export const SCREEN = {
   bg: "#020203",
   surface: "#0b0c0f",
   rule: "#2a2e36",
@@ -53,12 +55,19 @@ export function dashboardStats(t: number): DashboardStat[] {
   const driven = missionDistance(t);
   const moving = driven > 0;
   return [
-    { label: "ACTIVE", value: `${FLEET_SIZE}/${FLEET_SIZE}`, tone: "ok" },
-    { label: "PICKS", value: String(PICKS_BASE + Math.floor(driven / METRES_PER_PICK)), tone: "fg" },
-    { label: "UPTIME", value: "99.4%", tone: "fg" },
-    { label: "AVG SPD", value: `${(moving ? MISSION_SPEED : 0).toFixed(1)} m/s`, tone: "fg" },
-    { label: "ALERTS", value: "0", tone: "ok" },
+    { label: "Active Robots", value: `${FLEET_SIZE}/${FLEET_SIZE}`, tone: "ok" },
+    { label: "Picks", value: String(PICKS_BASE + Math.floor(driven / METRES_PER_PICK)), tone: "fg" },
+    { label: "Uptime", value: "99.999%", tone: "fg" },
+    { label: "Avg Speed", value: `${(moving ? MISSION_SPEED : 0).toFixed(1)} m/s`, tone: "fg" },
+    { label: "Alerts", value: "0", tone: "ok" },
   ];
+}
+
+/** Everything the static screen shows at `t`: redraw the canvas only when this changes. */
+export function dashboardKey(t: number): string {
+  return dashboardStats(t)
+    .map((s) => s.value)
+    .join("|");
 }
 
 /** Map-frame point → minimap pixel, keeping the floor's aspect ratio. */
@@ -71,8 +80,24 @@ export function toMinimap(x: number, y: number): [number, number] {
   return [ox + (x - FLOOR.minX) * s, oy + (FLOOR.maxY - y) * s];
 }
 
-/** Draws the dashboard for the given robot poses (hero first). */
-export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: Pose[], font: string) {
+/**
+ * Minimap pixel → monitor screen-local position (screen centre at the
+ * origin, y up), for a screen `width` × `height` in world units.
+ */
+export function minimapToScreen(px: number, py: number, width: number, height: number): [number, number] {
+  return [(px / DASH_W - 0.5) * width, (0.5 - py / DASH_H) * height];
+}
+
+/** Where robot `r` shows on the minimap, or null while it is still crossing the desk. */
+export function robotMarker(r: Pose): [number, number] | null {
+  return r.x < FLOOR.minX ? null : toMinimap(r.x, r.y);
+}
+
+/** Robot marker sizes in canvas units: dot radius, heading tick length, hero ring radius. */
+export const MARKER = { dot: 9, tick: 20, ring: 17 } as const;
+
+/** Draws the static dashboard at loop time `t`: title bar, floor map and stat cards. */
+export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, font: string) {
   const p = SCREEN;
   ctx.setTransform(DASH_SCALE, 0, 0, DASH_SCALE, 0, 0);
   ctx.fillStyle = p.bg;
@@ -82,14 +107,13 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: 
   ctx.fillStyle = p.surface;
   ctx.fillRect(0, 0, DASH_W, TITLE_H);
   ctx.textBaseline = "middle";
-  ctx.font = `700 32px ${font}`;
-  ctx.fillStyle = p.accent;
-  ctx.fillText("❯ nish_bot", PAD, TITLE_H / 2);
-  ctx.fillStyle = p.dim;
-  ctx.fillText("· fleet", PAD + 200, TITLE_H / 2);
+  ctx.font = `700 30px ${font}`;
+  ctx.fillStyle = p.fg;
+  ctx.fillText("Fleet Overview", PAD, TITLE_H / 2);
   ctx.textAlign = "right";
+  ctx.font = `600 24px ${font}`;
   ctx.fillStyle = p.ok;
-  ctx.fillText("● LIVE", DASH_W - PAD, TITLE_H / 2);
+  ctx.fillText("● Live", DASH_W - PAD, TITLE_H / 2);
   ctx.textAlign = "left";
 
   // Minimap: floor, obstacles, mission loop, robots
@@ -115,28 +139,6 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: 
   ctx.closePath();
   ctx.stroke();
   ctx.setLineDash([]);
-  robots.forEach((r, i) => {
-    // Still crossing the desk: not on the factory map yet.
-    if (r.x < FLOOR.minX) return;
-    const [x, y] = toMinimap(r.x, r.y);
-    ctx.fillStyle = p.ok;
-    ctx.beginPath();
-    ctx.arc(x, y, 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = p.ok;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + 20 * Math.cos(r.theta), y - 20 * Math.sin(r.theta));
-    ctx.stroke();
-    if (i === 0) {
-      // The hero AGV the story followed.
-      ctx.strokeStyle = p.accent;
-      ctx.beginPath();
-      ctx.arc(x, y, 17, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  });
 
   // Sidebar stat cards
   dashboardStats(t).forEach((stat, i) => {

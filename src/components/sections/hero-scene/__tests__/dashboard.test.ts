@@ -2,7 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { BEATS } from "../beats";
 import { CAMERA_KEYFRAMES, FLY_IN_START, cameraAt } from "../camera";
-import { DASH_H, DASH_W, dashboardStats, toMinimap } from "../dashboard";
+import {
+  DASH_H,
+  DASH_W,
+  dashboardKey,
+  dashboardStats,
+  minimapToScreen,
+  robotMarker,
+  toMinimap,
+} from "../dashboard";
 import { DESK } from "../desk-layout";
 import { FLOOR, MONITOR } from "../factory";
 import { acceptsGoals } from "../NavGoal";
@@ -12,7 +20,25 @@ const system = BEATS.find((b) => b.id === "system")!;
 
 describe("dashboard", () => {
   it("shows the five production cards", () => {
-    expect(dashboardStats(0).map((s) => s.label)).toEqual(["ACTIVE", "PICKS", "UPTIME", "AVG SPD", "ALERTS"]);
+    expect(dashboardStats(0).map((s) => s.label)).toEqual(["Active Robots", "Picks", "Uptime", "Avg Speed", "Alerts"]);
+    expect(dashboardStats(0)[2].value).toBe("99.999%");
+  });
+
+  it("changes its redraw key only when a shown value changes", () => {
+    const keys = new Set(Array.from({ length: 200 }, (_, i) => dashboardKey(system.start + i * 0.04)));
+    // Eight seconds of the system beat: a handful of pick ticks, not a redraw per frame.
+    expect(keys.size).toBeGreaterThan(1);
+    expect(keys.size).toBeLessThan(12);
+  });
+
+  it("maps minimap pixels onto the screen, centred, y up", () => {
+    expect(minimapToScreen(DASH_W / 2, DASH_H / 2, 4, 2.5)).toEqual([0, 0]);
+    expect(minimapToScreen(0, 0, 4, 2.5)).toEqual([-2, 1.25]);
+  });
+
+  it("hides robots still crossing the desk", () => {
+    expect(robotMarker({ x: FLOOR.minX - 0.1, y: 0, theta: 0 })).toBeNull();
+    expect(robotMarker({ x: FLOOR.minX + 1, y: 0, theta: 0 })).toEqual(toMinimap(FLOOR.minX + 1, 0));
   });
 
   it("counts picks up and reports speed once the fleet is moving", () => {
