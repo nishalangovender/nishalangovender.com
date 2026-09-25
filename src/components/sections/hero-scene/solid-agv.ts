@@ -15,10 +15,13 @@ import {
 } from "three";
 
 import { AGV, AGV_BODY_Y as BODY_Y, AGV_LIDAR_OFFSET, LIDAR_HEIGHT } from "./sketch";
+import { WHEELS } from "./wheels";
 
 export interface SolidAgv {
   group: Group;
   materials: MeshStandardMaterial[];
+  /** One pivot per wheel at its axle, in WHEELS order; spin about local z. */
+  wheels: Group[];
 }
 
 export function buildSolidAgv(): SolidAgv {
@@ -43,6 +46,7 @@ export function buildSolidAgv(): SolidAgv {
   const plate = mat("#5c636b");
   const hazard = mat("#f0c030");
   const tyre = mat("#111214", { roughness: 0.9 });
+  const hub = mat("#8a9099", { roughness: 0.4, metalness: 0.5 });
   const lidar = mat("#15171a", { roughness: 0.4 });
   const status = mat("#2ee6a8");
   status.emissive.set("#2ee6a8");
@@ -57,12 +61,32 @@ export function buildSolidAgv(): SolidAgv {
     add(new BoxGeometry(0.06, 0.14, AGV.width + 0.02), hazard, cx + (end * AGV.length) / 2, BODY_Y + 0.1, 0);
     add(new BoxGeometry(AGV.length * 0.6, 0.03, 0.02), status, cx, top - 0.05, (end * AGV.width) / 2 + 0.005);
   }
-  for (const side of [-1, 1]) {
-    add(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 20), tyre, 0, AGV.wheelRadius, (side * AGV.track) / 2, true);
-  }
-  add(new CylinderGeometry(AGV.castorRadius, AGV.castorRadius, AGV.castorWidth, 14), tyre, AGV.castorX, AGV.castorRadius, 0, true);
+  // Wheels: tyre plus a hub with three spokes on the outer face, so the spin reads.
+  const wheels = WHEELS.map((w) => {
+    const pivot = new Group();
+    pivot.position.set(w.x, w.y, w.z);
+    const outer = Math.sign(w.z) || 1;
+    const parts = [
+      new Mesh(new CylinderGeometry(w.radius, w.radius, w.width, 20), tyre),
+      new Mesh(new CylinderGeometry(w.radius * 0.45, w.radius * 0.45, w.width + 0.01, 12), hub),
+      ...[0, 1, 2].map((k) => {
+        const spoke = new Mesh(new BoxGeometry(w.radius * 1.5, w.radius * 0.18, 0.01), hub);
+        spoke.rotation.z = (k * Math.PI) / 3;
+        spoke.position.z = outer * (w.width / 2 + 0.006);
+        return spoke;
+      }),
+    ];
+    for (const p of parts.slice(0, 2)) p.rotation.x = Math.PI / 2;
+    for (const p of parts) {
+      p.castShadow = true;
+      p.receiveShadow = true;
+      pivot.add(p);
+    }
+    group.add(pivot);
+    return pivot;
+  });
   add(new CylinderGeometry(AGV.lidarRadius, AGV.lidarRadius, 0.1, 20), lidar, AGV_LIDAR_OFFSET, LIDAR_HEIGHT, 0);
-  return { group, materials };
+  return { group, materials, wheels };
 }
 
 /**

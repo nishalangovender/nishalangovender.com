@@ -24,27 +24,26 @@ import { blendPose } from "./nav-goal";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
 import { AGV, AGV_BODY_Y, AGV_LIDAR_OFFSET, LIDAR_HEIGHT, SKETCH_HEADING } from "./sketch";
 import { buildSolidAgv, setSolidOpacity, type SolidAgv } from "./solid-agv";
+import { WHEELS, spinFor, wheelTravel, type Wheel } from "./wheels";
 
 const at = (x: number, y: number, z: number) => new Matrix4().makeTranslation(x, y, z);
-const wheelAt = (z: number) =>
-  at(0, AGV.wheelRadius, z).multiply(new Matrix4().makeRotationX(Math.PI / 2));
+const axleZ = () => new Matrix4().makeRotationX(Math.PI / 2);
 
-/** Wireframe edges of the AGV in its base_link frame (x forward, y up). */
+/** Wireframe edges of the AGV body and lidar in its base_link frame (x forward, y up). */
 export function agvEdges(): number[] {
   return [
     ...edgeSegments(new BoxGeometry(AGV.length, AGV.height, AGV.width), at(AGV.offset, AGV_BODY_Y + AGV.height / 2, 0)),
-    ...edgeSegments(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(-AGV.track / 2)),
-    ...edgeSegments(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(AGV.track / 2)),
-    // Castor: a small wheel on the same axle orientation as the drive wheels.
-    ...edgeSegments(
-      new CylinderGeometry(AGV.castorRadius, AGV.castorRadius, AGV.castorWidth, 10),
-      at(AGV.castorX, AGV.castorRadius, 0).multiply(new Matrix4().makeRotationX(Math.PI / 2)),
-    ),
     ...edgeSegments(
       new CylinderGeometry(AGV.lidarRadius, AGV.lidarRadius, 0.1, 12),
       at(AGV_LIDAR_OFFSET, LIDAR_HEIGHT, 0),
     ),
   ];
+}
+
+/** Wireframe edges of one wheel centred on its axle (axle along z), so it can spin in place. */
+export function wheelEdges(wheel: Wheel): number[] {
+  const segments = wheel.id === "castor" ? 10 : 14;
+  return edgeSegments(new CylinderGeometry(wheel.radius, wheel.radius, wheel.width, segments), axleZ());
 }
 
 /** RViz TF axes at base_link: x red, y green (ROS y is −z here), z blue. */
@@ -62,6 +61,12 @@ export interface AgvModel {
   body: LineSegments2;
   axes: LineSegments2;
   solid: SolidAgv;
+  /** Wireframe wheels, one per WHEELS entry, each on a pivot at its axle. */
+  wheelLines: LineSegments2[];
+  /** Every wheel pivot (wireframe and solid) with the wheel it belongs to. */
+  spinners: { pivot: Group; wheel: Wheel }[];
+  /** Last pose shown, to roll the wheels by the distance since. */
+  last: Pose | null;
 }
 
 /**
@@ -75,20 +80,32 @@ export function useAgvModel(): AgvModel {
     const body = fatLines(agvEdges(), { linewidth: 1.5 });
     const axes = fatLines(AXES, { linewidth: 2.5, colors: new Array(AXES.length).fill(1) });
     const solid = buildSolidAgv();
+    const wheelLines = WHEELS.map((w) => fatLines(wheelEdges(w), { linewidth: 1.5 }));
+    const wirePivots = WHEELS.map((w, i) => {
+      const pivot = new Group();
+      pivot.position.set(w.x, w.y, w.z);
+      pivot.add(wheelLines[i]);
+      return pivot;
+    });
+    const spinners = [
+      ...wirePivots.map((pivot, i) => ({ pivot, wheel: WHEELS[i] })),
+      ...solid.wheels.map((pivot, i) => ({ pivot, wheel: WHEELS[i] })),
+    ];
     const group = new Group();
-    group.add(solid.group, body, axes);
+    group.add(solid.group, body, ...wirePivots, axes);
     group.renderOrder = LAYER.agv;
-    return { group, body, axes, solid };
+    return { group, body, axes, solid, wheelLines, spinners, last: null };
   }, []);
 
   useEffect(() => {
     model.body.material.color.set(palette.accent);
+    for (const line of model.wheelLines) line.material.color.set(palette.accent);
     model.axes.geometry.setColors(axisColors(palette));
   }, [model, palette]);
 
   useEffect(
     () => () => {
-      for (const line of [model.body, model.axes]) {
+      for (const line of [model.body, model.axes, ...model.wheelLines]) {
         line.geometry.dispose();
         line.material.dispose();
       }
@@ -130,7 +147,14 @@ export function heroPose(t: number): Pose {
  * desk, ramp or floor), pitched nose-down on the ramp, grown and faded in by
  * `presence` (0–1), and crossfaded from wireframe to solid by `solidity`.
  */
-export function showAgv({ group, body, axes, solid }: AgvModel, pose: Pose, presence: number, solidity: number) {
+export function showAgv(model: AgvModel, pose: Pose, presence: number, solidity: number) {
+  const { group, body, axes, solid, wheelLines } = model;
+  // Roll every wheel by how far its rim has travelled since the last frame.
+  if (model.last) {
+    const travel = wheelTravel(model.last, pose);
+    for (const { pivot, wheel } of model.spinners) pivot.rotation.z += spinFor(wheel, travel[wheel.id]);
+  }
+  model.last = pose;
   group.visible = presence > 0;
   group.position.set(...toWorld(pose.x, pose.y, groundHeight(pose.x, pose.y)));
   // Yaw about the world up axis, then pitch about the body's own left axis.
@@ -138,6 +162,10 @@ export function showAgv({ group, body, axes, solid }: AgvModel, pose: Pose, pres
   group.scale.set(1, Math.max(presence, 0.001), 1);
   body.material.opacity = presence * (1 - solidity);
   body.visible = solidity < 1;
+  for (const line of wheelLines) {
+    line.material.opacity = body.material.opacity;
+    line.visible = body.visible;
+  }
   axes.material.opacity = presence;
   setSolidOpacity(solid, presence * solidity);
 }
