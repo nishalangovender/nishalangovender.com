@@ -17,7 +17,7 @@ import { clamp01, smoothstep } from "@/lib/math";
 import type { Pose } from "@/lib/path-following/types";
 
 import { beatAt, beatProgress } from "./beats";
-import { groundHeight, groundPitch, materialised } from "./desk-layout";
+import { bodyPose, materialised } from "./desk-layout";
 import { toWorld } from "./factory";
 import { LAYER, edgeSegments, fatLines } from "./lines";
 import { missionDistance, missionPose } from "./mission";
@@ -147,9 +147,9 @@ export function heroPose(t: number): Pose {
 }
 
 /**
- * Places a model at a map-frame pose on whatever it is driving over (page,
- * desk, ramp or floor), pitched nose-down on the ramp, grown and faded in by
- * `presence` (0–1), and crossfaded from wireframe to solid by `solidity`.
+ * Places a model at a map-frame pose, resting on its wheels on whatever it
+ * is driving over (see bodyPose), grown and faded in by `presence` (0–1),
+ * and crossfaded from wireframe to solid by `solidity`.
  */
 export function showAgv(model: AgvModel, pose: Pose, presence: number, solidity: number) {
   const { group, body, axes, solid, wheelLines } = model;
@@ -160,9 +160,10 @@ export function showAgv(model: AgvModel, pose: Pose, presence: number, solidity:
   }
   model.last = pose;
   group.visible = presence > 0;
-  group.position.set(...toWorld(pose.x, pose.y, groundHeight(pose.x, pose.y)));
+  const { height, pitch } = bodyPose(pose);
+  group.position.set(...toWorld(pose.x, pose.y, height));
   // Yaw about the world up axis, then pitch about the body's own left axis.
-  group.rotation.set(0, pose.theta, -groundPitch(pose.x, pose.y), "YZX");
+  group.rotation.set(0, pose.theta, -pitch, "YZX");
   group.scale.set(1, Math.max(presence, 0.001), 1);
   body.material.opacity = presence * (1 - solidity);
   body.visible = solidity < 1;

@@ -4,7 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import { BufferGeometry, Float32BufferAttribute, Group, Points, PointsMaterial } from "three";
 
-import { groundHeight } from "./desk-layout";
+import { bodyPose } from "./desk-layout";
 import { raycast, toWorld } from "./factory";
 import { LAYER, fatLines } from "./lines";
 import { cloudMorph } from "./PointCloud";
@@ -63,7 +63,7 @@ export function Lidar() {
     const ox = agv.x + AGV_LIDAR_OFFSET * Math.cos(agv.theta);
     const oy = agv.y + AGV_LIDAR_OFFSET * Math.sin(agv.theta);
     // Scan plane rides with the AGV: page, desk, ramp or factory floor.
-    const scanH = groundHeight(agv.x, agv.y) + LIDAR_HEIGHT;
+    const scanH = bodyPose(agv).height + LIDAR_HEIGHT;
     const pos = hits.geometry.attributes.position.array as Float32Array;
     for (let i = 0; i < RAYS; i++) {
       const a = agv.theta + (i / RAYS) * Math.PI * 2;
