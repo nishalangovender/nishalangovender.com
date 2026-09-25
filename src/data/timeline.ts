@@ -8,7 +8,8 @@ import {
 
 export interface ChapterCommit {
   prefix: string; // "feat:", "fix:", "chore:"
-  message: string;
+  /** One entry per achievement — never hand-wrapped; the UI handles wrapping. */
+  message: string[];
   year?: string;
   /** Force text alignment: "left" | "right" | "center". Overrides auto-detection. */
   anchor?: "left" | "right" | "center";
@@ -65,13 +66,17 @@ export const timelineChapters: TimelineChapter[] = [
     commits: [
       {
         prefix: "feat:",
-        message:
-          "Prefect\nHead of Academics\nHead of Peer Tutoring\nProvincial Debating Captain",
+        message: [
+          "Prefect",
+          "Head of Academics",
+          "Head of Peer Tutoring",
+          "Provincial Debating Captain",
+        ],
         year: "Jan 2018",
       },
       {
         prefix: "feat:",
-        message: "8 Distinctions\n90% Aggregate",
+        message: ["8 Distinctions, 90% Aggregate"],
         year: "Dec 2018",
       },
     ],
@@ -88,16 +93,21 @@ export const timelineChapters: TimelineChapter[] = [
     commits: [
       {
         prefix: "feat:",
-        message:
-          "Senior Merit Award — \nTop 5% in Faculty\nGolden Key International \nHonour Society",
+        message: [
+          "Senior Merit Award — Top 5% in Faculty",
+          "Golden Key International Honour Society",
+        ],
         year: "2020.0",
         displayYear: "Jan 2020",
         anchor: "center",
       },
       {
         prefix: "feat:",
-        message:
-          "Graduate\nFinal-Year \nProject Distinction\n7 Dean's Merit Awards",
+        message: [
+          "Graduate",
+          "Final-Year Project Distinction",
+          "7 Dean's Merit Awards",
+        ],
         year: "2023.5",
         displayYear: "Dec 2023",
         anchor: "right",
@@ -109,12 +119,12 @@ export const timelineChapters: TimelineChapter[] = [
         events: [
           {
             prefix: "feat:",
-            text: "MAD Research Group\nResearch Intern",
+            text: ["MAD Research Group", "Research Intern"],
             date: "Jun 2022",
           },
           {
             prefix: "feat:",
-            text: "MellowVans\nEngineering Intern",
+            text: ["MellowVans", "Engineering Intern"],
             date: "Nov 2022",
           },
         ],
@@ -135,39 +145,50 @@ export const timelineChapters: TimelineChapter[] = [
     commits: [
       {
         prefix: "feat:",
-        message:
-          "Internship\nOperator Dashboard\nFull-Time Offer\nEstablished Software\nEngineering Practice",
+        message: [
+          "Internship",
+          "Operator Dashboard",
+          "Full-Time Offer",
+          "Established Software Engineering Practice",
+        ],
         year: "2024.3",
         displayYear: "May-Sep 2024",
         anchor: "left",
       },
       {
         prefix: "feat:",
-        message: "Ford & VW Demo",
+        message: ["Ford & VW Demo"],
         year: "2024.6",
         displayYear: "Oct-Dec 2024",
         anchor: "center",
       },
       {
         prefix: "feat:",
-        message:
-          "Laser-Guided AGV Training\nDelivered DOZERs to Toyota Africa Parts Centre",
+        message: [
+          "Laser-Guided AGV Training",
+          "Delivered DOZERs to Toyota Africa Parts Centre",
+        ],
         year: "2024.9",
         displayYear: "Jan-Mar 2025",
         anchor: "center",
       },
       {
         prefix: "feat:",
-        message:
-          "Isuzu & S4 Demo\nTechnical Lead\nToyota Africa Parts Centre\nNetwork Upgrade",
+        message: [
+          "Isuzu & S4 Demo",
+          "Technical Lead",
+          "Toyota Africa Parts Centre Network Upgrade",
+        ],
         year: "2025.2",
         displayYear: "Apr-Jun 2025",
         anchor: "center",
       },
       {
         prefix: "feat:",
-        message:
-          "Successful Trials\nAGV Fleet Deployment\nToyota SA Manufacturing",
+        message: [
+          "Successful Trials",
+          "AGV Fleet Deployment at Toyota SA Manufacturing",
+        ],
         year: "2025.8",
         displayYear: "Oct-Dec 2025",
       },
@@ -203,14 +224,14 @@ export const timelineChapters: TimelineChapter[] = [
     commits: [
       {
         prefix: "feat:",
-        message: "Industrial IoT\nDelivered Website \n& Invoicing System",
+        message: ["Industrial IoT", "Delivered Website & Invoicing System"],
         year: "2026.2",
         displayYear: "Mar 2026",
         anchor: "left",
       },
       {
         prefix: "feat:",
-        message: "Industrial Automation",
+        message: ["Industrial Automation"],
         year: "2026.3",
         displayYear: "Apr 2026",
         anchor: "center",
@@ -229,7 +250,7 @@ export const timelineChapters: TimelineChapter[] = [
     commits: [
       {
         prefix: "feat:",
-        message: "Robotics Engineer\nAI & Physical AI\nStellenbosch · Hybrid",
+        message: ["Joined Ubundi", "Physical AI R&D"],
         year: "2026.5",
         displayYear: "May 2026",
         anchor: "left",
@@ -251,7 +272,8 @@ export interface TimelineEvent {
 }
 
 export interface BranchEvent {
-  text: string;
+  /** First item is the label, the rest are dim sub-lines. */
+  text: string[];
   prefix: string; // e.g. "feat:" or "fix:"
   date?: string; // display date below the label
 }
@@ -347,8 +369,8 @@ export const timelineYears: TimelineYear[] = [
     branch: {
       name: "feat/internships",
       events: [
-        { prefix: "feat:", text: "Research Intern — MAD Group" },
-        { prefix: "feat:", text: "Engineering Intern — MellowVans" },
+        { prefix: "feat:", text: ["Research Intern — MAD Group"] },
+        { prefix: "feat:", text: ["Engineering Intern — MellowVans"] },
       ],
       mergeYear: "2023",
     },
@@ -384,8 +406,8 @@ export const timelineYears: TimelineYear[] = [
     branch: {
       name: "feat/open-source-contributions",
       events: [
-        { prefix: "feat:", text: "NAV2" },
-        { prefix: "feat:", text: "SMACC2 Research Group" },
+        { prefix: "feat:", text: ["NAV2"] },
+        { prefix: "feat:", text: ["SMACC2 Research Group"] },
       ],
       mergeYear: "2026",
     },

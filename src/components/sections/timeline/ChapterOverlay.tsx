@@ -215,15 +215,15 @@ export function ChapterOverlay({
                   }}
                 />
                 <div
-                  className={`absolute flex flex-col ${anchorClass}`}
+                  className={`absolute flex flex-col gap-0.5 w-max max-w-[10rem] ${anchorClass}`}
                   style={{ top: `calc(100% + ${stemH + 4}px)` }}
                 >
-                  {commit.message.split("\n").map((line, li) => (
+                  {commit.message.map((item) => (
                     <span
-                      key={li}
-                      className="whitespace-nowrap text-[11px] text-foreground/80 font-medium leading-tight"
+                      key={item}
+                      className="text-[11px] text-foreground/80 font-medium leading-tight"
                     >
-                      {line}
+                      {item}
                     </span>
                   ))}
                 </div>
@@ -378,15 +378,15 @@ export function ChapterOverlay({
                             : "left-1/2 -translate-x-1/2 items-start text-left";
                       return (
                         <div
-                          className={`absolute flex flex-col ${alignClass}`}
+                          className={`absolute flex flex-col w-max max-w-[10rem] ${alignClass}`}
                           style={{ top: `calc(100% + ${labelDrop + 2}px)` }}
                         >
-                          {event.text.split("\n").map((line, li) => (
+                          {event.text.map((item, li) => (
                             <span
-                              key={li}
-                              className={`whitespace-nowrap text-[11px] ${li === 0 ? "text-foreground/80 font-medium" : "text-foreground/50"} leading-tight`}
+                              key={item}
+                              className={`text-[11px] ${li === 0 ? "text-foreground/80 font-medium" : "text-foreground/50"} leading-tight`}
                             >
-                              {line}
+                              {item}
                             </span>
                           ))}
                         </div>

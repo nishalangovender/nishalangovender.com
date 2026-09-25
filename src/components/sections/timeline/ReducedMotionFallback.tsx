@@ -30,7 +30,7 @@ export function ReducedMotionFallback() {
                   <span className="font-mono text-accent/60 text-xs">
                     {c.prefix}
                   </span>{" "}
-                  {c.message}
+                  {c.message.join(" · ")}
                 </p>
               ))}
             </div>

@@ -55,7 +55,7 @@ function yearToChapterIndex(year: string): number {
 
 // ─── Build augmented mobile data ──────────────────────────────────────
 
-function buildMobileTimeline(): TimelineYear[] {
+export function buildMobileTimeline(): TimelineYear[] {
   const years: TimelineYear[] = JSON.parse(JSON.stringify(timelineYears));
 
   // Anchor the start of the timeline at 2000 to match the desktop chapter
@@ -101,9 +101,9 @@ function buildMobileTimeline(): TimelineYear[] {
   const y2024 = years.find((y) => y.year === "2024");
   if (y2024 && battChapter) {
     battChapter.commits
-      .filter((c) => c.message && parseFloat(c.year || "0") < 2025)
+      .filter((c) => parseFloat(c.year || "0") < 2025)
       .forEach((c) => {
-        c.message.split("\n").filter(Boolean).forEach((line) => {
+        c.message.forEach((line) => {
           y2024.events.push({ month: c.displayYear || "", text: line, side: "right" });
         });
       });
@@ -111,11 +111,11 @@ function buildMobileTimeline(): TimelineYear[] {
   const y2025 = years.find((y) => y.year === "2025");
   if (y2025 && battChapter) {
     const extraCommits = battChapter.commits.filter(
-      (c) => c.message && parseFloat(c.year || "0") >= 2025,
+      (c) => parseFloat(c.year || "0") >= 2025,
     );
     const existingRight = y2025.events.filter((e) => e.side === "right");
     extraCommits.forEach((c) => {
-      c.message.split("\n").filter(Boolean).forEach((line) => {
+      c.message.forEach((line) => {
         if (!existingRight.some((e) => e.text === line)) {
           y2025.events.push({ month: c.displayYear || "", text: line, side: "right" });
         }
@@ -131,8 +131,8 @@ function buildMobileTimeline(): TimelineYear[] {
   );
   if (y2026) {
     chapters2026.forEach((chapter) => {
-      chapter.commits.filter((c) => c.message).forEach((c) => {
-        c.message.split("\n").filter(Boolean).forEach((line) => {
+      chapter.commits.forEach((c) => {
+        c.message.forEach((line) => {
           y2026.events.push({ month: c.displayYear || "", text: line, side: "right" });
         });
       });
@@ -569,7 +569,7 @@ function TimelineYears({ Item }: { Item: typeof motion.div | "div" }) {
                           <div className="w-1.5 h-1.5 rounded-full bg-accent/30 flex-shrink-0" />
                         </div>
                         <span className="text-sm text-foreground/70 leading-snug ml-1.5">
-                          {event.text}
+                          {event.text.join(" · ")}
                         </span>
                       </div>
                     ))}
