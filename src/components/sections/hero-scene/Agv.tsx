@@ -38,7 +38,11 @@ export function agvEdges(): number[] {
     ...edgeSegments(new BoxGeometry(AGV.length, AGV.height, AGV.width), at(AGV.offset, BODY_Y + AGV.height / 2, 0)),
     ...edgeSegments(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(-AGV.track / 2)),
     ...edgeSegments(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(AGV.track / 2)),
-    ...edgeSegments(new CylinderGeometry(0.07, 0.07, 0.05, 10), at(AGV.castorX, 0.07, 0)),
+    // Castor: a small wheel on the same axle orientation as the drive wheels.
+    ...edgeSegments(
+      new CylinderGeometry(AGV.castorRadius, AGV.castorRadius, AGV.castorWidth, 10),
+      at(AGV.castorX, AGV.castorRadius, 0).multiply(new Matrix4().makeRotationX(Math.PI / 2)),
+    ),
     ...edgeSegments(
       new CylinderGeometry(AGV.lidarRadius, AGV.lidarRadius, 0.1, 12),
       at(AGV_LIDAR_OFFSET, LIDAR_HEIGHT, 0),

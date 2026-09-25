@@ -40,6 +40,8 @@ export const AGV = {
   /** Wheel centres at ±track/2 across. */
   track: 1.18,
   castorX: 0.75,
+  castorRadius: 0.07,
+  castorWidth: 0.05,
   lidarRadius: 0.1,
 } as const;
 
@@ -105,11 +107,11 @@ export const SKETCH_STROKES: readonly Stroke[] = [
   // World frame
   ...arrow("ink", ORIGIN, [ORIGIN[0], 1.3]),
   ...arrow("ink", ORIGIN, [1.85, ORIGIN[1]]),
-  // Robot: chassis, drive wheels, castor
+  // Robot: chassis, drive wheels, castor wheel
   { role: "ink", body: true, points: bodyRect(AGV.offset, 0, AGV.length, AGV.width) },
   { role: "ink", body: true, points: bodyRect(0, -AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
   { role: "ink", body: true, points: bodyRect(0, AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
-  { role: "ink", body: true, points: arc(body(AGV.castorX, 0), 0.07, 0, Math.PI * 2, 12) },
+  { role: "ink", body: true, points: bodyRect(AGV.castorX, 0, AGV.castorRadius * 2, AGV.castorWidth) },
   // θ: dashed reference from the origin to base_link, and its angle
   { role: "ink", points: [ORIGIN, add(ORIGIN, polar(0.75, refAngle)), add(ORIGIN, polar(1.5, refAngle)), B], dashed: true },
   { role: "ink", points: arc(ORIGIN, 0.42, 0, refAngle, 8) },

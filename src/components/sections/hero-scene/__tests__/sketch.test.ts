@@ -41,8 +41,7 @@ describe("sketch geometry", () => {
 
   it("marks only the chassis, drive wheels and castor as the lifting robot outline", () => {
     const bodyCount = SKETCH_BODY.filter(Boolean).length;
-    expect(bodyCount).toBeGreaterThan(0);
-    expect(bodyCount).toBeLessThan(SKETCH_BODY.length);
+    expect(bodyCount).toBe(4 * 4); // four closed rectangles
     expect(bodySegmentsIn(SKETCH_BODY.length)).toBe(bodyCount);
     SKETCH_BODY.forEach((isBody, i) => {
       if (isBody) expect(SKETCH_ROLES[i]).toBe("ink");
