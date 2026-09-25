@@ -1,7 +1,10 @@
 /**
- * The factory the notebook becomes, in the ROS map frame (x forward, y left,
- * metres). `toWorld` maps a map point onto the three.js floor: (x, h, −y).
- * Pure maths — the point cloud, lidar and costmap all read from here.
+ * The desk and the factory beside it, in the ROS map frame (x forward, y
+ * left, metres). The notebook lies at the origin and the monitor stands
+ * behind it; the factory floor starts just past the page's right edge, open
+ * on that side so the AGV can drive straight in. `toWorld` maps a map point
+ * onto the three.js floor: (x, h, −y). Pure maths — the point cloud, lidar
+ * and costmap all read from here.
  */
 
 export interface Rect {
@@ -15,23 +18,27 @@ export interface Rect {
   h: number;
 }
 
-export const FLOOR = { minX: -6, maxX: 6, minY: -3.6, maxY: 5.4, wallHeight: 2.6 } as const;
+/** Factory centre line, far enough right that the page and the floor don't overlap. */
+const FX = 8.8;
+
+/** Factory floor. The west side (minX, facing the desk) has no wall. */
+export const FLOOR = { minX: FX - 6, maxX: FX + 6, minY: -3.6, maxY: 5.4, wallHeight: 2.6 } as const;
 
 /** Two rack rows either side of the loop the AGV runs, plus two pillars. */
 export const OBSTACLES: readonly Rect[] = [
-  { x: -2.6, y: 3.2, w: 3.8, d: 0.9, h: 2.2 },
-  { x: 2.6, y: 3.2, w: 3.8, d: 0.9, h: 2.2 },
-  { x: -2.6, y: -1.5, w: 3.8, d: 0.9, h: 2.2 },
-  { x: 2.6, y: -1.5, w: 3.8, d: 0.9, h: 2.2 },
-  { x: -5.2, y: 0.9, w: 0.4, d: 0.4, h: 2.6 },
-  { x: 5.2, y: 0.9, w: 0.4, d: 0.4, h: 2.6 },
+  { x: FX - 2.6, y: 3.2, w: 3.8, d: 0.9, h: 2.2 },
+  { x: FX + 2.6, y: 3.2, w: 3.8, d: 0.9, h: 2.2 },
+  { x: FX - 2.6, y: -1.5, w: 3.8, d: 0.9, h: 2.2 },
+  { x: FX + 2.6, y: -1.5, w: 3.8, d: 0.9, h: 2.2 },
+  { x: FX - 5.2, y: 0.9, w: 0.4, d: 0.4, h: 2.6 },
+  { x: FX + 5.2, y: 0.9, w: 0.4, d: 0.4, h: 2.6 },
 ];
 
 /**
- * The production monitor, standing in the gap of the far rack row and facing
- * down the aisle. Screen centre height and size in metres (16:10).
+ * The production monitor on the desk, behind the notebook and facing it.
+ * Screen centre height and size in metres (16:10) — desk scale, like the book.
  */
-export const MONITOR = { x: 0, y: 3.2, height: 1.6, width: 1.3, screenHeight: 0.8125 } as const;
+export const MONITOR = { x: 0, y: 2.6, height: 2.3, width: 5.2, screenHeight: 3.25 } as const;
 
 /** Centre of the factory floor in the map frame — where the camera looks. */
 export const FACTORY_CENTRE = {
@@ -72,13 +79,12 @@ export function factoryPoints(n: number, seed = 7): Float32Array {
     if (r < 0.16) {
       put(i, FLOOR.minX + rand() * spanX, FLOOR.minY + rand() * spanY, 0);
     } else if (r < 0.45) {
-      // Walls, weighted by length.
+      // North, south and east walls, weighted by length; the west side opens onto the desk.
       const h = rand() * FLOOR.wallHeight;
-      const u = rand() * 2 * (spanX + spanY);
+      const u = rand() * (2 * spanX + spanY);
       if (u < spanX) put(i, FLOOR.minX + u, FLOOR.maxY, h);
       else if (u < 2 * spanX) put(i, FLOOR.minX + (u - spanX), FLOOR.minY, h);
-      else if (u < 2 * spanX + spanY) put(i, FLOOR.minX, FLOOR.minY + (u - 2 * spanX), h);
-      else put(i, FLOOR.maxX, FLOOR.minY + (u - 2 * spanX - spanY), h);
+      else put(i, FLOOR.maxX, FLOOR.minY + (u - 2 * spanX), h);
     } else {
       const o = OBSTACLES[Math.floor(rand() * OBSTACLES.length)];
       const side = rand();
@@ -95,7 +101,9 @@ export function factoryPoints(n: number, seed = 7): Float32Array {
 
 /** Distance from (x, y) to the nearest obstacle or wall, in metres. */
 export function clearance(x: number, y: number): number {
-  let best = Math.min(x - FLOOR.minX, FLOOR.maxX - x, y - FLOOR.minY, FLOOR.maxY - y);
+  // Outside the floor is not drivable; inside, the open west side is no wall.
+  if (x < FLOOR.minX) return -1;
+  let best = Math.min(FLOOR.maxX - x, y - FLOOR.minY, FLOOR.maxY - y);
   for (const o of OBSTACLES) {
     const dx = Math.max(Math.abs(x - o.x) - o.w / 2, 0);
     const dy = Math.max(Math.abs(y - o.y) - o.d / 2, 0);
@@ -115,10 +123,9 @@ export function costAt(x: number, y: number, radius = 0.9): number {
 export function raycast(x: number, y: number, angle: number, maxRange: number): number {
   const dx = Math.cos(angle);
   const dy = Math.sin(angle);
-  // Walls: the ray always leaves the floor rectangle.
+  // Walls: north, south and east (the west side is open).
   let t = maxRange;
   if (dx > 0) t = Math.min(t, (FLOOR.maxX - x) / dx);
-  if (dx < 0) t = Math.min(t, (FLOOR.minX - x) / dx);
   if (dy > 0) t = Math.min(t, (FLOOR.maxY - y) / dy);
   if (dy < 0) t = Math.min(t, (FLOOR.minY - y) / dy);
   // Obstacles: 2D slab test.

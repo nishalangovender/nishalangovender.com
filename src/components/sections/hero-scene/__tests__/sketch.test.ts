@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { agvEdges, agvPresence, heroPose } from "../Agv";
 import { BEATS, TOTAL_DURATION } from "../beats";
 import { inkAt } from "../InkSketch";
-import { pageOpacity } from "../Notebook";
 import {
   PAGE,
   SKETCH_HEADING,
@@ -67,7 +66,6 @@ describe("beats 1–2", () => {
   it("starts the loop on a blank page", () => {
     expect(inkAt(0).drawn).toBe(0);
     expect(agvPresence(0)).toBe(0);
-    expect(pageOpacity(0)).toBe(1);
   });
 
   it("finishes the drawing and labels before the design beat, then lifts it into the AGV", () => {
@@ -91,6 +89,5 @@ describe("beats 1–2", () => {
     const end = TOTAL_DURATION - 1e-6;
     expect(inkAt(end).opacity).toBe(0);
     expect(agvPresence(end)).toBeCloseTo(0, 3);
-    expect(pageOpacity(end)).toBeCloseTo(1, 3);
   });
 });

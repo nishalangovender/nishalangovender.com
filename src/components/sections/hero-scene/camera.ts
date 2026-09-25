@@ -23,7 +23,7 @@ const aroundCentre = (dx: number, y: number, dz: number): CameraPose => ({
 });
 
 /** Distance from the screen at which it fills the view (fov 40°, 16:10 canvas). */
-const SCREEN_DISTANCE = 1.45;
+const SCREEN_DISTANCE = MONITOR.width * 1.12;
 const screen = toWorld(MONITOR.x, MONITOR.y, MONITOR.height);
 
 const POSES = {

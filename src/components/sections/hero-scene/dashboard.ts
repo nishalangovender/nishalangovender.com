@@ -7,7 +7,7 @@ import type { Pose } from "@/lib/path-following/types";
 
 import { FLOOR, OBSTACLES } from "./factory";
 import { FLEET_SIZE } from "./Fleet";
-import { MISSION, MISSION_SPEED, missionDistance } from "./mission";
+import { LOOP, MISSION_SPEED, missionDistance } from "./mission";
 import type { Palette } from "./scene-context";
 
 /** Canvas size in pixels (16:10, matching the monitor screen). */
@@ -89,7 +89,7 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: 
   ctx.strokeStyle = p.dim;
   ctx.setLineDash([6, 8]);
   ctx.beginPath();
-  MISSION.forEach((m, i) => {
+  LOOP.forEach((m, i) => {
     const [x, y] = toMinimap(m.x, m.y);
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
@@ -98,6 +98,8 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: 
   ctx.stroke();
   ctx.setLineDash([]);
   robots.forEach((r, i) => {
+    // Still crossing the desk: not on the factory map yet.
+    if (r.x < FLOOR.minX) return;
     const [x, y] = toMinimap(r.x, r.y);
     ctx.fillStyle = p.ok;
     ctx.beginPath();

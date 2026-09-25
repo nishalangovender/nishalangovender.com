@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { BEATS, TOTAL_DURATION } from "../beats";
-import { FLOOR, OBSTACLES, clearance, costAt, factoryPoints, raycast } from "../factory";
-import { MISSION, MISSION_LENGTH, missionDistance, missionPose } from "../mission";
+import { FACTORY_CENTRE, FLOOR, OBSTACLES, clearance, costAt, factoryPoints, raycast } from "../factory";
+import { LEAD_IN_LENGTH, LOOP, LOOP_LENGTH, loopPose, missionDistance, missionPose } from "../mission";
 import { buildCloud, cloudMorph } from "../PointCloud";
+import { PAGE } from "../sketch";
 import { AGV, BASE_LINK } from "../sketch";
 
 const beat = (id: string) => BEATS.find((b) => b.id === id)!;
@@ -27,7 +28,7 @@ describe("factory", () => {
   it("inflates cost around obstacles and leaves open floor free", () => {
     const rack = OBSTACLES[0];
     expect(costAt(rack.x, rack.y)).toBe(1);
-    expect(costAt(0, 0.9)).toBe(0);
+    expect(costAt(FACTORY_CENTRE.x, 0.9)).toBe(0);
     expect(costAt(rack.x, rack.y - rack.d / 2 - 0.3)).toBeGreaterThan(0);
   });
 
@@ -35,7 +36,7 @@ describe("factory", () => {
     const rack = OBSTACLES[0];
     const fromY = rack.y - rack.d / 2 - 2;
     expect(raycast(rack.x, fromY, Math.PI / 2, 20)).toBeCloseTo(2, 6);
-    expect(raycast(0, 0.9, 0, 20)).toBeLessThanOrEqual(FLOOR.maxX);
+    expect(raycast(FACTORY_CENTRE.x, 0.9, 0, 20)).toBeLessThanOrEqual(FLOOR.maxX - FACTORY_CENTRE.x);
   });
 });
 
@@ -44,15 +45,23 @@ describe("mission", () => {
     expect(missionPose(0)).toEqual({ x: BASE_LINK.x, y: 0, theta: 0 });
   });
 
-  it("closes the loop and keeps the AGV clear of every obstacle", () => {
-    const end = missionPose(MISSION_LENGTH - 1e-6);
-    expect(end.x).toBeCloseTo(BASE_LINK.x, 2);
-    expect(end.y).toBeCloseTo(0, 2);
-    for (const p of MISSION) expect(clearance(p.x, p.y)).toBeGreaterThan(AGV.width / 2);
+  it("drives straight off the page's right edge into the factory", () => {
+    const edge = missionPose(PAGE.width / 2 - BASE_LINK.x);
+    expect(edge).toEqual({ x: PAGE.width / 2, y: 0, theta: 0 });
+    const entry = missionPose(LEAD_IN_LENGTH);
+    expect(entry.x).toBeGreaterThan(FLOOR.minX);
+    expect(clearance(entry.x, entry.y)).toBeGreaterThan(AGV.width / 2);
   });
 
-  it("waits for the factory, drives through deploy and system, then stops", () => {
-    expect(missionDistance(beat("deploy").start + 0.5)).toBe(0);
+  it("closes the loop and keeps the AGV clear of every obstacle", () => {
+    const end = loopPose(LOOP_LENGTH - 1e-6);
+    expect(end.x).toBeCloseTo(LOOP[0].x, 2);
+    expect(end.y).toBeCloseTo(LOOP[0].y, 2);
+    for (const p of LOOP) expect(clearance(p.x, p.y)).toBeGreaterThan(AGV.width / 2);
+  });
+
+  it("sets off at the start of deploy, drives through system, then stops", () => {
+    expect(missionDistance(beat("deploy").start + 0.1)).toBe(0);
     expect(missionDistance(beat("deploy").end)).toBeGreaterThan(0);
     expect(missionDistance(beat("system").end)).toBeGreaterThan(missionDistance(beat("deploy").end));
     expect(missionDistance(beat("return").end - 0.01)).toBe(missionDistance(beat("system").end));

@@ -3,8 +3,9 @@ import { describe, expect, it } from "vitest";
 import { BEATS } from "../beats";
 import { CAMERA_KEYFRAMES, FLY_IN_START, cameraAt } from "../camera";
 import { DASH_H, DASH_W, dashboardStats, toMinimap } from "../dashboard";
-import { FLOOR, MONITOR, OBSTACLES } from "../factory";
+import { FLOOR, MONITOR } from "../factory";
 import { acceptsGoals } from "../NavGoal";
+import { PAGE } from "../sketch";
 
 const system = BEATS.find((b) => b.id === "system")!;
 
@@ -50,12 +51,9 @@ describe("monitor fly-in", () => {
     expect(pose.position[1]).toBeCloseTo(pose.target[1], 3);
   });
 
-  it("stands the monitor in the gap of a rack row", () => {
-    for (const o of OBSTACLES) {
-      const overlapX = Math.abs(MONITOR.x - o.x) < o.w / 2;
-      const overlapY = Math.abs(MONITOR.y - o.y) < o.d / 2;
-      expect(overlapX && overlapY).toBe(false);
-    }
+  it("stands the monitor on the desk behind the notebook, clear of the factory", () => {
+    expect(MONITOR.x + MONITOR.width / 2).toBeLessThan(FLOOR.minX);
+    expect(MONITOR.y).toBeGreaterThan(PAGE.depth / 2);
   });
 
   it("stops accepting nav goals once the camera heads for the monitor", () => {

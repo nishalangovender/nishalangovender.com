@@ -7,17 +7,18 @@ import { BufferGeometry, Color, Float32BufferAttribute, Points, ShaderMaterial }
 import { clamp01, smoothstep } from "@/lib/math";
 
 import { beatAt, beatProgress } from "./beats";
-import { factoryPoints, mulberry32 } from "./factory";
+import { FLOOR, factoryPoints, mulberry32, toWorld } from "./factory";
 import { LAYER } from "./lines";
 import { useScene, useScenePalette } from "./scene-context";
-import { pageDots } from "./sketch";
 
-/** Points per page dot: desktop stacks 12 (≈15k points), phones 6 (≈7.6k). */
-const COPIES = { desktop: 12, mobile: 6 } as const;
+/** Dot pitch of the desk grid the factory rises from, metres. */
+const DESK_PITCH = 0.35;
+/** Points per desk dot: desktop stacks 16 (≈14k points), phones 8 (≈7k). */
+const COPIES = { desktop: 16, mobile: 8 } as const;
 /** Latest start of a point's morph, so the rise ripples instead of snapping. */
 const MAX_DELAY = 0.35;
 
-/** 0 = dot grid on the page, 1 = factory point cloud. */
+/** 0 = flat dot grid on the desk, 1 = factory point cloud. */
 export function cloudMorph(t: number): number {
   const id = beatAt(t).id;
   if (id === "deploy") return smoothstep(clamp01(beatProgress(t, "deploy") / 0.45));
@@ -26,12 +27,22 @@ export function cloudMorph(t: number): number {
   return 0;
 }
 
+/** Desk dot grid over the factory's footprint, as flat three.js [x, y, z]. */
+function deskDots(): number[] {
+  const out: number[] = [];
+  for (let x = FLOOR.minX + DESK_PITCH / 2; x < FLOOR.maxX; x += DESK_PITCH) {
+    for (let y = FLOOR.minY + DESK_PITCH / 2; y < FLOOR.maxY; y += DESK_PITCH) out.push(...toWorld(x, y, 0.001));
+  }
+  return out;
+}
+
 /**
- * Every page dot is `copies` stacked points; in the deploy beat they peel
- * apart and rise into a lidar map of the factory, then settle back.
+ * Every desk dot beside the notebook is `copies` stacked points; in the deploy
+ * beat they peel apart and rise into a lidar map of the factory, then settle
+ * back and fade.
  */
 export function buildCloud(copies: number): { from: Float32Array; to: Float32Array; delay: Float32Array } {
-  const dots = pageDots();
+  const dots = deskDots();
   const n = (dots.length / 3) * copies;
   const from = new Float32Array(n * 3);
   for (let c = 0; c < copies; c++) from.set(dots, c * dots.length);
@@ -59,6 +70,7 @@ const vertexShader = /* glsl */ `
 `;
 
 const fragmentShader = /* glsl */ `
+  uniform float uMorph;
   uniform vec3 uDot;
   uniform vec3 uLow;
   uniform vec3 uHigh;
@@ -68,7 +80,9 @@ const fragmentShader = /* glsl */ `
     vec2 c = gl_PointCoord - 0.5;
     if (dot(c, c) > 0.25) discard;
     vec3 cloud = mix(uLow, uHigh, clamp(vH / 2.6, 0.0, 1.0));
-    gl_FragColor = vec4(mix(uDot, cloud, vK), mix(0.55, 0.8, vK));
+    // The desk grid only shows while the factory is forming or standing.
+    float show = smoothstep(0.0, 0.12, uMorph);
+    gl_FragColor = vec4(mix(uDot, cloud, vK), mix(0.4, 0.8, vK) * show);
   }
 `;
 

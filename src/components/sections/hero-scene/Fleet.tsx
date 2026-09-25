@@ -3,10 +3,11 @@
 import { useFrame } from "@react-three/fiber";
 
 import { clamp01, smoothstep } from "@/lib/math";
+import type { Pose } from "@/lib/path-following/types";
 
 import { showAgv, useAgvModel } from "./Agv";
 import { beatAt, beatProgress } from "./beats";
-import { MISSION_LENGTH, missionDistance, missionPose } from "./mission";
+import { LEAD_IN_LENGTH, LOOP_LENGTH, loopPose, missionDistance } from "./mission";
 import { useScene } from "./scene-context";
 
 /** Fleet size, including the hero AGV. */
@@ -20,9 +21,10 @@ export function fleetPresence(t: number): number {
   return 0;
 }
 
-/** Mission distance of fleet member `index` (1-based after the hero), spaced evenly round the loop. */
-export function fleetDistance(t: number, index: number): number {
-  return missionDistance(t) + (index * MISSION_LENGTH) / FLEET_SIZE;
+/** Pose of fleet member `index` (1-based after the hero), spaced evenly round the loop from the hero. */
+export function fleetPose(t: number, index: number): Pose {
+  const heroOnLoop = Math.max(0, missionDistance(t) - LEAD_IN_LENGTH);
+  return loopPose(heroOnLoop + (index * LOOP_LENGTH) / FLEET_SIZE);
 }
 
 function FleetAgv({ index }: { index: number }) {
@@ -31,7 +33,7 @@ function FleetAgv({ index }: { index: number }) {
 
   useFrame(() => {
     const t = sceneRef.current.t;
-    showAgv(model, missionPose(fleetDistance(t, index)), fleetPresence(t));
+    showAgv(model, fleetPose(t, index), fleetPresence(t));
   });
 
   return <primitive object={model.group} />;

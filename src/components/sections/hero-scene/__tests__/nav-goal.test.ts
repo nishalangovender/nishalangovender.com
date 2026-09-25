@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import { BEATS } from "../beats";
-import { OBSTACLES } from "../factory";
+import { FACTORY_CENTRE, OBSTACLES } from "../factory";
 import { GOAL_TOLERANCE, IDLE_RESUME, blendPose, isGoalValid, setGoal, shouldResume, stepNav } from "../nav-goal";
 import { acceptsGoals } from "../NavGoal";
 
 const DT = 1 / 60;
 
-function drive(goal: [number, number], start = { x: 0, y: 0.9, theta: 0 }, seconds = 20) {
+/** Factory centre line: goals are placed relative to it. */
+const CX = FACTORY_CENTRE.x;
+
+function drive(goal: [number, number], start = { x: CX, y: 0.9, theta: 0 }, seconds = 20) {
   let s = setGoal(start, ...goal);
   let maxV = 0;
   for (let i = 0; i < seconds / DT; i++) {
@@ -21,14 +24,14 @@ function drive(goal: [number, number], start = { x: 0, y: 0.9, theta: 0 }, secon
 describe("nav goal", () => {
   it("rejects goals inside obstacles and accepts open floor", () => {
     expect(isGoalValid(OBSTACLES[0].x, OBSTACLES[0].y)).toBe(false);
-    expect(isGoalValid(0, 0.9)).toBe(true);
+    expect(isGoalValid(CX, 0.9)).toBe(true);
   });
 
   it.each([
-    [3, 0.9],
-    [-3, 0.2],
-    [0.5, 1.6],
-    [-2, 0.9], // behind the AGV
+    [CX + 3, 0.9],
+    [CX - 3, 0.2],
+    [CX + 0.5, 1.6],
+    [CX - 2, 0.9], // behind the AGV
   ] as [number, number][])("drives to (%d, %d) and stops within tolerance", (x, y) => {
     const { s, maxV } = drive([x, y]);
     expect(s.path).toHaveLength(0);
@@ -38,7 +41,7 @@ describe("nav goal", () => {
   });
 
   it("hands back to the loop after sitting idle", () => {
-    let { s } = drive([3, 0.9]);
+    let { s } = drive([CX + 3, 0.9]);
     expect(shouldResume(s)).toBe(false);
     for (let i = 0; i < IDLE_RESUME / DT + 1; i++) s = stepNav(s, DT);
     expect(shouldResume(s)).toBe(true);

@@ -1,21 +1,27 @@
 /**
- * The AGV's mission: a rounded loop down the aisle between the rack rows,
- * starting on base_link where the sketch left it. Map frame, metres.
+ * The AGV's mission, map frame, metres: drive straight off the page from
+ * base_link, across the desk and into the factory, then lap a rounded loop
+ * down the aisle between the rack rows.
  */
 import type { Pose } from "@/lib/path-following/types";
 
 import { BEATS, loopTime } from "./beats";
+import { FACTORY_CENTRE } from "./factory";
 import { BASE_LINK } from "./sketch";
 
 /** Cruise speed along the mission, m/s. */
-export const MISSION_SPEED = 1.1;
-/** Seconds into the deploy beat before the AGV moves — the factory forms first. */
-export const DEPART_DELAY = 1.2;
+export const MISSION_SPEED = 1.4;
+/** Seconds into the deploy beat before the AGV moves off the page. */
+export const DEPART_DELAY = 0.2;
 
 const HALF_X = 4;
 const LOOP_Y = 1.8;
 const R = LOOP_Y / 2;
 const STEP = 0.05;
+const CX = FACTORY_CENTRE.x;
+
+/** Where the lead-in meets the loop: the start of the loop's bottom straight. */
+const LOOP_ENTRY = { x: CX - HALF_X + R, y: 0 };
 
 function buildLoop(): Pose[] {
   const pts: Pose[] = [];
@@ -30,46 +36,54 @@ function buildLoop(): Pose[] {
       pts.push({ x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), theta: a + Math.PI / 2 });
     }
   };
-  const x0 = BASE_LINK.x;
-  straight(x0, HALF_X - R, 0, 0);
-  turn(HALF_X - R, R, -Math.PI / 2);
-  straight(HALF_X - R, -HALF_X + R, LOOP_Y, Math.PI);
-  turn(-HALF_X + R, R, Math.PI / 2);
-  straight(-HALF_X + R, x0, 0, 0);
+  straight(LOOP_ENTRY.x, CX + HALF_X - R, 0, 0);
+  turn(CX + HALF_X - R, R, -Math.PI / 2);
+  straight(CX + HALF_X - R, CX - HALF_X + R, LOOP_Y, Math.PI);
+  turn(CX - HALF_X + R, R, Math.PI / 2);
   return pts;
 }
 
-export const MISSION: readonly Pose[] = buildLoop();
+/** The closed loop inside the factory, starting at its entry point. */
+export const LOOP: readonly Pose[] = buildLoop();
 
-const CUMULATIVE: number[] = MISSION.reduce<number[]>((acc, p, i) => {
+/** Straight run from base_link on the page to the loop entry. */
+export const LEAD_IN_LENGTH = LOOP_ENTRY.x - BASE_LINK.x;
+
+const CUMULATIVE: number[] = LOOP.reduce<number[]>((acc, p, i) => {
   if (i === 0) return [0];
-  const q = MISSION[i - 1];
+  const q = LOOP[i - 1];
   acc.push(acc[i - 1] + Math.hypot(p.x - q.x, p.y - q.y));
   return acc;
 }, []);
 
-export const MISSION_LENGTH =
+export const LOOP_LENGTH =
   CUMULATIVE[CUMULATIVE.length - 1] +
-  Math.hypot(MISSION[0].x - MISSION[MISSION.length - 1].x, MISSION[0].y - MISSION[MISSION.length - 1].y);
+  Math.hypot(LOOP[0].x - LOOP[LOOP.length - 1].x, LOOP[0].y - LOOP[LOOP.length - 1].y);
 
 function wrapAngle(a: number): number {
   return Math.atan2(Math.sin(a), Math.cos(a));
 }
 
-/** Pose `s` metres along the loop (wrapping). */
-export function missionPose(s: number): Pose {
-  const d = ((s % MISSION_LENGTH) + MISSION_LENGTH) % MISSION_LENGTH;
-  let i = CUMULATIVE.findIndex((c) => c > d) - 1;
+/** Pose `d` metres round the loop (wrapping). */
+export function loopPose(d: number): Pose {
+  const s = ((d % LOOP_LENGTH) + LOOP_LENGTH) % LOOP_LENGTH;
+  let i = CUMULATIVE.findIndex((c) => c > s) - 1;
   if (i < 0) i = CUMULATIVE.length - 1;
-  const a = MISSION[i];
-  const b = MISSION[(i + 1) % MISSION.length];
-  const segEnd = i + 1 < CUMULATIVE.length ? CUMULATIVE[i + 1] : MISSION_LENGTH;
-  const k = (d - CUMULATIVE[i]) / (segEnd - CUMULATIVE[i] || 1);
+  const a = LOOP[i];
+  const b = LOOP[(i + 1) % LOOP.length];
+  const segEnd = i + 1 < CUMULATIVE.length ? CUMULATIVE[i + 1] : LOOP_LENGTH;
+  const k = (s - CUMULATIVE[i]) / (segEnd - CUMULATIVE[i] || 1);
   return {
     x: a.x + (b.x - a.x) * k,
     y: a.y + (b.y - a.y) * k,
     theta: a.theta + wrapAngle(b.theta - a.theta) * k,
   };
+}
+
+/** Pose `s` metres along the mission: the lead-in off the page, then the loop. */
+export function missionPose(s: number): Pose {
+  if (s < LEAD_IN_LENGTH) return { x: BASE_LINK.x + Math.max(0, s), y: 0, theta: 0 };
+  return loopPose(s - LEAD_IN_LENGTH);
 }
 
 const deploy = BEATS.find((b) => b.id === "deploy")!;
