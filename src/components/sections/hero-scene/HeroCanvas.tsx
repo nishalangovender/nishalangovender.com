@@ -4,8 +4,9 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 
 import { HeroAgv } from "./Agv";
-import { BEATS, beatAt, parseBeatParam, type BeatId } from "./beats";
+import { BEATS, LIVE_BEATS, beatAt, parseBeatParam, type BeatId } from "./beats";
 import { cameraAt } from "./camera";
+import { CmdVel } from "./CmdVel";
 import { CodeTerminal } from "./CodeTerminal";
 import { Costmap } from "./Costmap";
 import { Fleet } from "./Fleet";
@@ -13,6 +14,8 @@ import { FleetStatus } from "./FleetStatus";
 import { InkSketch } from "./InkSketch";
 import { Lidar } from "./Lidar";
 import { missionPose } from "./mission";
+import { REJOIN_TIME } from "./nav-goal";
+import { NavGoal } from "./NavGoal";
 import { Notebook } from "./Notebook";
 import { PointCloud } from "./PointCloud";
 import {
@@ -36,7 +39,14 @@ function Director({ onBeat }: { onBeat: (id: BeatId) => void }) {
 
   useFrame(({ camera }, delta) => {
     const s = sceneRef.current;
-    s.t += Math.min(delta, MAX_DT);
+    const dt = Math.min(delta, MAX_DT);
+    // A nav goal pauses the story; the camera holds where it is.
+    if (s.live) return;
+    s.t += dt;
+    if (s.rejoin) {
+      s.rejoin.k += dt / REJOIN_TIME;
+      if (s.rejoin.k >= 1) s.rejoin = null;
+    }
     if (s.hold !== null) {
       const beat = BEATS[s.hold];
       if (s.t >= beat.end) s.t = beat.start;
@@ -61,8 +71,12 @@ export default function HeroCanvas({ active }: { active: boolean }) {
     t: hold === null ? 0 : BEATS[hold].start,
     hold,
     agv: missionPose(0),
+    live: null,
+    rejoin: null,
   });
   const [beat, setBeat] = useState<BeatId>("sketch");
+  const [live, setLive] = useState(false);
+  const readoutRef = useRef<HTMLSpanElement>(null);
 
   return (
     <>
@@ -86,11 +100,13 @@ export default function HeroCanvas({ active }: { active: boolean }) {
             <HeroAgv />
             <Fleet />
             <Lidar />
+            <NavGoal readout={readoutRef} onLive={setLive} />
           </PaletteProvider>
         </SceneProvider>
       </Canvas>
       <CodeTerminal visible={beat === "code"} />
       <FleetStatus visible={beat === "system"} />
+      <CmdVel visible={live || LIVE_BEATS.includes(beat)} live={live} readout={readoutRef} />
     </>
   );
 }

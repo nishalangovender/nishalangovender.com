@@ -20,6 +20,7 @@ import { beatAt, beatProgress } from "./beats";
 import { toWorld } from "./factory";
 import { LAYER, fatLines } from "./lines";
 import { missionDistance, missionPose } from "./mission";
+import { blendPose } from "./nav-goal";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
 import { AGV } from "./sketch";
 
@@ -129,7 +130,10 @@ export function HeroAgv() {
 
   useFrame(() => {
     const scene = sceneRef.current;
-    scene.agv = missionPose(missionDistance(scene.t));
+    const mission = missionPose(missionDistance(scene.t));
+    if (scene.live) scene.agv = scene.live.pose;
+    else if (scene.rejoin) scene.agv = blendPose(scene.rejoin.from, mission, smoothstep(scene.rejoin.k));
+    else scene.agv = mission;
     showAgv(model, scene.agv, agvPresence(scene.t));
   });
 

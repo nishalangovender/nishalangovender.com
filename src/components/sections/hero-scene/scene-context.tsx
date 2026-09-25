@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState, type RefObject } from "
 
 import type { Pose } from "@/lib/path-following/types";
 
+import type { NavState } from "./nav-goal";
+
 /**
  * Mutable scene state shared by every object in the canvas. It lives in one
  * object read inside `useFrame`, never in React state, so the loop costs no
@@ -16,6 +18,10 @@ export interface SceneState {
   hold: number | null;
   /** Hero AGV pose in the map frame, written by the AGV each frame. */
   agv: Pose;
+  /** Live mode: a nav goal is driving the AGV and the loop clock is paused. */
+  live: NavState | null;
+  /** After live mode, the AGV glides from `from` back onto its mission as `k` runs 0 → 1. */
+  rejoin: { from: Pose; k: number } | null;
 }
 
 const SceneContext = createContext<RefObject<SceneState> | null>(null);
