@@ -14,13 +14,20 @@ import {
 import type { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 
 import { smoothstep } from "@/lib/math";
+import type { Pose } from "@/lib/path-following/types";
 
 import { beatAt, beatProgress } from "./beats";
+import { toWorld } from "./factory";
 import { LAYER, fatLines } from "./lines";
+import { missionDistance, missionPose } from "./mission";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
-import { AGV, BASE_LINK } from "./sketch";
+import { AGV } from "./sketch";
 
 const BODY_Y = AGV.wheelRadius + 0.04;
+
+/** Lidar puck: distance ahead of base_link and height of its scan plane. */
+export const AGV_LIDAR_OFFSET = AGV.offset + AGV.length / 2 - 0.2;
+export const LIDAR_HEIGHT = BODY_Y + AGV.height + 0.05;
 
 function edges(geometry: BufferGeometry, matrix: Matrix4): number[] {
   geometry.applyMatrix4(matrix);
@@ -44,7 +51,7 @@ export function agvEdges(): number[] {
     ...edges(new CylinderGeometry(0.07, 0.07, 0.05, 10), at(AGV.castorX, 0.07, 0)),
     ...edges(
       new CylinderGeometry(AGV.lidarRadius, AGV.lidarRadius, 0.1, 12),
-      at(AGV.offset + AGV.length / 2 - 0.2, BODY_Y + AGV.height + 0.05, 0),
+      at(AGV_LIDAR_OFFSET, LIDAR_HEIGHT, 0),
     ),
   ];
 }
@@ -99,15 +106,23 @@ export function agvPresence(t: number): number {
   return 1;
 }
 
-/** The AGV the story follows, parked on base_link until it deploys. */
+/** Places a model at a map-frame pose. */
+export function placeAt(group: Group, pose: Pose) {
+  group.position.set(...toWorld(pose.x, pose.y));
+  group.rotation.y = pose.theta;
+}
+
+/** The AGV the story follows: parked on base_link, then out on its mission. */
 export function HeroAgv() {
   const sceneRef = useScene();
   const { group, body, axes } = useAgvModel();
 
   useFrame(() => {
-    const presence = agvPresence(sceneRef.current.t);
+    const scene = sceneRef.current;
+    scene.agv = missionPose(missionDistance(scene.t));
+    const presence = agvPresence(scene.t);
     group.visible = presence > 0;
-    group.position.set(BASE_LINK.x, 0, BASE_LINK.z);
+    placeAt(group, scene.agv);
     group.scale.set(1, Math.max(presence, 0.001), 1);
     body.material.opacity = presence;
     axes.material.opacity = presence;

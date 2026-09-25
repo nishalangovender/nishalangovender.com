@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, type RefObject } from "react";
 
+import type { Pose } from "@/lib/path-following/types";
+
 /**
  * Mutable scene state shared by every object in the canvas. It lives in one
  * object read inside `useFrame`, never in React state, so the loop costs no
@@ -12,6 +14,8 @@ export interface SceneState {
   t: number;
   /** Dev `?beat=N`: the beat index the clock loops within, or null. */
   hold: number | null;
+  /** Hero AGV pose in the map frame, written by the AGV each frame. */
+  agv: Pose;
 }
 
 const SceneContext = createContext<RefObject<SceneState> | null>(null);

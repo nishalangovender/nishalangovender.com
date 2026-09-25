@@ -6,6 +6,7 @@
 import { smoothstep } from "@/lib/math";
 
 import { BEATS, TOTAL_DURATION, loopTime, type BeatId } from "./beats";
+import { FACTORY_CENTRE, toWorld } from "./factory";
 
 export type Vec3 = [number, number, number];
 
@@ -14,13 +15,20 @@ export interface CameraPose {
   target: Vec3;
 }
 
+/** The factory floor's centre in world space, and a pose offset from it. */
+const centre = toWorld(FACTORY_CENTRE.x, FACTORY_CENTRE.y);
+const aroundCentre = (dx: number, y: number, dz: number): CameraPose => ({
+  position: [centre[0] + dx, y, centre[2] + dz],
+  target: centre,
+});
+
 const POSES = {
   page: { position: [0, 4.4, 2.8], target: [0, 0, 0.15] },
   design: { position: [2.6, 2.4, 2.9], target: [0, 0.35, 0] },
   code: { position: [2.1, 2.0, 2.3], target: [0, 0.35, 0] },
-  factory: { position: [7.5, 8, 10.5], target: [0, 0, 0] },
-  factoryTrack: { position: [-6.5, 7.5, 10], target: [0, 0, 0] },
-  system: { position: [0, 17, 6], target: [0, 0, 0] },
+  factory: aroundCentre(7.5, 8, 10.5),
+  factoryTrack: aroundCentre(-6.5, 7.5, 10),
+  system: aroundCentre(0, 17, 6),
 } satisfies Record<string, CameraPose>;
 
 const start = (id: BeatId) => BEATS.find((b) => b.id === id)!.start;

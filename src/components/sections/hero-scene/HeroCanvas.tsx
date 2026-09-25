@@ -7,8 +7,12 @@ import { HeroAgv } from "./Agv";
 import { BEATS, beatAt, parseBeatParam, type BeatId } from "./beats";
 import { cameraAt } from "./camera";
 import { CodeTerminal } from "./CodeTerminal";
+import { Costmap } from "./Costmap";
 import { InkSketch } from "./InkSketch";
+import { Lidar } from "./Lidar";
+import { missionPose } from "./mission";
 import { Notebook } from "./Notebook";
+import { PointCloud } from "./PointCloud";
 import {
   PaletteProvider,
   SceneProvider,
@@ -51,7 +55,11 @@ function Director({ onBeat }: { onBeat: (id: BeatId) => void }) {
 export default function HeroCanvas({ active }: { active: boolean }) {
   const palette = usePalette();
   const hold = parseBeatParam(window.location.search, process.env.NODE_ENV !== "production");
-  const sceneRef = useRef<SceneState>({ t: hold === null ? 0 : BEATS[hold].start, hold });
+  const sceneRef = useRef<SceneState>({
+    t: hold === null ? 0 : BEATS[hold].start,
+    hold,
+    agv: missionPose(0),
+  });
   const [beat, setBeat] = useState<BeatId>("sketch");
 
   return (
@@ -70,8 +78,11 @@ export default function HeroCanvas({ active }: { active: boolean }) {
           <PaletteProvider value={palette}>
             <Director onBeat={setBeat} />
             <Notebook />
+            <Costmap />
+            <PointCloud />
             <InkSketch />
             <HeroAgv />
+            <Lidar />
           </PaletteProvider>
         </SceneProvider>
       </Canvas>
