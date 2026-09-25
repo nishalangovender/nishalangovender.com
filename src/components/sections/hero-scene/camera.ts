@@ -6,6 +6,7 @@
 import { smoothstep } from "@/lib/math";
 
 import { BEATS, TOTAL_DURATION, loopTime, type BeatId } from "./beats";
+import { DESK, PAGE_HEIGHT } from "./desk-layout";
 import { FACTORY_CENTRE, MONITOR, toWorld } from "./factory";
 
 export type Vec3 = [number, number, number];
@@ -28,12 +29,14 @@ const aroundCentre = (dx: number, y: number, dz: number): CameraPose => ({
  * on phones.
  */
 const SCREEN_DISTANCE = MONITOR.width * 1.7;
-const screen = toWorld(MONITOR.x, MONITOR.y, MONITOR.height);
+const screen = toWorld(MONITOR.x, MONITOR.y, DESK.height + MONITOR.height);
+const h = PAGE_HEIGHT;
 
 const POSES = {
-  page: { position: [0, 4.4, 2.8], target: [0, 0, 0.15] },
-  design: { position: [2.6, 2.4, 2.9], target: [0, 0.35, 0] },
-  code: { position: [2.1, 2.0, 2.3], target: [0, 0.35, 0] },
+  // Desk-top poses sit above the page, which is raised on the desk.
+  page: { position: [0, h + 4.4, 2.8], target: [0, h, 0.15] },
+  design: { position: [2.6, h + 2.4, 2.9], target: [0, h + 0.35, 0] },
+  code: { position: [2.1, h + 2.0, 2.3], target: [0, h + 0.35, 0] },
   factory: aroundCentre(7.5, 8, 10.5),
   factoryTrack: aroundCentre(-6.5, 7.5, 10),
   system: aroundCentre(0, 17, 6),

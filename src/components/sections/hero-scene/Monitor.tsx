@@ -15,6 +15,7 @@ import {
 } from "three";
 
 import { DASH_H, DASH_SCALE, DASH_W, drawDashboard } from "./dashboard";
+import { DESK } from "./desk-layout";
 import { MONITOR, toWorld } from "./factory";
 import { fleetPose, FLEET_SIZE } from "./Fleet";
 import { LAYER, edgeSegments, fatLines } from "./lines";
@@ -61,7 +62,7 @@ export function Monitor() {
     const group = new Group();
     group.add(frame, screen);
     // Screen faces down the aisle (map −y = world +z).
-    group.position.set(...toWorld(MONITOR.x, MONITOR.y, MONITOR.height));
+    group.position.set(...toWorld(MONITOR.x, MONITOR.y, DESK.height + MONITOR.height));
     group.renderOrder = LAYER.agv;
     return { group, frame, screen, texture, canvas };
   }, []);

@@ -5,6 +5,7 @@ import { useEffect, useMemo } from "react";
 import { BufferGeometry, Float32BufferAttribute, Group, Points, PointsMaterial } from "three";
 
 import { AGV_LIDAR_OFFSET, LIDAR_HEIGHT } from "./Agv";
+import { groundHeight } from "./desk-layout";
 import { raycast, toWorld } from "./factory";
 import { LAYER, fatLines } from "./lines";
 import { cloudMorph } from "./PointCloud";
@@ -61,19 +62,21 @@ export function Lidar() {
 
     const ox = agv.x + AGV_LIDAR_OFFSET * Math.cos(agv.theta);
     const oy = agv.y + AGV_LIDAR_OFFSET * Math.sin(agv.theta);
+    // Scan plane rides with the AGV: page, desk, ramp or factory floor.
+    const scanH = groundHeight(agv.x, agv.y) + LIDAR_HEIGHT;
     const pos = hits.geometry.attributes.position.array as Float32Array;
     for (let i = 0; i < RAYS; i++) {
       const a = agv.theta + (i / RAYS) * Math.PI * 2;
       const r = raycast(ox, oy, a, MAX_RANGE);
-      pos.set(toWorld(ox + r * Math.cos(a), oy + r * Math.sin(a), LIDAR_HEIGHT), i * 3);
+      pos.set(toWorld(ox + r * Math.cos(a), oy + r * Math.sin(a), scanH), i * 3);
     }
     hits.geometry.attributes.position.needsUpdate = true;
 
     const a = agv.theta + clock.elapsedTime * SWEEP_HZ * Math.PI * 2;
     const r = raycast(ox, oy, a, MAX_RANGE);
     beam.geometry.setPositions([
-      ...toWorld(ox, oy, LIDAR_HEIGHT),
-      ...toWorld(ox + r * Math.cos(a), oy + r * Math.sin(a), LIDAR_HEIGHT),
+      ...toWorld(ox, oy, scanH),
+      ...toWorld(ox + r * Math.cos(a), oy + r * Math.sin(a), scanH),
     ]);
     const opacity = (k - 0.5) * 2;
     hits.material.opacity = opacity;

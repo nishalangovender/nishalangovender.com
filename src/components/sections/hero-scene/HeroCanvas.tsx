@@ -10,6 +10,7 @@ import { cameraAt } from "./camera";
 import { CmdVel } from "./CmdVel";
 import { CodeTerminal } from "./CodeTerminal";
 import { Costmap } from "./Costmap";
+import { Desk } from "./Desk";
 import { Fleet } from "./Fleet";
 import { InkSketch } from "./InkSketch";
 import { Lidar } from "./Lidar";
@@ -121,6 +122,7 @@ export default function HeroCanvas({ active }: { active: boolean }) {
           <PaletteProvider value={palette}>
             <Director onBeat={setBeat} />
             <Framing />
+            <Desk />
             <Notebook />
             <Costmap />
             <PointCloud />

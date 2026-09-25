@@ -1,7 +1,7 @@
 /**
  * The AGV's mission, map frame, metres: drive straight off the page from
- * base_link, across the desk and into the factory, then lap a rounded loop
- * down the aisle between the rack rows.
+ * base_link, across the desk, down the ramp and into the factory, then lap a
+ * rounded loop down the aisle between the rack rows.
  */
 import type { Pose } from "@/lib/path-following/types";
 
@@ -10,7 +10,7 @@ import { FACTORY_CENTRE } from "./factory";
 import { BASE_LINK } from "./sketch";
 
 /** Cruise speed along the mission, m/s. */
-export const MISSION_SPEED = 1.4;
+export const MISSION_SPEED = 2;
 /** Seconds into the deploy beat before the AGV moves off the page. */
 export const DEPART_DELAY = 0.2;
 

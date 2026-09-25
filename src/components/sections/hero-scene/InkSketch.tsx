@@ -7,6 +7,7 @@ import { CanvasTexture, Color, Group, Mesh, MeshBasicMaterial, PlaneGeometry } f
 import { clamp01, smoothstep } from "@/lib/math";
 
 import { beatProgress } from "./beats";
+import { PAGE_HEIGHT } from "./desk-layout";
 import { LAYER, fatLines, toPositions } from "./lines";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
 import {
@@ -108,6 +109,8 @@ export function InkSketch() {
     });
     const group = new Group();
     group.add(page, body, ...labels);
+    // The sketch is drawn on the notebook's top page, up on the desk.
+    group.position.y = PAGE_HEIGHT;
     group.renderOrder = LAYER.ink;
     return { page, body, labels, group };
   }, []);

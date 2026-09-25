@@ -1,8 +1,8 @@
 /**
- * The desk and the factory beside it, in the ROS map frame (x forward, y
- * left, metres). The notebook lies at the origin and the monitor stands
- * behind it; the factory floor starts just past the page's right edge, open
- * on that side so the AGV can drive straight in. `toWorld` maps a map point
+ * The factory beside the desk, in the ROS map frame (x forward, y left,
+ * metres). The desk, notebook and monitor sit at the origin (see `desk.ts`);
+ * the factory floor starts just past the foot of the desk ramp, open on that
+ * side so the AGV can drive straight in. `toWorld` maps a map point
  * onto the three.js floor: (x, h, −y). Pure maths — the point cloud, lidar
  * and costmap all read from here.
  */
@@ -18,8 +18,8 @@ export interface Rect {
   h: number;
 }
 
-/** Factory centre line, far enough right that the page and the floor don't overlap. */
-const FX = 8.8;
+/** Factory centre line: the floor starts just past the foot of the desk ramp. */
+const FX = 12.6;
 
 /** Factory floor. The west side (minX, facing the desk) has no wall. */
 export const FLOOR = { minX: FX - 6, maxX: FX + 6, minY: -3.6, maxY: 5.4, wallHeight: 2.6 } as const;
@@ -36,7 +36,8 @@ export const OBSTACLES: readonly Rect[] = [
 
 /**
  * The production monitor on the desk, behind the notebook and facing it.
- * Screen centre height and size in metres (16:10) — desk scale, like the book.
+ * Screen centre height above the desk top, and size in metres (16:10) — desk
+ * scale, like the book.
  */
 export const MONITOR = { x: 0, y: 2.6, height: 2.3, width: 5.2, screenHeight: 3.25 } as const;
 

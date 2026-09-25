@@ -15,6 +15,7 @@ import { clamp01, smoothstep } from "@/lib/math";
 import type { Pose } from "@/lib/path-following/types";
 
 import { beatAt, beatProgress } from "./beats";
+import { groundHeight, groundPitch } from "./desk-layout";
 import { toWorld } from "./factory";
 import { LAYER, edgeSegments, fatLines } from "./lines";
 import { missionDistance, missionPose } from "./mission";
@@ -121,11 +122,16 @@ export function heroPose(t: number): Pose {
   return pose;
 }
 
-/** Places a model at a map-frame pose, grown and faded in by `presence` (0–1). */
+/**
+ * Places a model at a map-frame pose on whatever it is driving over (page,
+ * desk, ramp or floor), pitched nose-down on the ramp, and grown and faded
+ * in by `presence` (0–1).
+ */
 export function showAgv({ group, body, axes }: AgvModel, pose: Pose, presence: number) {
   group.visible = presence > 0;
-  group.position.set(...toWorld(pose.x, pose.y));
-  group.rotation.y = pose.theta;
+  group.position.set(...toWorld(pose.x, pose.y, groundHeight(pose.x, pose.y)));
+  // Yaw about the world up axis, then pitch about the body's own left axis.
+  group.rotation.set(0, pose.theta, -groundPitch(pose.x, pose.y), "YZX");
   group.scale.set(1, Math.max(presence, 0.001), 1);
   body.material.opacity = presence;
   axes.material.opacity = presence;

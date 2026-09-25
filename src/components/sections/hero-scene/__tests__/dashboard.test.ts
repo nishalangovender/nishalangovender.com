@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { BEATS } from "../beats";
 import { CAMERA_KEYFRAMES, FLY_IN_START, cameraAt } from "../camera";
 import { DASH_H, DASH_W, dashboardStats, toMinimap } from "../dashboard";
+import { DESK } from "../desk-layout";
 import { FLOOR, MONITOR } from "../factory";
 import { acceptsGoals } from "../NavGoal";
 import { PAGE } from "../sketch";
@@ -45,7 +46,7 @@ describe("monitor fly-in", () => {
   it("ends the system beat looking straight at the screen", () => {
     const pose = cameraAt(system.end - 0.01);
     expect(pose.target[0]).toBeCloseTo(MONITOR.x, 3);
-    expect(pose.target[1]).toBeCloseTo(MONITOR.height, 3);
+    expect(pose.target[1]).toBeCloseTo(DESK.height + MONITOR.height, 3);
     expect(pose.target[2]).toBeCloseTo(-MONITOR.y, 3);
     expect(pose.position[0]).toBeCloseTo(pose.target[0], 3);
     expect(pose.position[1]).toBeCloseTo(pose.target[1], 3);
