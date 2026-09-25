@@ -17,7 +17,7 @@ export const SCROLL_SCREENS = 6;
 
 /** Overview paragraph typed during the final zoom-out. */
 export const OVERVIEW_TEXT =
-  "From workshop tinkerer to mechatronics engineer — a journey shaped by curiosity, rigour, and a drive to build things that work. Whether it's autonomous vehicles, industrial automation, or the web app you're reading this on, I bring the same hands-on engineering mindset to every problem. Let's build something together.";
+  "From workshop tinkerer to robotics engineer — a journey shaped by curiosity, rigour, and a drive to build things that work. From AGV fleets on a Toyota line to Physical AI at Ubundi, I bring the same hands-on engineering mindset to every problem. Let's build something together.";
 
 /** Year boundaries used for chapter centering. One entry per chapter in
  *  `timelineChapters`, in the same order — the overlay lookup is by index. */
