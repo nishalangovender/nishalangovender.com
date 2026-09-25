@@ -10,9 +10,9 @@ import { FACTORY_CENTRE } from "./factory";
 import { BASE_LINK } from "./sketch";
 
 /** Cruise speed along the mission, m/s. */
-export const MISSION_SPEED = 2;
+export const MISSION_SPEED = 1.3;
 /** Seconds into the deploy beat before the AGV moves off the page. */
-export const DEPART_DELAY = 0.2;
+export const DEPART_DELAY = 0.6;
 
 const HALF_X = 4;
 const LOOP_Y = 1.8;

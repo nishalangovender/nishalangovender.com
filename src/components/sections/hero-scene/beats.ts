@@ -18,13 +18,14 @@ export interface BeatInfo {
   progress: number;
 }
 
+/** Seconds per beat — paced so each idea lands before the next one starts. */
 const DURATIONS: [BeatId, number][] = [
-  ["sketch", 3.5],
-  ["design", 3],
-  ["code", 3],
-  ["deploy", 6],
-  ["system", 5],
-  ["return", 3],
+  ["sketch", 6],
+  ["design", 4.5],
+  ["code", 4.5],
+  ["deploy", 9],
+  ["system", 8],
+  ["return", 5.5],
 ];
 
 export const BEATS: readonly Beat[] = DURATIONS.reduce<Beat[]>((acc, [id, d]) => {

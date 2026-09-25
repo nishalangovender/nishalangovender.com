@@ -50,15 +50,15 @@ const end = (id: BeatId) => BEATS.find((b) => b.id === id)!.end;
 export const PAGE_LANDING = 0.6;
 
 /** When the camera leaves the fleet overview for the monitor, and arrives. */
-export const FLY_IN_START = start("system") + 1.3;
-const FLY_IN_END = start("system") + 3.6;
+export const FLY_IN_START = start("system") + 2.4;
+const FLY_IN_END = start("system") + 5.6;
 
 export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
   { t: 0, pose: POSES.page },
   { t: end("sketch"), pose: POSES.page },
   { t: end("design"), pose: POSES.design },
   { t: end("code"), pose: POSES.code },
-  { t: start("deploy") + 2.4, pose: POSES.factory },
+  { t: start("deploy") + 3.6, pose: POSES.factory },
   { t: end("deploy"), pose: POSES.factoryTrack },
   { t: FLY_IN_START, pose: POSES.system },
   { t: FLY_IN_END, pose: POSES.monitor },

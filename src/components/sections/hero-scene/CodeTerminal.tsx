@@ -5,7 +5,9 @@ import { motion } from "framer-motion";
 import { TerminalPanel } from "./TerminalPanel";
 
 /** Seconds between lines, so the whole session types out inside the code beat. */
-const LINE_DELAY = 0.32;
+export const LINE_DELAY = 0.5;
+/** Seconds after the panel appears before the first line types. */
+export const TYPING_START = 0.2;
 
 export const TERMINAL_LINES: readonly { text: string; kind: "prompt" | "log" | "ok" }[] = [
   { text: "colcon build --packages-up-to nish_bot", kind: "prompt" },
@@ -28,7 +30,7 @@ export function CodeTerminal({ visible }: { visible: boolean }) {
           key={line.text}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 + i * LINE_DELAY, duration: 0.05 }}
+          transition={{ delay: TYPING_START + i * LINE_DELAY, duration: 0.05 }}
           className={`truncate ${KIND_CLASS[line.kind]}`}
         >
           {line.kind === "prompt" && <span className="text-[var(--terminal-prompt)]">❯ </span>}
