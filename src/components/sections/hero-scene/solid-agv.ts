@@ -8,7 +8,7 @@
 import {
   BoxGeometry,
   CylinderGeometry,
-  Group,
+  Object3D,
   Mesh,
   MeshStandardMaterial,
   type BufferGeometry,
@@ -17,11 +17,16 @@ import {
 import { AGV, AGV_BODY_Y as BODY_Y, AGV_LIDAR_OFFSET, LIDAR_HEIGHT } from "./sketch";
 import { WHEELS } from "./wheels";
 
+/**
+ * Containers are plain Object3Ds, not Groups: three.js takes draw order from
+ * the nearest Group ancestor, so a Group here would reset the AGV's layer to 0
+ * and let the paper sheet paint over it.
+ */
 export interface SolidAgv {
-  group: Group;
+  group: Object3D;
   materials: MeshStandardMaterial[];
   /** One pivot per wheel at its axle, in WHEELS order; spin about local z. */
-  wheels: Group[];
+  wheels: Object3D[];
 }
 
 export function buildSolidAgv(): SolidAgv {
@@ -32,7 +37,7 @@ export function buildSolidAgv(): SolidAgv {
     materials.push(m);
     return m;
   };
-  const group = new Group();
+  const group = new Object3D();
   const add = (geometry: BufferGeometry, material: MeshStandardMaterial, x: number, y: number, z: number, axleZ = false) => {
     const mesh = new Mesh(geometry, material);
     mesh.position.set(x, y, z);
@@ -63,7 +68,7 @@ export function buildSolidAgv(): SolidAgv {
   }
   // Wheels: tyre plus a hub with three spokes on the outer face, so the spin reads.
   const wheels = WHEELS.map((w) => {
-    const pivot = new Group();
+    const pivot = new Object3D();
     pivot.position.set(w.x, w.y, w.z);
     const outer = Math.sign(w.z) || 1;
     const parts = [

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import { buildAgvModel } from "../Agv";
 import { DESK, RAMP, materialised } from "../desk-layout";
 import { FLOOR } from "../factory";
+import { LAYER } from "../lines";
 import { buildSolidAgv, setSolidOpacity } from "../solid-agv";
 
 describe("materialise on the ramp", () => {
@@ -34,5 +36,17 @@ describe("solid AGV", () => {
 
     setSolidOpacity(agv, 0);
     expect(agv.group.visible).toBe(false);
+  });
+});
+
+describe("AGV draw layer", () => {
+  it("has no nested Group to reset the layer the AGV's top group sets", () => {
+    const { group } = buildAgvModel();
+    const nested: unknown[] = [];
+    group.traverse((o) => {
+      if (o !== group && (o as { isGroup?: boolean }).isGroup) nested.push(o);
+    });
+    expect(group.renderOrder).toBe(LAYER.agv);
+    expect(nested).toEqual([]);
   });
 });

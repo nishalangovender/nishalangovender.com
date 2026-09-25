@@ -8,6 +8,7 @@ import {
   CylinderGeometry,
   Group,
   Matrix4,
+  Object3D,
   type Mesh,
 } from "three";
 import type { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
@@ -64,38 +65,41 @@ export interface AgvModel {
   /** Wireframe wheels, one per WHEELS entry, each on a pivot at its axle. */
   wheelLines: LineSegments2[];
   /** Every wheel pivot (wireframe and solid) with the wheel it belongs to. */
-  spinners: { pivot: Group; wheel: Wheel }[];
+  spinners: { pivot: Object3D; wheel: Wheel }[];
   /** Last pose shown, to roll the wheels by the distance since. */
   last: Pose | null;
 }
 
 /**
  * One AGV: the wireframe from the sketch, the solid robot it materialises
- * into, and RViz TF axes over both. Wireframe coloured from the palette.
+ * into, and RViz TF axes over both. Uncoloured; see useAgvModel.
  */
+export function buildAgvModel(): AgvModel {
+  const body = fatLines(agvEdges(), { linewidth: 1.5 });
+  const axes = fatLines(AXES, { linewidth: 2.5, colors: new Array(AXES.length).fill(1) });
+  const solid = buildSolidAgv();
+  const wheelLines = WHEELS.map((w) => fatLines(wheelEdges(w), { linewidth: 1.5 }));
+  // Object3D, not Group: a Group would reset the AGV's draw layer (see SolidAgv).
+  const wirePivots = WHEELS.map((w, i) => {
+    const pivot = new Object3D();
+    pivot.position.set(w.x, w.y, w.z);
+    pivot.add(wheelLines[i]);
+    return pivot;
+  });
+  const spinners = [
+    ...wirePivots.map((pivot, i) => ({ pivot, wheel: WHEELS[i] })),
+    ...solid.wheels.map((pivot, i) => ({ pivot, wheel: WHEELS[i] })),
+  ];
+  const group = new Group();
+  group.add(solid.group, body, ...wirePivots, axes);
+  group.renderOrder = LAYER.agv;
+  return { group, body, axes, solid, wheelLines, spinners, last: null };
+}
+
+/** An AGV model for the scene, with the wireframe coloured from the palette. */
 export function useAgvModel(): AgvModel {
   const palette = useScenePalette();
-
-  const model = useMemo(() => {
-    const body = fatLines(agvEdges(), { linewidth: 1.5 });
-    const axes = fatLines(AXES, { linewidth: 2.5, colors: new Array(AXES.length).fill(1) });
-    const solid = buildSolidAgv();
-    const wheelLines = WHEELS.map((w) => fatLines(wheelEdges(w), { linewidth: 1.5 }));
-    const wirePivots = WHEELS.map((w, i) => {
-      const pivot = new Group();
-      pivot.position.set(w.x, w.y, w.z);
-      pivot.add(wheelLines[i]);
-      return pivot;
-    });
-    const spinners = [
-      ...wirePivots.map((pivot, i) => ({ pivot, wheel: WHEELS[i] })),
-      ...solid.wheels.map((pivot, i) => ({ pivot, wheel: WHEELS[i] })),
-    ];
-    const group = new Group();
-    group.add(solid.group, body, ...wirePivots, axes);
-    group.renderOrder = LAYER.agv;
-    return { group, body, axes, solid, wheelLines, spinners, last: null };
-  }, []);
+  const model = useMemo(() => buildAgvModel(), []);
 
   useEffect(() => {
     model.body.material.color.set(palette.accent);
