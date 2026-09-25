@@ -49,7 +49,8 @@ const COLOURS = {
 
 const WALL_THICKNESS = 0.15;
 const KICK_HEIGHT = 0.35;
-const LEVELS = [0.12, 0.85, 1.58];
+const CAP_HEIGHT = 0.03;
+const LEVELS = [0.12, 0.85];
 const BAYS = 3;
 const PALLET = { w: 1.1, h: 0.13, d: 0.8 } as const;
 const LOAD = { w: 1.0, h: 0.5, d: 0.75 } as const;
@@ -85,6 +86,7 @@ function rackParts(racks: readonly Rect[]) {
 function instanced(geometry: BoxGeometry, material: Material, matrices: Matrix4[]): InstancedMesh {
   const mesh = new InstancedMesh(geometry, material, matrices.length);
   matrices.forEach((m, i) => mesh.setMatrixAt(i, m));
+  mesh.instanceMatrix.needsUpdate = true;
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   return mesh;
@@ -135,17 +137,21 @@ export function FactoryFloor() {
 
     const wallMat = std("#000000");
     const kickMat = std("#000000");
+    const capMat = std("#000000");
     const walls = new Group();
     const wall = (x: number, y: number, w: number, d: number) => {
       const upper = new Mesh(new BoxGeometry(w, FLOOR.wallHeight - KICK_HEIGHT, d), wallMat);
       upper.position.set(...toWorld(x, y, KICK_HEIGHT + (FLOOR.wallHeight - KICK_HEIGHT) / 2));
       const kick = new Mesh(new BoxGeometry(w, KICK_HEIGHT, d), kickMat);
       kick.position.set(...toWorld(x, y, KICK_HEIGHT / 2));
+      // A pale cap on the cut edge, so the low walls read as cut away, not short.
+      const cap = new Mesh(new BoxGeometry(w + 0.02, CAP_HEIGHT, d + 0.02), capMat);
+      cap.position.set(...toWorld(x, y, FLOOR.wallHeight + CAP_HEIGHT / 2));
       for (const m of [upper, kick]) {
         m.castShadow = true;
         m.receiveShadow = true;
       }
-      walls.add(upper, kick);
+      walls.add(upper, kick, cap);
     };
     // North and south walls run east–west; toWorld maps map y to −z, so their depth is along z.
     wall(FACTORY_CENTRE.x, FLOOR.maxY, floorW, WALL_THICKNESS);
@@ -182,7 +188,7 @@ export function FactoryFloor() {
     rising.add(walls, stock);
     const group = new Group();
     group.add(floor, lanes, rising, sun, sun.target, fill);
-    return { group, floor, floorMat, wallMat, kickMat, rising, lanes };
+    return { group, floor, floorMat, wallMat, kickMat, capMat, rising, lanes };
   }, []);
 
   useEffect(() => {
@@ -191,6 +197,7 @@ export function FactoryFloor() {
     scene.floorMat.color.set(dark ? "#2a2d31" : "#b9bdc2");
     scene.wallMat.color.set(dark ? "#3a3e44" : "#dde0e4");
     scene.kickMat.color.set(dark ? "#1c1e21" : "#8d9197");
+    scene.capMat.color.set(dark ? "#6b7078" : "#f4f5f7");
   }, [scene, palette]);
 
   useEffect(

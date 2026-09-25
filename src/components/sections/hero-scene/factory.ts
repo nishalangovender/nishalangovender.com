@@ -21,17 +21,25 @@ export interface Rect {
 /** Factory centre line: the floor starts just past the foot of the desk ramp. */
 const FX = 12.6;
 
-/** Factory floor. The west side (minX, facing the desk) has no wall. */
-export const FLOOR = { minX: FX - 6, maxX: FX + 6, minY: -3.6, maxY: 5.4, wallHeight: 2.6 } as const;
+/**
+ * Factory floor. The west side (minX, facing the desk) has no wall, and the
+ * other walls are cut away at knee height, like a model, so the camera always
+ * sees the AGV.
+ */
+export const FLOOR = { minX: FX - 6, maxX: FX + 6, minY: -3.6, maxY: 5.4, wallHeight: 1 } as const;
 
-/** Two rack rows either side of the loop the AGV runs, plus two pillars. */
+/**
+ * Two rows of two-level racking either side of the loop the AGV runs — low
+ * enough that the camera sees over them into the aisle — plus two columns at
+ * the back, clear of the lanes.
+ */
 export const OBSTACLES: readonly Rect[] = [
-  { x: FX - 2.6, y: 3.2, w: 3.8, d: 0.9, h: 2.2 },
-  { x: FX + 2.6, y: 3.2, w: 3.8, d: 0.9, h: 2.2 },
-  { x: FX - 2.6, y: -1.5, w: 3.8, d: 0.9, h: 2.2 },
-  { x: FX + 2.6, y: -1.5, w: 3.8, d: 0.9, h: 2.2 },
-  { x: FX - 5.2, y: 0.9, w: 0.4, d: 0.4, h: 2.6 },
-  { x: FX + 5.2, y: 0.9, w: 0.4, d: 0.4, h: 2.6 },
+  { x: FX - 2.6, y: 3.2, w: 3.8, d: 0.9, h: 1.5 },
+  { x: FX + 2.6, y: 3.2, w: 3.8, d: 0.9, h: 1.5 },
+  { x: FX - 2.6, y: -1.5, w: 3.8, d: 0.9, h: 1.5 },
+  { x: FX + 2.6, y: -1.5, w: 3.8, d: 0.9, h: 1.5 },
+  { x: FX - 5.2, y: 4.6, w: 0.4, d: 0.4, h: 2.6 },
+  { x: FX + 5.2, y: 4.6, w: 0.4, d: 0.4, h: 2.6 },
 ];
 
 /**
