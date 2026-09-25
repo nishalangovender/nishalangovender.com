@@ -8,6 +8,8 @@ import { BEATS, beatAt, parseBeatParam, type BeatId } from "./beats";
 import { cameraAt } from "./camera";
 import { CodeTerminal } from "./CodeTerminal";
 import { Costmap } from "./Costmap";
+import { Fleet } from "./Fleet";
+import { FleetStatus } from "./FleetStatus";
 import { InkSketch } from "./InkSketch";
 import { Lidar } from "./Lidar";
 import { missionPose } from "./mission";
@@ -82,11 +84,13 @@ export default function HeroCanvas({ active }: { active: boolean }) {
             <PointCloud />
             <InkSketch />
             <HeroAgv />
+            <Fleet />
             <Lidar />
           </PaletteProvider>
         </SceneProvider>
       </Canvas>
       <CodeTerminal visible={beat === "code"} />
+      <FleetStatus visible={beat === "system"} />
     </>
   );
 }

@@ -66,8 +66,14 @@ function axisColors(p: Palette): number[] {
   });
 }
 
+export interface AgvModel {
+  group: Group;
+  body: LineSegments2;
+  axes: LineSegments2;
+}
+
 /** One wireframe AGV with its TF axes, coloured from the palette. */
-export function useAgvModel(): { group: Group; body: LineSegments2; axes: LineSegments2 } {
+export function useAgvModel(): AgvModel {
   const palette = useScenePalette();
 
   const model = useMemo(() => {
@@ -106,27 +112,26 @@ export function agvPresence(t: number): number {
   return 1;
 }
 
-/** Places a model at a map-frame pose. */
-export function placeAt(group: Group, pose: Pose) {
+/** Places a model at a map-frame pose, grown and faded in by `presence` (0–1). */
+export function showAgv({ group, body, axes }: AgvModel, pose: Pose, presence: number) {
+  group.visible = presence > 0;
   group.position.set(...toWorld(pose.x, pose.y));
   group.rotation.y = pose.theta;
+  group.scale.set(1, Math.max(presence, 0.001), 1);
+  body.material.opacity = presence;
+  axes.material.opacity = presence;
 }
 
 /** The AGV the story follows: parked on base_link, then out on its mission. */
 export function HeroAgv() {
   const sceneRef = useScene();
-  const { group, body, axes } = useAgvModel();
+  const model = useAgvModel();
 
   useFrame(() => {
     const scene = sceneRef.current;
     scene.agv = missionPose(missionDistance(scene.t));
-    const presence = agvPresence(scene.t);
-    group.visible = presence > 0;
-    placeAt(group, scene.agv);
-    group.scale.set(1, Math.max(presence, 0.001), 1);
-    body.material.opacity = presence;
-    axes.material.opacity = presence;
+    showAgv(model, scene.agv, agvPresence(scene.t));
   });
 
-  return <primitive object={group} />;
+  return <primitive object={model.group} />;
 }
