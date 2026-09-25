@@ -224,16 +224,9 @@ export const timelineChapters: TimelineChapter[] = [
     commits: [
       {
         prefix: "feat:",
-        message: ["Industrial IoT", "Delivered Website & Invoicing System"],
-        year: "2026.2",
-        displayYear: "Mar 2026",
-        anchor: "left",
-      },
-      {
-        prefix: "feat:",
-        message: ["Industrial Automation"],
-        year: "2026.3",
-        displayYear: "Apr 2026",
+        message: ["Industrial IoT", "Delivered Website & Invoicing System", "Industrial Automation"],
+        year: "2026.165", // centre of the four-month freelance segment
+        displayYear: "Jan–Apr 2026",
         anchor: "center",
       },
     ],

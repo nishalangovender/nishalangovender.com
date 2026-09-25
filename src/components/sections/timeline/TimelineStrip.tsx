@@ -20,13 +20,17 @@
 
 // ─── Chronologically accurate positioning ──────────────────────────────
 //
-// 6-segment piecewise linear mapping:
-//   Segment 1: 2000 → 2005  (pre-school)               — heavily compressed, 3%
-//   Segment 2: 2005 → 2014  (Cordwalles)               — compressed,         7%
-//   Segment 3: 2014 → 2019  (Maritzburg College)       — moderate,          17.5%
-//   Segment 4: 2019 → 2024  (Stellenbosch University)  — expanded,          22.5%
-//   Segment 5: 2024 → 2026  (BATTALION Technologies)   — expanded,          22.5%
-//   Segment 6: 2026 → 2028  (Freelance → Ubundi)        — expanded,          17.5%
+// 7-segment piecewise linear mapping (shares of the 90% span):
+//   Segment 1: 2000 → 2005     (pre-school)               — 5%
+//   Segment 2: 2005 → 2014     (Cordwalles)               — 9%
+//   Segment 3: 2014 → 2019     (Maritzburg College)       — 13%
+//   Segment 4: 2019 → 2024     (Stellenbosch University)  — 19%
+//   Segment 5: 2024 → 2026     (BATTALION Technologies)   — 24%
+//   Segment 6: 2026 → May 2026 (Freelance)                — 10%
+//   Segment 7: May 2026 → now  (Ubundi)                   — 10%
+//
+// Freelance is four months but gets a full segment, so its label and
+// commits have room when the chapter is zoomed in.
 //
 // Pre-school and Cordwalles are compressed (less relevant professionally).
 // Space saved is redistributed equally to Stellenbosch and BATTALION.
@@ -43,19 +47,22 @@ const PIVOT_3 = 2019; // end of MC / start of Stellenbosch
 const PIVOT_4 = 2024; // end of Stellenbosch / start of BATTALION
 const PIVOT_5 = 2026; // end of BATTALION / start of Freelance
 
-const SHARE_1 = 0.05;   // 2000–2005: pre-school (original length)
-const SHARE_2 = 0.10;   // 2005–2014: Cordwalles (slightly wider for label+logo)
-const SHARE_3 = 0.14;   // 2014–2019: Maritzburg College (wider for label+logo)
-const SHARE_4 = 0.21;   // 2019–2024: Stellenbosch University (expanded)
-const SHARE_5 = 0.28;   // 2024–2026: BATTALION Technologies (expanded)
-const SHARE_6 = SPAN - SHARE_1 - SHARE_2 - SHARE_3 - SHARE_4 - SHARE_5; // 2026–2028: Freelance (shortened, 0.12)
-
 /** "Present" maps to this year for positioning purposes */
 export const PRESENT_YEAR = 2028;
 
 /** Fractional year for May 2026 — the freelance → Ubundi handover. Shared by
  *  the institution bands here and the chapter positions in `data/timeline`. */
 export const UBUNDI_START_YEAR = 2026.33;
+
+const PIVOT_6 = UBUNDI_START_YEAR; // end of Freelance / start of Ubundi
+
+const SHARE_1 = 0.05; // 2000–2005: pre-school
+const SHARE_2 = 0.09; // 2005–2014: Cordwalles
+const SHARE_3 = 0.13; // 2014–2019: Maritzburg College
+const SHARE_4 = 0.19; // 2019–2024: Stellenbosch University
+const SHARE_5 = 0.24; // 2024–2026: BATTALION Technologies
+const SHARE_6 = 0.1; // 2026–May 2026: Freelance
+const SHARE_7 = SPAN - SHARE_1 - SHARE_2 - SHARE_3 - SHARE_4 - SHARE_5 - SHARE_6; // Ubundi (0.10)
 
 export function yearToPosition(y: number): number {
   if (y <= PIVOT_1) {
@@ -73,7 +80,10 @@ export function yearToPosition(y: number): number {
   if (y <= PIVOT_5) {
     return PAD + SHARE_1 + SHARE_2 + SHARE_3 + SHARE_4 + ((y - PIVOT_4) / (PIVOT_5 - PIVOT_4)) * SHARE_5;
   }
-  return PAD + SHARE_1 + SHARE_2 + SHARE_3 + SHARE_4 + SHARE_5 + ((y - PIVOT_5) / (YEAR_END - PIVOT_5)) * SHARE_6;
+  if (y <= PIVOT_6) {
+    return PAD + SHARE_1 + SHARE_2 + SHARE_3 + SHARE_4 + SHARE_5 + ((y - PIVOT_5) / (PIVOT_6 - PIVOT_5)) * SHARE_6;
+  }
+  return PAD + SHARE_1 + SHARE_2 + SHARE_3 + SHARE_4 + SHARE_5 + SHARE_6 + ((y - PIVOT_6) / (YEAR_END - PIVOT_6)) * SHARE_7;
 }
 
 // ─── Boundary dots (transition points between periods) ─────────────────

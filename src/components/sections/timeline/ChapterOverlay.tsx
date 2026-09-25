@@ -215,7 +215,7 @@ export function ChapterOverlay({
                   }}
                 />
                 <div
-                  className={`absolute flex flex-col gap-0.5 w-max max-w-[10rem] ${anchorClass}`}
+                  className={`absolute flex flex-col gap-0.5 w-max max-w-[12rem] ${anchorClass}`}
                   style={{ top: `calc(100% + ${stemH + 4}px)` }}
                 >
                   {commit.message.map((item) => (
@@ -378,7 +378,7 @@ export function ChapterOverlay({
                             : "left-1/2 -translate-x-1/2 items-start text-left";
                       return (
                         <div
-                          className={`absolute flex flex-col w-max max-w-[10rem] ${alignClass}`}
+                          className={`absolute flex flex-col w-max max-w-[12rem] ${alignClass}`}
                           style={{ top: `calc(100% + ${labelDrop + 2}px)` }}
                         >
                           {event.text.map((item, li) => (
