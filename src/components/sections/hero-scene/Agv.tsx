@@ -180,8 +180,10 @@ export function showAgv(model: AgvModel, pose: Pose, presence: number, solidity:
 export function HeroAgv() {
   const sceneRef = useScene();
   const model = useAgvModel();
-  // Its electronics ride inside the chassis; the solid body hides them once it forms.
+  const palette = useScenePalette();
+  // Its wireframe electronics ride inside the chassis, fading with the wireframe as the solid body forms.
   const electronics = useMemo(() => buildElectronics(), []);
+  useEffect(() => electronics.setColors(palette.accent, palette.dim), [electronics, palette]);
   useEffect(() => {
     model.group.add(electronics.root);
     return () => {
@@ -197,7 +199,7 @@ export function HeroAgv() {
     else if (scene.rejoin) scene.agv = blendPose(scene.rejoin.from, mission, smoothstep(scene.rejoin.k));
     else scene.agv = mission;
     showAgv(model, scene.agv, agvPresence(scene.t), materialised(scene.agv.x));
-    showElectronics(electronics, scene.t);
+    showElectronics(electronics, scene.t, model.body.visible ? model.body.material.opacity : 0);
   });
 
   return <primitive object={model.group} />;

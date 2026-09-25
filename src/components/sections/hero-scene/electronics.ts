@@ -1,48 +1,48 @@
 /**
- * The electronics build: once the robot's outline has lifted off the page,
- * its parts drop into the open wireframe chassis one at a time — battery,
- * motor drivers, the Pi — and the cables run between them. The status LEDs
- * light as the stack boots in the code beat. Timings are pure and tested;
- * the meshes live in the base_link frame (x forward, y up) inside the AGV.
+ * The electronics build, drawn as wireframes to match the wireframe AGV:
+ * once the robot's outline has lifted off the page, its parts appear in an
+ * exploded view above the open chassis — battery, motor drivers, the Pi —
+ * each on a leader line to its seat, then slide down into place and the
+ * cables run between them. The status LEDs light as the stack boots in the
+ * code beat. Timings are pure and tested; the lines live in the base_link
+ * frame (x forward, y up) inside the AGV.
  */
-import { BoxGeometry, Mesh, MeshStandardMaterial, Object3D, type BufferGeometry } from "three";
+import { BoxGeometry, Matrix4, Mesh, MeshStandardMaterial, Object3D } from "three";
 import type { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 
 import { clamp01, smoothstep } from "@/lib/math";
 
 import { beatAt, beatProgress } from "./beats";
-import { fatLines } from "./lines";
+import { edgeSegments, fatLines } from "./lines";
 import { AGV, AGV_BODY_Y } from "./sketch";
 import { terminalLinesAt } from "./terminal";
 
-/** Chassis floor the parts sit on, and how far above it each one drops from. */
+/** Chassis floor the parts sit on. */
 const FLOOR_Y = AGV_BODY_Y + 0.02;
-const DROP_HEIGHT = 0.7;
 
-/** Design-beat progress at which the first part starts to drop, the gap between parts, and each drop's length. */
-const FIRST_DROP = 0.45;
-const DROP_GAP = 0.1;
-const DROP_TIME = 0.2;
-/** Design-beat progress over which the cables run once the parts are in. */
-const CABLES = { from: 0.85, to: 1 } as const;
+/** Design-beat progress: parts appear (staggered), hold exploded, collapse into place, then cabling. */
+const APPEAR = { from: 0.42, each: 0.04, length: 0.1 } as const;
+const COLLAPSE = { from: 0.72, to: 0.9 } as const;
+const CABLES = { from: 0.88, to: 1 } as const;
 
 interface Part {
   name: string;
-  /** Centre in base_link, sitting on the chassis floor. */
+  /** Seat centre in base_link, on the chassis floor. */
   x: number;
   z: number;
   size: [number, number, number];
-  color: string;
-  /** Optional detail on top: [w, h, d, colour] centred on the part. */
-  top?: [number, number, number, string];
+  /** Offset from the seat in the exploded view. */
+  explode: [number, number, number];
+  /** Optional detail on top: [w, h, d]. */
+  top?: [number, number, number];
 }
 
-/** Drop order: the heavy battery first, then the drivers either side, then the Pi. */
+/** Stacked in the exploded view: battery lowest, drivers either side above it, the Pi on top. */
 export const PARTS: readonly Part[] = [
-  { name: "battery", x: -0.18, z: 0, size: [0.42, 0.14, 0.46], color: "#2a5bb8", top: [0.3, 0.01, 0.1, "#e6e9ee"] },
-  { name: "driver-left", x: 0.08, z: -0.3, size: [0.16, 0.07, 0.14], color: "#1b1d21", top: [0.14, 0.012, 0.12, "#9aa0a7"] },
-  { name: "driver-right", x: 0.08, z: 0.3, size: [0.16, 0.07, 0.14], color: "#1b1d21", top: [0.14, 0.012, 0.12, "#9aa0a7"] },
-  { name: "pi", x: 0.4, z: -0.05, size: [0.2, 0.02, 0.14], color: "#1e6b3a", top: [0.05, 0.015, 0.05, "#15171a"] },
+  { name: "battery", x: -0.18, z: 0, size: [0.42, 0.14, 0.46], explode: [0, 0.6, 0], top: [0.3, 0.01, 0.1] },
+  { name: "driver-left", x: 0.08, z: -0.3, size: [0.16, 0.07, 0.14], explode: [0.05, 0.85, -0.3], top: [0.14, 0.012, 0.12] },
+  { name: "driver-right", x: 0.08, z: 0.3, size: [0.16, 0.07, 0.14], explode: [0.05, 0.85, 0.3], top: [0.14, 0.012, 0.12] },
+  { name: "pi", x: 0.4, z: -0.05, size: [0.2, 0.02, 0.14], explode: [0.25, 1.1, 0], top: [0.05, 0.015, 0.05] },
 ];
 
 /** Cable runs between the parts, as [x, z] polylines at wire height, with a colour each. */
@@ -62,17 +62,19 @@ export const LEDS: readonly { z: number; color: string; onLine: number }[] = [
 ];
 
 /**
- * Where part `k` is at loop time `t`: `drop` is its height above its seat
- * (0 once seated), `scale` grows it in as it starts to fall. Hidden (scale 0)
- * in the sketch beat, dropping in the design beat, seated after.
+ * Where part `k` is at loop time `t`: `shown` (0–1) as it appears, and
+ * `explode` (1 fully exploded, 0 seated). Hidden in the sketch beat,
+ * exploded then collapsing in the design beat, seated after.
  */
-export function partDrop(t: number, k: number): { drop: number; scale: number } {
+export function partPlacement(t: number, k: number): { shown: number; explode: number } {
   const id = beatAt(t).id;
-  if (id === "sketch") return { drop: DROP_HEIGHT, scale: 0 };
-  if (id !== "design") return { drop: 0, scale: 1 };
-  const k01 = clamp01((beatProgress(t, "design") - (FIRST_DROP + k * DROP_GAP)) / DROP_TIME);
-  // Falls with gravity's ease-in, then settles.
-  return { drop: DROP_HEIGHT * (1 - k01 * k01), scale: smoothstep(clamp01(k01 / 0.3)) };
+  if (id === "sketch") return { shown: 0, explode: 1 };
+  if (id !== "design") return { shown: 1, explode: 0 };
+  const p = beatProgress(t, "design");
+  return {
+    shown: smoothstep(clamp01((p - APPEAR.from - k * APPEAR.each) / APPEAR.length)),
+    explode: 1 - smoothstep(clamp01((p - COLLAPSE.from) / (COLLAPSE.to - COLLAPSE.from))),
+  };
 }
 
 /** Share of the cabling drawn at `t`: none until the parts are in, all of it by the end of the design beat. */
@@ -91,79 +93,102 @@ export function ledLit(t: number, k: number): boolean {
   return lines === null || lines >= LEDS[k].onLine;
 }
 
+/** Wireframe edges of a part (and its top detail), centred on its seat. */
+function partEdges(p: Part): number[] {
+  const out = edgeSegments(new BoxGeometry(...p.size), new Matrix4());
+  if (p.top) {
+    const [w, h, d] = p.top;
+    out.push(...edgeSegments(new BoxGeometry(w, h, d), new Matrix4().makeTranslation(0, p.size[1] / 2 + h / 2, 0)));
+  }
+  return out;
+}
+
 export interface Electronics {
   /** Plain Object3D, not a Group, so it keeps the AGV's draw layer. */
   root: Object3D;
-  parts: Object3D[];
+  parts: LineSegments2[];
+  /** Leader lines, one per part, from its seat to its exploded position. */
+  leaders: LineSegments2[];
   cables: LineSegments2[];
   leds: MeshStandardMaterial[];
+  /** Colours the part wireframes and leaders to match the AGV's. */
+  setColors: (wire: string, leader: string) => void;
   dispose: () => void;
 }
 
 export function buildElectronics(): Electronics {
-  const geometries: BufferGeometry[] = [];
-  const materials: MeshStandardMaterial[] = [];
-  const box = (w: number, h: number, d: number, color: string) => {
-    const geometry = new BoxGeometry(w, h, d);
-    const material = new MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.2 });
-    geometries.push(geometry);
-    materials.push(material);
-    return new Mesh(geometry, material);
-  };
-
   const root = new Object3D();
+  const seat = (p: Part): [number, number, number] => [p.x, FLOOR_Y + p.size[1] / 2, p.z];
+
   const parts = PARTS.map((p) => {
-    const part = new Object3D();
-    part.position.set(p.x, FLOOR_Y + p.size[1] / 2, p.z);
-    part.add(box(...p.size, p.color));
-    if (p.top) {
-      const [w, h, d, color] = p.top;
-      const top = box(w, h, d, color);
-      top.position.y = p.size[1] / 2 + h / 2;
-      part.add(top);
-    }
+    const part = fatLines(partEdges(p), { linewidth: 1.5 });
+    part.position.set(...seat(p));
     root.add(part);
     return part;
+  });
+  // Each leader runs from the seat along the explode offset; scaling it shrinks it as the part drops.
+  const leaders = PARTS.map((p) => {
+    const leader = fatLines([0, 0, 0, ...p.explode], { linewidth: 1 });
+    leader.position.set(...seat(p));
+    root.add(leader);
+    return leader;
   });
 
   const cables = CABLE_RUNS.map(({ color, points }) => {
     const positions = points.slice(1).flatMap(([x, z], i) => [points[i][0], WIRE_Y, points[i][1], x, WIRE_Y, z]);
     const line = fatLines(positions, { linewidth: 2 });
     line.material.color.set(color);
-    line.material.transparent = false;
     root.add(line);
     return line;
   });
 
+  const ledGeometry = new BoxGeometry(0.02, 0.035, 0.05);
   const leds = LEDS.map(({ z }) => {
-    const led = box(0.02, 0.035, 0.05, "#15171a");
+    const material = new MeshStandardMaterial({ color: "#15171a", roughness: 0.5 });
+    const led = new Mesh(ledGeometry, material);
     led.position.set(AGV.offset - AGV.length / 2 - 0.01, AGV_BODY_Y + AGV.height - 0.06, z);
     root.add(led);
-    return led.material as MeshStandardMaterial;
+    return material;
   });
 
-  const dispose = () => {
-    for (const g of geometries) g.dispose();
-    for (const m of materials) m.dispose();
-    for (const c of cables) {
-      c.geometry.dispose();
-      c.material.dispose();
-    }
+  const setColors = (wire: string, leader: string) => {
+    for (const p of parts) p.material.color.set(wire);
+    for (const l of leaders) l.material.color.set(leader);
   };
-  return { root, parts, cables, leds, dispose };
+  const dispose = () => {
+    for (const line of [...parts, ...leaders, ...cables]) {
+      line.geometry.dispose();
+      line.material.dispose();
+    }
+    ledGeometry.dispose();
+    for (const m of leds) m.dispose();
+  };
+  return { root, parts, leaders, cables, leds, setColors, dispose };
 }
 
-/** Poses the electronics for loop time `t`. */
-export function showElectronics(e: Electronics, t: number) {
-  e.parts.forEach((part, k) => {
-    const { drop, scale } = partDrop(t, k);
-    part.visible = scale > 0;
-    part.scale.setScalar(Math.max(scale, 0.001));
-    part.position.y = FLOOR_Y + PARTS[k].size[1] / 2 + drop;
+/** Poses the electronics for loop time `t`, faded with the wireframe by `opacity`. */
+export function showElectronics(e: Electronics, t: number, opacity: number) {
+  PARTS.forEach((p, k) => {
+    const { shown, explode } = partPlacement(t, k);
+    const part = e.parts[k];
+    part.visible = shown > 0 && opacity > 0;
+    part.material.opacity = shown * opacity;
+    part.position.set(
+      p.x + p.explode[0] * explode,
+      FLOOR_Y + p.size[1] / 2 + p.explode[1] * explode,
+      p.z + p.explode[2] * explode,
+    );
+    const leader = e.leaders[k];
+    leader.visible = part.visible && explode > 0.01;
+    leader.scale.setScalar(Math.max(explode, 0.001));
+    leader.material.opacity = shown * opacity * 0.6;
   });
   // Each run is a short wire; reveal whole runs in order.
   const shown = Math.ceil(cablesDrawn(t) * e.cables.length);
-  e.cables.forEach((c, i) => (c.visible = i < shown));
+  e.cables.forEach((c, i) => {
+    c.visible = i < shown && opacity > 0;
+    c.material.opacity = opacity;
+  });
   e.leds.forEach((m, k) => {
     const lit = ledLit(t, k);
     m.emissive.set(lit ? LEDS[k].color : "#000000");

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { BEATS } from "../beats";
-import { LEDS, PARTS, buildElectronics, cablesDrawn, ledLit, partDrop } from "../electronics";
+import { LEDS, PARTS, buildElectronics, cablesDrawn, ledLit, partPlacement } from "../electronics";
 import { LINE_DELAY, TYPING_START } from "../terminal";
 
 const beat = (id: string) => BEATS.find((b) => b.id === id)!;
@@ -10,20 +10,22 @@ const code = beat("code");
 const at = (b: { start: number; end: number }, p: number) => b.start + p * (b.end - b.start);
 
 describe("electronics build", () => {
-  it("drops each part into the chassis in the design beat, one after another", () => {
+  it("shows the parts exploded above the chassis, then collapses them into place", () => {
     for (let k = 0; k < PARTS.length; k++) {
-      expect(partDrop(beat("sketch").start + 1, k).scale).toBe(0);
-      expect(partDrop(design.end - 1e-6, k)).toEqual({ drop: expect.closeTo(0, 6), scale: 1 });
-      expect(partDrop(code.start + 1, k)).toEqual({ drop: 0, scale: 1 });
+      expect(partPlacement(beat("sketch").start + 1, k).shown).toBe(0);
+      expect(partPlacement(at(design, 0.66), k)).toEqual({ shown: 1, explode: 1 });
+      expect(partPlacement(design.end - 1e-6, k)).toEqual({ shown: 1, explode: 0 });
+      expect(partPlacement(code.start + 1, k)).toEqual({ shown: 1, explode: 0 });
     }
-    // Midway through the drops the battery is in and the Pi is still to come.
-    const mid = at(design, 0.75);
-    expect(partDrop(mid, 0).drop).toBe(0);
-    expect(partDrop(mid, PARTS.length - 1).scale).toBe(0);
+    // Parts appear one after another: the battery before the Pi.
+    const early = at(design, 0.47);
+    expect(partPlacement(early, 0).shown).toBeGreaterThan(partPlacement(early, PARTS.length - 1).shown);
+    // Every part explodes upward, clear of the chassis.
+    for (const p of PARTS) expect(p.explode[1]).toBeGreaterThan(0.4);
   });
 
   it("runs the cables once the parts are in", () => {
-    expect(cablesDrawn(at(design, 0.8))).toBe(0);
+    expect(cablesDrawn(at(design, 0.85))).toBe(0);
     expect(cablesDrawn(at(design, 0.95))).toBeGreaterThan(0);
     expect(cablesDrawn(code.start)).toBe(1);
   });
