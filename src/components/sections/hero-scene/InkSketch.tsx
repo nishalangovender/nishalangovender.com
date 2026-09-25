@@ -1,13 +1,14 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   BufferGeometry,
   Color,
   DoubleSide,
   Float32BufferAttribute,
   Group,
+  type InterleavedBufferAttribute,
   Mesh,
   PlaneGeometry,
   Points,
@@ -21,6 +22,7 @@ import { PAGE_LANDING } from "./camera";
 import { PAGE_HEIGHT } from "./desk-layout";
 import { LAYER, fatLines, toPositions } from "./lines";
 import { HINGE_X, PAPER, PEN, paperMaterial } from "./Notebook";
+import { curlPositions } from "./page-turn";
 import { useScene } from "./scene-context";
 import {
   SKETCH_BODY,
@@ -46,7 +48,7 @@ export function roleColor(role: SketchRole): string {
 /**
  * Ink state at time `t`: the diagram and its symbols written in the sketch beat;
  * the robot outline lifts and fades in the design beat; in the return beat
- * the written sheet turns over the gutter coil (`turn` 0 → 1, a half turn)
+ * the written sheet curls over the spine (`turn` 0 → 1, see page-turn.ts)
  * and lands face-down on the stack of turned pages, uncovering a fresh page.
  */
 export function inkAt(t: number): {
@@ -69,6 +71,7 @@ export function inkAt(t: number): {
 
 /** Layer heights above the page, so the turning sheet never fights the page under it. */
 const SHEET_Y = 0.004;
+const DOT_Y = 0.0055;
 const INK_Y = 0.007;
 
 function strokeColors(roles: readonly SketchRole[]): number[] {
@@ -83,46 +86,64 @@ const BODY_ROLES = SKETCH_ROLES.filter((_, i) => SKETCH_BODY[i]);
 const segmentsWhere = (keep: boolean) =>
   SKETCH_SEGMENTS.filter((_, i) => SKETCH_BODY[Math.floor(i / 4)] === keep);
 
+/** Shifts [x, y, z] positions from page-centred to spine-based x, the frame the sheet turns in. */
+const fromSpine = (positions: ArrayLike<number>) =>
+  Float32Array.from(positions, (v, i) => (i % 3 === 0 ? v + PAGE.width / 2 : v));
+
+/** Paper subdivisions along and across the sheet, so it can curl smoothly. */
+const PAPER_SEGMENTS = { along: 32, across: 12 } as const;
+
 /**
  * The top sheet of the notebook and everything written on it. Beats 1–2: the
  * kinematic sketch and its symbols are inked stroke by stroke; the robot's
  * outline lifts off into the wireframe while the axes, vectors and symbols
- * stay on the page. Return beat: the sheet turns about the spine onto
- * the left-hand stack. At the loop seam it is back on the right, blank — the
+ * stay on the page. Return beat: the sheet curls over the spine onto the
+ * left-hand stack, ink and dots bending with the paper. At the loop seam it is back on the right, blank — the
  * same as the fresh page it uncovered, so nothing visibly vanishes.
  */
 export function InkSketch() {
   const sceneRef = useScene();
-  const { page, body, paper, dots, hinge } = useMemo(() => {
-    const page = fatLines(toPositions(segmentsWhere(false), INK_Y), { linewidth: 2, colors: strokeColors(PAGE_ROLES) });
-    const body = fatLines(toPositions(segmentsWhere(true), INK_Y), { linewidth: 2, colors: strokeColors(BODY_ROLES) });
+  const turned = useRef(0);
+  const { page, body, paper, dots, hinge, bases } = useMemo(() => {
+    const page = fatLines(Array.from(fromSpine(toPositions(segmentsWhere(false), INK_Y))), {
+      linewidth: 2,
+      colors: strokeColors(PAGE_ROLES),
+    });
+    const body = fatLines(Array.from(fromSpine(toPositions(segmentsWhere(true), INK_Y))), {
+      linewidth: 2,
+      colors: strokeColors(BODY_ROLES),
+    });
     // The sheet itself: lit paper matching the page beneath, both sides, with the page's dot grid.
     const paperMat = paperMaterial(PAPER.sheet);
-    Object.assign(paperMat, { side: DoubleSide, transparent: true });
-    const paper = new Mesh(new PlaneGeometry(PAGE.width, PAGE.depth), paperMat);
-    paper.rotation.x = -Math.PI / 2;
-    paper.position.y = SHEET_Y;
+    paperMat.side = DoubleSide;
+    const paperGeometry = new PlaneGeometry(PAGE.width, PAGE.depth, PAPER_SEGMENTS.along, PAPER_SEGMENTS.across)
+      .rotateX(-Math.PI / 2)
+      .translate(PAGE.width / 2, SHEET_Y, 0);
+    const paper = new Mesh(paperGeometry, paperMat);
     const dotGeometry = new BufferGeometry();
-    dotGeometry.setAttribute("position", new Float32BufferAttribute(pageDots(), 3));
+    const dotBase = fromSpine(pageDots().map((v, i) => (i % 3 === 1 ? DOT_Y : v)));
+    dotGeometry.setAttribute("position", new Float32BufferAttribute(dotBase.slice(), 3));
     const dots = new Points(
       dotGeometry,
       new PointsMaterial({ color: PAPER.dots, size: 2, sizeAttenuation: false, transparent: true, depthWrite: false }),
     );
-    dots.position.y = SHEET_Y;
 
-    // Draw order inside the sheet: paper, dots, then ink. The paper is
-    // transparent so it sorts with the ink, and must never paint over it.
-    paper.material.depthWrite = false;
+    // The paper is opaque and writes depth, so once the sheet curls over, the
+    // ink on its face is hidden behind it; dots and ink draw after it.
     [paper, dots, page, body].forEach((obj, i) => (obj.renderOrder = Math.min(i, 2)));
-    const sheet = new Group();
-    sheet.add(paper, dots, page, body);
-    // Hinge in the gutter, at page height; the sheet lies out to its right.
-    sheet.position.x = PAGE.width / 2;
+    // The curl moves every vertex, so bounds computed at rest no longer hold.
+    for (const obj of [paper, dots, page]) obj.frustumCulled = false;
+    // Hinge on the spine, at page height; the sheet lies out to its right.
     const hinge = new Group();
-    hinge.add(sheet);
+    hinge.add(paper, dots, page, body);
     hinge.position.set(HINGE_X, PAGE_HEIGHT, 0);
     hinge.renderOrder = LAYER.ink;
-    return { page, body, paper, dots, hinge };
+    const bases = {
+      paper: Float32Array.from(paperGeometry.attributes.position.array),
+      dots: dotBase,
+      ink: Float32Array.from((page.geometry.attributes.instanceStart as InterleavedBufferAttribute).data.array),
+    };
+    return { page, body, paper, dots, hinge, bases };
   }, []);
 
   useEffect(
@@ -144,10 +165,27 @@ export function InkSketch() {
     body.position.y = ink.lift;
     body.material.opacity = ink.body;
     body.visible = ink.body > 0;
-    // A half turn about the gutter (positive about z) lifts the free right edge
-    // up and over to the left, landing the sheet face-down on the turned pages.
-    hinge.rotation.z = ink.turn * Math.PI;
+    if (ink.turn !== turned.current) {
+      turned.current = ink.turn;
+      curlSheet(ink.turn);
+    }
   });
+
+  /** Bends the paper, its dots and its ink onto the turning sheet. */
+  function curlSheet(turn: number) {
+    const { width, depth } = PAGE;
+    const paperPos = paper.geometry.attributes.position;
+    curlPositions(bases.paper, paperPos.array as Float32Array, width, depth, turn);
+    paperPos.needsUpdate = true;
+    paper.geometry.computeVertexNormals();
+    const dotPos = dots.geometry.attributes.position;
+    curlPositions(bases.dots, dotPos.array as Float32Array, width, depth, turn);
+    dotPos.needsUpdate = true;
+    // Segment starts and ends share one interleaved buffer laid out as [x1 y1 z1 x2 y2 z2].
+    const inkData = (page.geometry.attributes.instanceStart as InterleavedBufferAttribute).data;
+    curlPositions(bases.ink, inkData.array as Float32Array, width, depth, turn);
+    inkData.needsUpdate = true;
+  }
 
   return <primitive object={hinge} />;
 }
