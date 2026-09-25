@@ -4,21 +4,20 @@ import { useEffect, useMemo } from "react";
 import {
   BoxGeometry,
   BufferGeometry,
-  Color,
   Float32BufferAttribute,
   Group,
   InstancedMesh,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   PlaneGeometry,
   Points,
   PointsMaterial,
 } from "three";
 
 import { DESK, NOTEBOOK, PAGE_HEIGHT } from "./desk-layout";
-import { LAYER, edgeSegments, fatLines } from "./lines";
-import { useScenePalette } from "./scene-context";
+import { LAYER, fatLines } from "./lines";
 import { PAGE, pageDots } from "./sketch";
 
 /**
@@ -85,6 +84,22 @@ export function bindingHoles(): [number, number][] {
 
 const HOLE = { w: 0.045, d: 0.07 } as const;
 
+/** Real-world notebook colours, the same in both themes: it is an object on the desk, not UI. */
+export const PAPER = {
+  sheet: "#f4efe4",
+  edge: "#e2dccd",
+  cover: "#2a3a4f",
+  wire: "#c9ccd1",
+  hole: "#3a2a1e",
+  dots: "#b9b2a3",
+} as const;
+
+/** Pen colours for the sketch: blue-black ink, RViz red/green axes, orange motion. */
+export const PEN = { ink: "#1f2a52", axisX: "#c62f2f", axisY: "#1c8a4a", motion: "#c77700" } as const;
+
+/** Matte paper, lit like the rest of the desk. */
+export const paperMaterial = (color: string) => new MeshStandardMaterial({ color, roughness: 0.9, metalness: 0 });
+
 /**
  * The open notebook on the desk: a cover board under both halves, the right
  * page block with the fresh dotted page, the left block of turned pages, and
@@ -92,27 +107,28 @@ const HOLE = { w: 0.045, d: 0.07 } as const;
  * drives off the right page, and the written sheet turns onto the left.
  */
 export function Notebook() {
-  const palette = useScenePalette();
-
   const parts = useMemo(() => {
     const coverW = 2 * PAGE.width + 2 * NOTEBOOK.coverMargin;
     const coverD = PAGE.depth + 2 * NOTEBOOK.coverMargin;
     const coverX = LEFT_X / 2;
     const coverY = DESK.height + NOTEBOOK.cover / 2;
     const blockY = DESK.height + NOTEBOOK.cover + NOTEBOOK.pages / 2;
-    const at = (x: number, y: number) => new Matrix4().makeTranslation(x, y, 0);
 
-    const cover = new Mesh(new BoxGeometry(coverW, NOTEBOOK.cover, coverD), new MeshBasicMaterial());
+    const cover = new Mesh(
+      new BoxGeometry(coverW, NOTEBOOK.cover, coverD),
+      new MeshStandardMaterial({ color: PAPER.cover, roughness: 0.75, metalness: 0 }),
+    );
     cover.position.set(coverX, coverY, 0);
     const blockGeometry = new BoxGeometry(PAGE.width, NOTEBOOK.pages, PAGE.depth);
     const blocks = [0, LEFT_X].map((x) => {
-      const block = new Mesh(blockGeometry, new MeshBasicMaterial());
+      const block = new Mesh(blockGeometry, paperMaterial(PAPER.edge));
       block.position.set(x, blockY, 0);
       return block;
     });
     const pageGeometry = new PlaneGeometry(PAGE.width, PAGE.depth);
     const pages = [0, LEFT_X].map((x) => {
-      const page = new Mesh(pageGeometry, new MeshBasicMaterial());
+      const page = new Mesh(pageGeometry, paperMaterial(PAPER.sheet));
+      page.receiveShadow = true;
       page.rotation.x = -Math.PI / 2;
       page.position.set(x, PAGE_HEIGHT + 0.001, 0);
       return page;
@@ -122,19 +138,16 @@ export function Notebook() {
     geometry.setAttribute("position", new Float32BufferAttribute(pageDots(), 3));
     const dots = new Points(
       geometry,
-      new PointsMaterial({ size: 2, sizeAttenuation: false, transparent: true, opacity: 0.55, depthWrite: false }),
+      new PointsMaterial({ color: PAPER.dots, size: 2, sizeAttenuation: false, transparent: true, depthWrite: false }),
     );
     dots.position.y = PAGE_HEIGHT;
 
-    const edges = fatLines(
-      [
-        ...edgeSegments(new BoxGeometry(coverW, NOTEBOOK.cover, coverD), at(coverX, coverY)),
-        ...edgeSegments(new BoxGeometry(PAGE.width, NOTEBOOK.pages, PAGE.depth), at(0, blockY)),
-        ...edgeSegments(new BoxGeometry(PAGE.width, NOTEBOOK.pages, PAGE.depth), at(LEFT_X, blockY)),
-      ],
-      { linewidth: 1 },
-    );
-    const binding = fatLines(bindingCoil(), { linewidth: 1.6 });
+    const binding = fatLines(bindingCoil(), { linewidth: 2 });
+    binding.material.color.set(PAPER.wire);
+    for (const mesh of [cover, ...blocks]) {
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    }
 
     // Punched holes: dark slots above the top sheet, so they show on every page.
     const holeMatrices = bindingHoles().map(([x, z]) => {
@@ -142,34 +155,20 @@ export function Notebook() {
       m.setPosition(x, PAGE_HEIGHT + 0.012, z);
       return m;
     });
-    const holes = new InstancedMesh(new PlaneGeometry(HOLE.w, HOLE.d), new MeshBasicMaterial(), holeMatrices.length);
+    const holes = new InstancedMesh(new PlaneGeometry(HOLE.w, HOLE.d), new MeshBasicMaterial({ color: PAPER.hole }), holeMatrices.length);
     holeMatrices.forEach((m, i) => holes.setMatrixAt(i, m));
     holes.instanceMatrix.needsUpdate = true;
 
     const group = new Group();
-    group.add(cover, ...blocks, ...pages, dots, edges, binding, holes);
+    group.add(cover, ...blocks, ...pages, dots, binding, holes);
     group.renderOrder = LAYER.page;
-    return { group, cover, blocks, pages, dots, edges, binding, holes };
+    return { group, cover, blocks, pages, dots, binding, holes };
   }, []);
-
-  useEffect(() => {
-    const { cover, blocks, pages, dots, edges, binding, holes } = parts;
-    const pageColor = new Color(palette.page);
-    for (const page of pages) page.material.color.copy(pageColor);
-    // Page edges read slightly darker than the top sheet; the cover is a deep accent board.
-    for (const block of blocks) block.material.color.copy(pageColor).lerp(new Color(palette.rule), 0.45);
-    cover.material.color.set(palette.accent).lerp(new Color(palette.bg), 0.72);
-    dots.material.color.set(palette.dim);
-    edges.material.color.set(palette.rule);
-    // Wire reads as bright metal against the cover; holes as the desk showing through.
-    binding.material.color.set(palette.dim).lerp(new Color(palette.fg), 0.35);
-    holes.material.color.set(palette.bg);
-  }, [parts, palette]);
 
   useEffect(
     () => () => {
-      const { cover, blocks, pages, dots, edges, binding, holes } = parts;
-      for (const obj of [cover, ...blocks, ...pages, dots, edges, binding, holes]) {
+      const { cover, blocks, pages, dots, binding, holes } = parts;
+      for (const obj of [cover, ...blocks, ...pages, dots, binding, holes]) {
         obj.geometry.dispose();
         obj.material.dispose();
       }

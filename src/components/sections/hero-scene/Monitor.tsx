@@ -7,9 +7,9 @@ import {
   CanvasTexture,
   Group,
   LinearMipmapLinearFilter,
-  Matrix4,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   PlaneGeometry,
   SRGBColorSpace,
 } from "three";
@@ -18,24 +18,33 @@ import { DASH_H, DASH_SCALE, DASH_W, drawDashboard } from "./dashboard";
 import { DESK } from "./desk-layout";
 import { MONITOR, toWorld } from "./factory";
 import { fleetPose, FLEET_SIZE } from "./Fleet";
-import { LAYER, edgeSegments, fatLines } from "./lines";
-import { useScene, useScenePalette } from "./scene-context";
+import { LAYER } from "./lines";
+import { useScene } from "./scene-context";
 
 /** Dashboard redraw interval, seconds — a status screen, not an animation. */
 const REDRAW_PERIOD = 0.25;
 
-const at = (x: number, y: number, z: number) => new Matrix4().makeTranslation(x, y, z);
-
 /** Wireframe bezel, stand and base in the monitor's local frame (screen centre at origin), scaled to its width. */
-function monitorEdges(): number[] {
+/** A black bezel on a dark metal stand and base, in the monitor's local frame (screen centre at origin). */
+function monitorBody(): Group {
   const { width, screenHeight, height } = MONITOR;
   const u = width / 16; // one unit of bezel / stand thickness
   const standH = height - screenHeight / 2;
-  return [
-    ...edgeSegments(new BoxGeometry(width + u, screenHeight + u, u / 2), at(0, 0, -u / 3)),
-    ...edgeSegments(new BoxGeometry(u, standH, u), at(0, -(height + screenHeight / 2) / 2, -u)),
-    ...edgeSegments(new BoxGeometry(u * 6, u / 4, u * 3.5), at(0, -height + u / 8, -u)),
-  ];
+  const bezel = new MeshStandardMaterial({ color: "#0d0e10", roughness: 0.45, metalness: 0.2 });
+  const metal = new MeshStandardMaterial({ color: "#2b2e33", roughness: 0.4, metalness: 0.7 });
+  const body = new Group();
+  const part = (geometry: BoxGeometry, material: MeshStandardMaterial, x: number, y: number, z: number) => {
+    const mesh = new Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    body.add(mesh);
+  };
+  // Bezel sits just behind the screen plane, so the screen reads as inset glass.
+  part(new BoxGeometry(width + u, screenHeight + u, u / 2), bezel, 0, 0, -u / 4 - 0.005);
+  part(new BoxGeometry(u, standH, u), metal, 0, -(height + screenHeight / 2) / 2, -u);
+  part(new BoxGeometry(u * 6, u / 4, u * 3.5), metal, 0, -height + u / 8, -u);
+  return body;
 }
 
 /**
@@ -45,9 +54,8 @@ function monitorEdges(): number[] {
  */
 export function Monitor() {
   const sceneRef = useScene();
-  const palette = useScenePalette();
 
-  const { group, frame, screen, texture, canvas } = useMemo(() => {
+  const { group, body, screen, texture, canvas } = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = DASH_W * DASH_SCALE;
     canvas.height = DASH_H * DASH_SCALE;
@@ -58,18 +66,14 @@ export function Monitor() {
       new PlaneGeometry(MONITOR.width, MONITOR.screenHeight),
       new MeshBasicMaterial({ map: texture }),
     );
-    const frame = fatLines(monitorEdges(), { linewidth: 1.5 });
+    const body = monitorBody();
     const group = new Group();
-    group.add(frame, screen);
+    group.add(body, screen);
     // Screen faces down the aisle (map −y = world +z).
     group.position.set(...toWorld(MONITOR.x, MONITOR.y, DESK.height + MONITOR.height));
     group.renderOrder = LAYER.agv;
-    return { group, frame, screen, texture, canvas };
+    return { group, body, screen, texture, canvas };
   }, []);
-
-  useEffect(() => {
-    frame.material.color.set(palette.accent);
-  }, [frame, palette]);
 
   // Sharpest sampling the GPU offers, for the screen seen at an angle.
   const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy());
@@ -80,13 +84,16 @@ export function Monitor() {
 
   useEffect(
     () => () => {
-      frame.geometry.dispose();
-      frame.material.dispose();
+      body.traverse((o) => {
+        const mesh = o as Mesh;
+        mesh.geometry?.dispose();
+        (mesh.material as MeshStandardMaterial | undefined)?.dispose();
+      });
       screen.geometry.dispose();
       screen.material.dispose();
       texture.dispose();
     },
-    [frame, screen, texture],
+    [body, screen, texture],
   );
 
   useFrame(({ clock }, delta) => {

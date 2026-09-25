@@ -15,6 +15,7 @@ import { FactoryFloor } from "./FactoryFloor";
 import { Fleet } from "./Fleet";
 import { InkSketch } from "./InkSketch";
 import { Lidar } from "./Lidar";
+import { Lights } from "./Lights";
 import { missionPose } from "./mission";
 import { Monitor } from "./Monitor";
 import { REJOIN_TIME } from "./nav-goal";
@@ -125,6 +126,7 @@ export default function HeroCanvas({ active }: { active: boolean }) {
           <PaletteProvider value={palette}>
             <Director onBeat={setBeat} />
             <Framing />
+            <Lights />
             <Desk />
             <Notebook />
             <FactoryFloor />

@@ -5,9 +5,7 @@ import { useEffect, useMemo } from "react";
 import {
   BoxGeometry,
   Color,
-  DirectionalLight,
   Group,
-  HemisphereLight,
   InstancedMesh,
   Matrix4,
   Mesh,
@@ -113,7 +111,7 @@ function laneStrips(): { length: number; matrices: Matrix4[] } {
 /**
  * The production floor the scan resolves into: concrete floor with lane
  * lines, walls on three sides, loaded pallet racking, columns and loose
- * pallets, lit with soft shadows. It rises from the floor as `factoryReveal`
+ * pallets, lit (by Lights.tsx) with soft shadows. It rises from the floor as `factoryReveal`
  * goes 0 → 1, so there is no transparency to sort.
  */
 export function FactoryFloor() {
@@ -173,21 +171,12 @@ export function FactoryFloor() {
     const lanes = instanced(new BoxGeometry(lane.length, 0.004, 0.1), std(COLOURS.lane), lane.matrices);
     lanes.castShadow = false;
 
-    // Key light from above the far corner; ambient fill keeps shadowed faces readable.
-    const sun = new DirectionalLight("#ffffff", 2.4);
-    sun.position.set(...toWorld(FACTORY_CENTRE.x + 4, FACTORY_CENTRE.y - 6, 12));
-    sun.target.position.set(...toWorld(FACTORY_CENTRE.x, FACTORY_CENTRE.y, 0));
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
-    Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 30 });
-    sun.shadow.bias = -0.0005;
-
-    const fill = new HemisphereLight("#ffffff", "#444444", 1.3);
 
     const rising = new Group();
     rising.add(walls, stock);
     const group = new Group();
-    group.add(floor, lanes, rising, sun, sun.target, fill);
+    // Lit by the scene-wide rig in Lights.tsx.
+    group.add(floor, lanes, rising);
     return { group, floor, floorMat, wallMat, kickMat, capMat, rising, lanes };
   }, []);
 

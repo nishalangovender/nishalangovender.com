@@ -22,8 +22,8 @@ import { beatProgress } from "./beats";
 import { PAGE_LANDING } from "./camera";
 import { PAGE_HEIGHT } from "./desk-layout";
 import { LAYER, fatLines, toPositions } from "./lines";
-import { HINGE_X } from "./Notebook";
-import { useScene, useScenePalette, type Palette } from "./scene-context";
+import { HINGE_X, PAPER, PEN, paperMaterial } from "./Notebook";
+import { useScene } from "./scene-context";
 import {
   SKETCH_BODY,
   SKETCH_LABELS,
@@ -43,9 +43,9 @@ const LIFT = 0.5;
 /** Label glyph size on the page, metres. */
 const LABEL_SIZE = 0.34;
 
-/** Palette colour for each stroke role — RViz red/green for the body axes. */
-export function roleColor(role: SketchRole, p: Palette): string {
-  return { ink: p.accent, axisX: p.error, axisY: p.ok, motion: p.warn }[role];
+/** Pen colour for each stroke role — RViz red/green for the body axes. */
+export function roleColor(role: SketchRole): string {
+  return PEN[role];
 }
 
 /**
@@ -102,9 +102,9 @@ function glyphTexture(text: string): CanvasTexture {
   return texture;
 }
 
-function strokeColors(roles: readonly SketchRole[], p: Palette): number[] {
+function strokeColors(roles: readonly SketchRole[]): number[] {
   return roles.flatMap((role) => {
-    const c = new Color(roleColor(role, p)).toArray();
+    const c = new Color(roleColor(role)).toArray();
     return [...c, ...c];
   });
 }
@@ -124,35 +124,36 @@ const segmentsWhere = (keep: boolean) =>
  */
 export function InkSketch() {
   const sceneRef = useScene();
-  const palette = useScenePalette();
-
   const { page, body, labels, paper, dots, hinge } = useMemo(() => {
-    const white = (n: number) => new Array(n * 6).fill(1);
-    const page = fatLines(toPositions(segmentsWhere(false), INK_Y), { linewidth: 2, colors: white(PAGE_ROLES.length) });
-    const body = fatLines(toPositions(segmentsWhere(true), INK_Y), { linewidth: 2, colors: white(BODY_ROLES.length) });
+    const page = fatLines(toPositions(segmentsWhere(false), INK_Y), { linewidth: 2, colors: strokeColors(PAGE_ROLES) });
+    const body = fatLines(toPositions(segmentsWhere(true), INK_Y), { linewidth: 2, colors: strokeColors(BODY_ROLES) });
     const plane = new PlaneGeometry(LABEL_SIZE, LABEL_SIZE);
     const labels = SKETCH_LABELS.map((l) => {
       const mesh = new Mesh(
         plane,
-        new MeshBasicMaterial({ map: glyphTexture(l.text), transparent: true, depthWrite: false }),
+        new MeshBasicMaterial({
+          map: glyphTexture(l.text),
+          color: roleColor(l.role),
+          transparent: true,
+          depthWrite: false,
+        }),
       );
       mesh.rotation.x = -Math.PI / 2;
       mesh.position.set(l.x, LABEL_Y, l.z);
       return mesh;
     });
 
-    // The sheet itself: paper, both sides, with the page's dot grid.
-    const paper = new Mesh(
-      new PlaneGeometry(PAGE.width, PAGE.depth),
-      new MeshBasicMaterial({ side: DoubleSide, transparent: true }),
-    );
+    // The sheet itself: lit paper matching the page beneath, both sides, with the page's dot grid.
+    const paperMat = paperMaterial(PAPER.sheet);
+    Object.assign(paperMat, { side: DoubleSide, transparent: true });
+    const paper = new Mesh(new PlaneGeometry(PAGE.width, PAGE.depth), paperMat);
     paper.rotation.x = -Math.PI / 2;
     paper.position.y = SHEET_Y;
     const dotGeometry = new BufferGeometry();
     dotGeometry.setAttribute("position", new Float32BufferAttribute(pageDots(), 3));
     const dots = new Points(
       dotGeometry,
-      new PointsMaterial({ size: 2, sizeAttenuation: false, transparent: true, depthWrite: false }),
+      new PointsMaterial({ color: PAPER.dots, size: 2, sizeAttenuation: false, transparent: true, depthWrite: false }),
     );
     dots.position.y = SHEET_Y;
 
@@ -170,14 +171,6 @@ export function InkSketch() {
     hinge.renderOrder = LAYER.ink;
     return { page, body, labels, paper, dots, hinge };
   }, []);
-
-  useEffect(() => {
-    paper.material.color.set(palette.page);
-    dots.material.color.set(palette.dim);
-    page.geometry.setColors(strokeColors(PAGE_ROLES, palette));
-    body.geometry.setColors(strokeColors(BODY_ROLES, palette));
-    labels.forEach((mesh, i) => mesh.material.color.set(roleColor(SKETCH_LABELS[i].role, palette)));
-  }, [page, body, labels, paper, dots, palette]);
 
   useEffect(
     () => () => {
