@@ -48,6 +48,12 @@ export const AGV = {
 /** Heading the robot is sketched at; the AGV turns to 0 once it boots. */
 export const SKETCH_HEADING = (25 * Math.PI) / 180;
 
+/** Underside of the AGV body above its contact patch. */
+export const AGV_BODY_Y = AGV.wheelRadius + 0.04;
+/** Lidar puck: distance ahead of base_link and height of its scan plane. */
+export const AGV_LIDAR_OFFSET = AGV.offset + AGV.length / 2 - 0.2;
+export const LIDAR_HEIGHT = AGV_BODY_Y + AGV.height + 0.05;
+
 type P = [number, number];
 /** Flat segment list on the page: [x1, z1, x2, z2] per segment. */
 export type Segments = number[];

@@ -42,6 +42,14 @@ export function groundHeight(x: number, y: number): number {
   return 0;
 }
 
+/**
+ * How far the AGV has materialised from wireframe into the solid robot at
+ * map x: none on the desk, filling in down the ramp, solid on the floor.
+ */
+export function materialised(x: number): number {
+  return smoothstep(Math.min(Math.max((x - RAMP.fromX) / (RAMP.toX - RAMP.fromX), 0), 1));
+}
+
 /** Distance over which the AGV tips onto and off the ramp. */
 const TIP = 0.4;
 

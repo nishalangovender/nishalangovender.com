@@ -4,12 +4,12 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import { BufferGeometry, Float32BufferAttribute, Group, Points, PointsMaterial } from "three";
 
-import { AGV_LIDAR_OFFSET, LIDAR_HEIGHT } from "./Agv";
 import { groundHeight } from "./desk-layout";
 import { raycast, toWorld } from "./factory";
 import { LAYER, fatLines } from "./lines";
 import { cloudMorph } from "./PointCloud";
 import { useScene, useScenePalette } from "./scene-context";
+import { AGV_LIDAR_OFFSET, LIDAR_HEIGHT } from "./sketch";
 
 const RAYS = 180;
 const MAX_RANGE = 8;

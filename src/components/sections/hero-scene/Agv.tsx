@@ -8,6 +8,7 @@ import {
   CylinderGeometry,
   Group,
   Matrix4,
+  type Mesh,
 } from "three";
 import type { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 
@@ -15,19 +16,14 @@ import { clamp01, smoothstep } from "@/lib/math";
 import type { Pose } from "@/lib/path-following/types";
 
 import { beatAt, beatProgress } from "./beats";
-import { groundHeight, groundPitch } from "./desk-layout";
+import { groundHeight, groundPitch, materialised } from "./desk-layout";
 import { toWorld } from "./factory";
 import { LAYER, edgeSegments, fatLines } from "./lines";
 import { missionDistance, missionPose } from "./mission";
 import { blendPose } from "./nav-goal";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
-import { AGV, SKETCH_HEADING } from "./sketch";
-
-const BODY_Y = AGV.wheelRadius + 0.04;
-
-/** Lidar puck: distance ahead of base_link and height of its scan plane. */
-export const AGV_LIDAR_OFFSET = AGV.offset + AGV.length / 2 - 0.2;
-export const LIDAR_HEIGHT = BODY_Y + AGV.height + 0.05;
+import { AGV, AGV_BODY_Y, AGV_LIDAR_OFFSET, LIDAR_HEIGHT, SKETCH_HEADING } from "./sketch";
+import { buildSolidAgv, setSolidOpacity, type SolidAgv } from "./solid-agv";
 
 const at = (x: number, y: number, z: number) => new Matrix4().makeTranslation(x, y, z);
 const wheelAt = (z: number) =>
@@ -36,7 +32,7 @@ const wheelAt = (z: number) =>
 /** Wireframe edges of the AGV in its base_link frame (x forward, y up). */
 export function agvEdges(): number[] {
   return [
-    ...edgeSegments(new BoxGeometry(AGV.length, AGV.height, AGV.width), at(AGV.offset, BODY_Y + AGV.height / 2, 0)),
+    ...edgeSegments(new BoxGeometry(AGV.length, AGV.height, AGV.width), at(AGV.offset, AGV_BODY_Y + AGV.height / 2, 0)),
     ...edgeSegments(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(-AGV.track / 2)),
     ...edgeSegments(new CylinderGeometry(AGV.wheelRadius, AGV.wheelRadius, AGV.wheelWidth, 14), wheelAt(AGV.track / 2)),
     // Castor: a small wheel on the same axle orientation as the drive wheels.
@@ -65,19 +61,24 @@ export interface AgvModel {
   group: Group;
   body: LineSegments2;
   axes: LineSegments2;
+  solid: SolidAgv;
 }
 
-/** One wireframe AGV with its TF axes, coloured from the palette. */
+/**
+ * One AGV: the wireframe from the sketch, the solid robot it materialises
+ * into, and RViz TF axes over both. Wireframe coloured from the palette.
+ */
 export function useAgvModel(): AgvModel {
   const palette = useScenePalette();
 
   const model = useMemo(() => {
     const body = fatLines(agvEdges(), { linewidth: 1.5 });
     const axes = fatLines(AXES, { linewidth: 2.5, colors: new Array(AXES.length).fill(1) });
+    const solid = buildSolidAgv();
     const group = new Group();
-    group.add(body, axes);
+    group.add(solid.group, body, axes);
     group.renderOrder = LAYER.agv;
-    return { group, body, axes };
+    return { group, body, axes, solid };
   }, []);
 
   useEffect(() => {
@@ -91,6 +92,8 @@ export function useAgvModel(): AgvModel {
         line.geometry.dispose();
         line.material.dispose();
       }
+      model.solid.group.traverse((o) => (o as Mesh).geometry?.dispose());
+      for (const m of model.solid.materials) m.dispose();
     },
     [model],
   );
@@ -124,17 +127,19 @@ export function heroPose(t: number): Pose {
 
 /**
  * Places a model at a map-frame pose on whatever it is driving over (page,
- * desk, ramp or floor), pitched nose-down on the ramp, and grown and faded
- * in by `presence` (0–1).
+ * desk, ramp or floor), pitched nose-down on the ramp, grown and faded in by
+ * `presence` (0–1), and crossfaded from wireframe to solid by `solidity`.
  */
-export function showAgv({ group, body, axes }: AgvModel, pose: Pose, presence: number) {
+export function showAgv({ group, body, axes, solid }: AgvModel, pose: Pose, presence: number, solidity: number) {
   group.visible = presence > 0;
   group.position.set(...toWorld(pose.x, pose.y, groundHeight(pose.x, pose.y)));
   // Yaw about the world up axis, then pitch about the body's own left axis.
   group.rotation.set(0, pose.theta, -groundPitch(pose.x, pose.y), "YZX");
   group.scale.set(1, Math.max(presence, 0.001), 1);
-  body.material.opacity = presence;
+  body.material.opacity = presence * (1 - solidity);
+  body.visible = solidity < 1;
   axes.material.opacity = presence;
+  setSolidOpacity(solid, presence * solidity);
 }
 
 /** The AGV the story follows: parked on base_link, then out on its mission. */
@@ -148,7 +153,7 @@ export function HeroAgv() {
     if (scene.live) scene.agv = scene.live.pose;
     else if (scene.rejoin) scene.agv = blendPose(scene.rejoin.from, mission, smoothstep(scene.rejoin.k));
     else scene.agv = mission;
-    showAgv(model, scene.agv, agvPresence(scene.t));
+    showAgv(model, scene.agv, agvPresence(scene.t), materialised(scene.agv.x));
   });
 
   return <primitive object={model.group} />;

@@ -33,7 +33,8 @@ function FleetAgv({ index }: { index: number }) {
 
   useFrame(() => {
     const t = sceneRef.current.t;
-    showAgv(model, fleetPose(t, index), fleetPresence(t));
+    // Fleet AGVs are already on the factory floor: solid from the start.
+    showAgv(model, fleetPose(t, index), fleetPresence(t), 1);
   });
 
   return <primitive object={model.group} />;
