@@ -9,8 +9,8 @@ import { smoothstep } from "@/lib/math";
 
 import { PAGE } from "./sketch";
 
-/** Desk top footprint and height. */
-export const DESK = { minX: -3.3, maxX: 3.3, minY: -2.4, maxY: 3.9, height: 2.2, thickness: 0.16 } as const;
+/** Desk top footprint and height — wide enough for the open notebook spread. */
+export const DESK = { minX: -7.2, maxX: 3.3, minY: -2.4, maxY: 3.9, height: 2.2, thickness: 0.16 } as const;
 
 /** Notebook build-up on the desk: cover board, then the page block. */
 export const NOTEBOOK = { cover: 0.05, pages: 0.14, coverMargin: 0.14 } as const;

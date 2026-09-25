@@ -22,35 +22,41 @@ import { useScenePalette } from "./scene-context";
 import { PAGE, pageDots } from "./sketch";
 
 /**
- * Spiral binding: one continuous wire coil along the bound (far) edge. Each
- * turn comes up through a punched hole a little in from the page edge, over
- * the top, round the outside of the spine and back under the cover, resting
- * on the desk. The coil advances one hole pitch per turn.
+ * The notebook lies open as a spread: the right page is the one the sketch
+ * is drawn on (centred on the origin), the left is the stack of pages already
+ * turned, and a spiral coil runs down the gutter between them at x = HINGE_X.
+ */
+export const HINGE_X = -PAGE.width / 2;
+/** Centre of the left (turned) page stack. */
+export const LEFT_X = HINGE_X - PAGE.width / 2;
+
+/**
+ * Spiral binding: one continuous wire coil down the gutter. Each turn stands
+ * as an arch over the gutter, dropping through a punched hole in each page
+ * and round under the stacks to the cover, resting on the desk. The coil
+ * advances one hole pitch per turn along the gutter.
  */
 export const BINDING = {
   pitch: 0.2,
-  radius: 0.16,
-  /** Hole centres, measured in from the page's bound edge. */
-  holeInset: 0.07,
+  radius: 0.15,
   stepsPerTurn: 24,
 } as const;
 
-const HOLE_Z = -PAGE.depth / 2 + BINDING.holeInset;
-/** Coil axis: behind the holes by the inset, high enough that the coil sits on the desk. */
-const AXIS = { y: DESK.height + BINDING.radius, z: HOLE_Z - BINDING.holeInset } as const;
-/** Angle round the axis at which the wire passes down through a hole. */
-const HOLE_ANGLE = Math.acos(BINDING.holeInset / BINDING.radius);
-/** The coil stops this far in from each side edge of the page. */
+/** Coil axis: along the gutter, low enough that the coil rests on the desk. */
+const AXIS_Y = DESK.height + BINDING.radius;
+/** Winding angle at which the wire meets the right page's top surface. */
+const TOP_ANGLE = Math.asin((PAGE_HEIGHT - AXIS_Y) / BINDING.radius);
+/** The coil stops this far in from the top and bottom edges of the pages. */
 const COIL_MARGIN = 0.12;
-const X0 = -PAGE.width / 2 + COIL_MARGIN;
-const TURNS = Math.floor((PAGE.width - 2 * COIL_MARGIN) / BINDING.pitch);
+const Z0 = -PAGE.depth / 2 + COIL_MARGIN;
+const TURNS = Math.floor((PAGE.depth - 2 * COIL_MARGIN) / BINDING.pitch);
 
 /** Point on the coil after `u` radians of winding. */
 function coilPoint(u: number): [number, number, number] {
   return [
-    X0 + (BINDING.pitch * u) / (Math.PI * 2),
-    AXIS.y + BINDING.radius * Math.sin(u),
-    AXIS.z + BINDING.radius * Math.cos(u),
+    HINGE_X + BINDING.radius * Math.cos(u),
+    AXIS_Y + BINDING.radius * Math.sin(u),
+    Z0 + (BINDING.pitch * u) / (Math.PI * 2),
   ];
 }
 
@@ -65,34 +71,52 @@ export function bindingCoil(): number[] {
   return out;
 }
 
-/** Where the coil passes through the top page: one punched hole per turn. */
+/** Punched holes as page (x, z): where each turn meets the page tops, one each side of the gutter. */
 export function bindingHoles(): [number, number][] {
-  return Array.from({ length: TURNS }, (_, k) => [coilPoint(HOLE_ANGLE + k * Math.PI * 2)[0], HOLE_Z]);
+  return Array.from({ length: TURNS }, (_, k): [number, number][] => {
+    const right = coilPoint(TOP_ANGLE + k * Math.PI * 2);
+    const left = coilPoint(Math.PI - TOP_ANGLE + k * Math.PI * 2);
+    return [
+      [right[0], right[2]],
+      [left[0], left[2]],
+    ];
+  }).flat();
 }
 
-const HOLE = { w: 0.07, d: 0.045 } as const;
+const HOLE = { w: 0.045, d: 0.07 } as const;
 
 /**
- * The notebook on the desk: a cover board, a block of pages and a spiral
- * binding, with the dotted top page the sketch is drawn on. It stays put for
- * the whole loop — the AGV drives off it, and the camera comes back to it.
+ * The open notebook on the desk: a cover board under both halves, the right
+ * page block with the fresh dotted page, the left block of turned pages, and
+ * the spiral coil in the gutter. It stays put for the whole loop — the AGV
+ * drives off the right page, and the written sheet turns onto the left.
  */
 export function Notebook() {
   const palette = useScenePalette();
 
   const parts = useMemo(() => {
-    const coverW = PAGE.width + 2 * NOTEBOOK.coverMargin;
+    const coverW = 2 * PAGE.width + 2 * NOTEBOOK.coverMargin;
     const coverD = PAGE.depth + 2 * NOTEBOOK.coverMargin;
+    const coverX = LEFT_X / 2;
     const coverY = DESK.height + NOTEBOOK.cover / 2;
     const blockY = DESK.height + NOTEBOOK.cover + NOTEBOOK.pages / 2;
+    const at = (x: number, y: number) => new Matrix4().makeTranslation(x, y, 0);
 
     const cover = new Mesh(new BoxGeometry(coverW, NOTEBOOK.cover, coverD), new MeshBasicMaterial());
-    cover.position.y = coverY;
-    const block = new Mesh(new BoxGeometry(PAGE.width, NOTEBOOK.pages, PAGE.depth), new MeshBasicMaterial());
-    block.position.y = blockY;
-    const page = new Mesh(new PlaneGeometry(PAGE.width, PAGE.depth), new MeshBasicMaterial());
-    page.rotation.x = -Math.PI / 2;
-    page.position.y = PAGE_HEIGHT + 0.001;
+    cover.position.set(coverX, coverY, 0);
+    const blockGeometry = new BoxGeometry(PAGE.width, NOTEBOOK.pages, PAGE.depth);
+    const blocks = [0, LEFT_X].map((x) => {
+      const block = new Mesh(blockGeometry, new MeshBasicMaterial());
+      block.position.set(x, blockY, 0);
+      return block;
+    });
+    const pageGeometry = new PlaneGeometry(PAGE.width, PAGE.depth);
+    const pages = [0, LEFT_X].map((x) => {
+      const page = new Mesh(pageGeometry, new MeshBasicMaterial());
+      page.rotation.x = -Math.PI / 2;
+      page.position.set(x, PAGE_HEIGHT + 0.001, 0);
+      return page;
+    });
 
     const geometry = new BufferGeometry();
     geometry.setAttribute("position", new Float32BufferAttribute(pageDots(), 3));
@@ -104,8 +128,9 @@ export function Notebook() {
 
     const edges = fatLines(
       [
-        ...edgeSegments(new BoxGeometry(coverW, NOTEBOOK.cover, coverD), new Matrix4().makeTranslation(0, coverY, 0)),
-        ...edgeSegments(new BoxGeometry(PAGE.width, NOTEBOOK.pages, PAGE.depth), new Matrix4().makeTranslation(0, blockY, 0)),
+        ...edgeSegments(new BoxGeometry(coverW, NOTEBOOK.cover, coverD), at(coverX, coverY)),
+        ...edgeSegments(new BoxGeometry(PAGE.width, NOTEBOOK.pages, PAGE.depth), at(0, blockY)),
+        ...edgeSegments(new BoxGeometry(PAGE.width, NOTEBOOK.pages, PAGE.depth), at(LEFT_X, blockY)),
       ],
       { linewidth: 1 },
     );
@@ -122,17 +147,17 @@ export function Notebook() {
     holes.instanceMatrix.needsUpdate = true;
 
     const group = new Group();
-    group.add(cover, block, page, dots, edges, binding, holes);
+    group.add(cover, ...blocks, ...pages, dots, edges, binding, holes);
     group.renderOrder = LAYER.page;
-    return { group, cover, block, page, dots, edges, binding, holes };
+    return { group, cover, blocks, pages, dots, edges, binding, holes };
   }, []);
 
   useEffect(() => {
-    const { cover, block, page, dots, edges, binding, holes } = parts;
+    const { cover, blocks, pages, dots, edges, binding, holes } = parts;
     const pageColor = new Color(palette.page);
-    page.material.color.copy(pageColor);
+    for (const page of pages) page.material.color.copy(pageColor);
     // Page edges read slightly darker than the top sheet; the cover is a deep accent board.
-    block.material.color.copy(pageColor).lerp(new Color(palette.rule), 0.45);
+    for (const block of blocks) block.material.color.copy(pageColor).lerp(new Color(palette.rule), 0.45);
     cover.material.color.set(palette.accent).lerp(new Color(palette.bg), 0.72);
     dots.material.color.set(palette.dim);
     edges.material.color.set(palette.rule);
@@ -143,8 +168,8 @@ export function Notebook() {
 
   useEffect(
     () => () => {
-      const { cover, block, page, dots, edges, binding, holes } = parts;
-      for (const obj of [cover, block, page, dots, edges, binding, holes]) {
+      const { cover, blocks, pages, dots, edges, binding, holes } = parts;
+      for (const obj of [cover, ...blocks, ...pages, dots, edges, binding, holes]) {
         obj.geometry.dispose();
         obj.material.dispose();
       }

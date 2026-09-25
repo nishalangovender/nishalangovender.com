@@ -22,6 +22,7 @@ import { beatProgress } from "./beats";
 import { PAGE_LANDING } from "./camera";
 import { PAGE_HEIGHT } from "./desk-layout";
 import { LAYER, fatLines, toPositions } from "./lines";
+import { HINGE_X } from "./Notebook";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
 import {
   SKETCH_BODY,
@@ -50,8 +51,8 @@ export function roleColor(role: SketchRole, p: Palette): string {
 /**
  * Ink state at time `t`: strokes drawn and labels written in the sketch beat;
  * the robot outline lifts and fades in the design beat; in the return beat
- * the written sheet turns over the binding (`turn` 0 → 1, a half turn) to a
- * fresh page, then clears (`sheet` 1 → 0) for the next loop.
+ * the written sheet turns over the gutter coil (`turn` 0 → 1, a half turn)
+ * and lands face-down on the stack of turned pages, uncovering a fresh page.
  */
 export function inkAt(t: number): {
   drawn: number;
@@ -59,7 +60,6 @@ export function inkAt(t: number): {
   lift: number;
   body: number;
   turn: number;
-  sheet: number;
 } {
   const sketch = beatProgress(t, "sketch");
   const design = beatProgress(t, "design");
@@ -71,7 +71,6 @@ export function inkAt(t: number): {
     body: 1 - design,
     // Turns once the camera has landed back on the notebook (see camera.ts).
     turn: smoothstep(clamp01((back - PAGE_LANDING) / 0.3)),
-    sheet: 1 - smoothstep(clamp01((back - 0.94) / 0.06)),
   };
 }
 
@@ -119,7 +118,9 @@ const segmentsWhere = (keep: boolean) =>
  * The top sheet of the notebook and everything written on it. Beats 1–2: the
  * kinematic sketch is inked stroke by stroke and labelled; the robot's
  * outline lifts off into the wireframe while the axes, vectors and symbols
- * stay on the page. Return beat: the sheet turns over the spiral binding.
+ * stay on the page. Return beat: the sheet turns over the spiral binding onto
+ * the left-hand stack. At the loop seam it is back on the right, blank — the
+ * same as the fresh page it uncovered, so nothing visibly vanishes.
  */
 export function InkSketch() {
   const sceneRef = useScene();
@@ -155,17 +156,17 @@ export function InkSketch() {
     );
     dots.position.y = SHEET_Y;
 
-    // Draw order inside the sheet: paper, dots, ink, symbols — the paper fades
-    // at the end of the loop, so it is transparent and must never paint over the ink.
+    // Draw order inside the sheet: paper, dots, ink, symbols — the paper is
+    // transparent (for the labels' blending), so it must never paint over the ink.
     paper.material.depthWrite = false;
     [paper, dots, page, body, ...labels].forEach((obj, i) => (obj.renderOrder = Math.min(i, 3)));
     const sheet = new Group();
     sheet.add(paper, dots, page, body, ...labels);
-    // Hinge on the bound edge of the page, at page height; the sheet hangs off it towards the viewer.
-    sheet.position.z = PAGE.depth / 2;
+    // Hinge in the gutter, at page height; the sheet lies out to its right.
+    sheet.position.x = PAGE.width / 2;
     const hinge = new Group();
     hinge.add(sheet);
-    hinge.position.set(0, PAGE_HEIGHT, -PAGE.depth / 2);
+    hinge.position.set(HINGE_X, PAGE_HEIGHT, 0);
     hinge.renderOrder = LAYER.ink;
     return { page, body, labels, paper, dots, hinge };
   }, []);
@@ -202,19 +203,15 @@ export function InkSketch() {
     body.position.y = ink.lift;
     body.material.opacity = ink.body;
     body.visible = ink.body > 0;
-    page.material.opacity = ink.sheet;
     // Labels are written in one after another once the strokes are done.
     labels.forEach((mesh, i) => {
       const k = clamp01(ink.labels * labels.length - i);
       mesh.visible = k > 0;
-      mesh.material.opacity = k * ink.sheet;
+      mesh.material.opacity = k;
     });
-    // A half turn about the bound edge lifts the sheet up and over the spiral
-    // (negative about x: the free edge, towards +z, swings up rather than down).
-    hinge.rotation.x = -ink.turn * Math.PI;
-    paper.material.opacity = ink.sheet;
-    dots.material.opacity = 0.55 * ink.sheet;
-    hinge.visible = ink.sheet > 0;
+    // A half turn about the gutter (positive about z) lifts the free right edge
+    // up and over to the left, landing the sheet face-down on the turned pages.
+    hinge.rotation.z = ink.turn * Math.PI;
   });
 
   return <primitive object={hinge} />;

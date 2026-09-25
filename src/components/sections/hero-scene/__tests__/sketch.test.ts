@@ -88,9 +88,8 @@ describe("beats 1–2", () => {
     expect(lifting.lift).toBeGreaterThan(0);
     expect(lifting.body).toBeLessThan(1);
     // Annotations and symbols stay written on the page.
-    expect(lifting.sheet).toBe(1);
     expect(lifting.turn).toBe(0);
-    expect(inkAt(mid("system")).sheet).toBe(1);
+    expect(inkAt(mid("system")).turn).toBe(0);
     expect(agvPresence(mid("design"))).toBeGreaterThan(0);
     expect(agvPresence(mid("code"))).toBe(1);
   });
@@ -101,21 +100,21 @@ describe("beats 1–2", () => {
     expect(heroPose(beat("deploy").start + 0.1).theta).toBe(0);
   });
 
-  it("turns the written sheet over in the return beat, then clears it for the next loop", () => {
+  it("turns the written sheet over onto the left-hand stack in the return beat", () => {
     // Nothing turns while the camera is still pulling back from the monitor.
     expect(inkAt(mid("return")).turn).toBe(0);
     const r = beat("return");
     const turning = inkAt(r.start + (PAGE_LANDING + 0.15) * (r.end - r.start));
     expect(turning.turn).toBeGreaterThan(0);
     expect(turning.turn).toBeLessThan(1);
-    expect(turning.sheet).toBe(1); // still visible while it turns
     expect(inkAt(beat("return").end - 0.2).turn).toBe(1);
     expect(inkAt(0).turn).toBe(0);
   });
 
   it("clears the page by the end of the loop", () => {
     const end = TOTAL_DURATION - 1e-6;
-    expect(inkAt(end).sheet).toBeCloseTo(0, 3);
+    // The sheet has landed on the turned stack; the right page is fresh.
+    expect(inkAt(end).turn).toBe(1);
     expect(inkAt(end).body).toBe(0);
     expect(agvPresence(end)).toBeCloseTo(0, 3);
   });
