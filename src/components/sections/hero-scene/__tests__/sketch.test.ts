@@ -5,10 +5,13 @@ import { BEATS, TOTAL_DURATION } from "../beats";
 import { PAGE_LANDING } from "../camera";
 import { inkAt } from "../InkSketch";
 import {
+  BASE_LINK,
+  DOT_PITCH,
   PAGE,
   SKETCH_BODY,
   SKETCH_HEADING,
   SKETCH_LABELS,
+  SKETCH_ORIGIN,
   SKETCH_ROLES,
   SKETCH_SEGMENTS,
   bodySegmentsIn,
@@ -117,5 +120,24 @@ describe("beats 1–2", () => {
     expect(inkAt(end).turn).toBe(1);
     expect(inkAt(end).body).toBe(0);
     expect(agvPresence(end)).toBeCloseTo(0, 3);
+  });
+});
+
+describe("sketch on the dot grid", () => {
+  const onGrid = (v: number) => Math.abs(v / DOT_PITCH - Math.round(v / DOT_PITCH)) < 1e-9;
+
+  it("puts the world origin on a dot, so the axes run along rows of dots", () => {
+    expect(onGrid(SKETCH_ORIGIN[0])).toBe(true);
+    expect(onGrid(SKETCH_ORIGIN[1])).toBe(true);
+  });
+
+  it("draws the position line from the origin to base_link as one unbroken stroke", () => {
+    const [ox, oy] = SKETCH_ORIGIN;
+    const segs = SKETCH_SEGMENTS;
+    const fromOrigin = [];
+    for (let i = 0; i < segs.length; i += 4) {
+      if (segs[i] === ox && segs[i + 1] === -oy && segs[i + 2] === BASE_LINK.x) fromOrigin.push(i);
+    }
+    expect(fromOrigin).toHaveLength(1);
   });
 });

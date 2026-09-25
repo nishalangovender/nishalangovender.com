@@ -10,7 +10,7 @@
 export const PAGE = { width: 4.2, depth: 3.2 } as const;
 
 /** Dot pitch on the page, in metres. */
-const DOT_PITCH = 0.1;
+export const DOT_PITCH = 0.1;
 
 /** Page dot-grid positions as flat [x, y, z], row by row, just above y = 0. */
 export function pageDots(): number[] {
@@ -65,13 +65,14 @@ export type SketchRole = "ink" | "axisX" | "axisY" | "motion";
 interface Stroke {
   role: SketchRole;
   points: P[];
-  dashed?: boolean;
   /** Part of the robot's outline, which lifts off into the wireframe. */
   body?: boolean;
 }
 
 const B: P = [BASE_LINK.x, -BASE_LINK.z];
-const ORIGIN: P = [-1.75, -1.25];
+/** World-frame origin, on a dot, so both axes run along rows of the grid. */
+export const SKETCH_ORIGIN: P = [-1.8, -1.2];
+const ORIGIN = SKETCH_ORIGIN;
 
 const add = (a: P, b: P): P => [a[0] + b[0], a[1] + b[1]];
 const polar = (r: number, a: number): P => [r * Math.cos(a), r * Math.sin(a)];
@@ -112,14 +113,14 @@ const OMEGA_CENTRE = body(-0.55, 0.95);
 export const SKETCH_STROKES: readonly Stroke[] = [
   // World frame
   ...arrow("ink", ORIGIN, [ORIGIN[0], 1.3]),
-  ...arrow("ink", ORIGIN, [1.85, ORIGIN[1]]),
+  ...arrow("ink", ORIGIN, [1.9, ORIGIN[1]]),
   // Robot: chassis, drive wheels, castor wheel
   { role: "ink", body: true, points: bodyRect(AGV.offset, 0, AGV.length, AGV.width) },
   { role: "ink", body: true, points: bodyRect(0, -AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
   { role: "ink", body: true, points: bodyRect(0, AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
   { role: "ink", body: true, points: bodyRect(AGV.castorX, 0, AGV.castorRadius * 2, AGV.castorWidth) },
-  // θ: dashed reference from the origin to base_link, and its angle
-  { role: "ink", points: [ORIGIN, add(ORIGIN, polar(0.75, refAngle)), add(ORIGIN, polar(1.5, refAngle)), B], dashed: true },
+  // θ: the position line from the origin to base_link, and its angle
+  { role: "ink", points: [ORIGIN, B] },
   { role: "ink", points: arc(ORIGIN, 0.42, 0, refAngle, 8) },
   // Body frame
   ...arrow("axisX", B, body(0.62, 0)),
@@ -133,7 +134,6 @@ export const SKETCH_STROKES: readonly Stroke[] = [
 function toSegments(stroke: Stroke): Segments {
   const out: Segments = [];
   for (let i = 0; i < stroke.points.length - 1; i++) {
-    if (stroke.dashed && i % 2 === 1) continue;
     const [ax, ay] = stroke.points[i];
     const [bx, by] = stroke.points[i + 1];
     out.push(ax, -ay, bx, -by);
@@ -191,7 +191,7 @@ const label = (text: string, role: SketchRole, p: P): SketchLabel => ({ text, ro
 /** Symbols written in once the strokes are done. */
 export const SKETCH_LABELS: readonly SketchLabel[] = [
   label("Y", "ink", [ORIGIN[0] - 0.12, 1.3]),
-  label("X", "ink", [1.95, ORIGIN[1]]),
+  label("X", "ink", [1.88, ORIGIN[1] - 0.2]),
   label("θ", "ink", add(ORIGIN, polar(0.58, refAngle / 2))),
   label("x", "axisX", body(0.62, 0.14)),
   label("y", "axisY", body(-0.14, 0.5)),
