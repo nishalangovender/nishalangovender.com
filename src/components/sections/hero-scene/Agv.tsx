@@ -18,6 +18,7 @@ import type { Pose } from "@/lib/path-following/types";
 
 import { beatAt, beatProgress } from "./beats";
 import { bodyPose, materialised } from "./desk-layout";
+import { buildElectronics, showElectronics } from "./electronics";
 import { toWorld } from "./factory";
 import { LAYER, edgeSegments, fatLines } from "./lines";
 import { missionDistance, missionPose } from "./mission";
@@ -175,10 +176,19 @@ export function showAgv(model: AgvModel, pose: Pose, presence: number, solidity:
   setSolidOpacity(solid, presence * solidity);
 }
 
-/** The AGV the story follows: parked on base_link, then out on its mission. */
+/** The AGV the story follows: built on the page, parked on base_link, then out on its mission. */
 export function HeroAgv() {
   const sceneRef = useScene();
   const model = useAgvModel();
+  // Its electronics ride inside the chassis; the solid body hides them once it forms.
+  const electronics = useMemo(() => buildElectronics(), []);
+  useEffect(() => {
+    model.group.add(electronics.root);
+    return () => {
+      model.group.remove(electronics.root);
+      electronics.dispose();
+    };
+  }, [model, electronics]);
 
   useFrame(() => {
     const scene = sceneRef.current;
@@ -187,6 +197,7 @@ export function HeroAgv() {
     else if (scene.rejoin) scene.agv = blendPose(scene.rejoin.from, mission, smoothstep(scene.rejoin.k));
     else scene.agv = mission;
     showAgv(model, scene.agv, agvPresence(scene.t), materialised(scene.agv.x));
+    showElectronics(electronics, scene.t);
   });
 
   return <primitive object={model.group} />;
