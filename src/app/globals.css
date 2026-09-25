@@ -35,11 +35,6 @@
   --border: var(--tty-rule);
   --focus: var(--tty-focus);
   --blueprint-line: color-mix(in srgb, var(--tty-accent) 7%, transparent);
-  /* The terminal stays dark in both themes, drawn in the dark TTY values. */
-  --terminal-bg: #040405;
-  --terminal-border: color-mix(in srgb, #eef4f9 14%, transparent);
-  --terminal-text: #eef4f9;
-  --terminal-prompt: #2ee6a8;
   --notebook-ink: var(--tty-accent);
   --notebook-page-dot: color-mix(in srgb, var(--tty-dim) 40%, transparent);
   --notebook-page-edge: var(--tty-rule);
@@ -404,12 +399,6 @@ button, a, [role="button"] {
     --accent-light: #ffffff;
     --accent-dark: #000000;
     --blueprint-line: transparent;
-    /* The hero terminal panels are illustration, not chrome — on paper they
-       invert to black-on-white like everything else. */
-    --terminal-bg: #ffffff;
-    --terminal-border: #cccccc;
-    --terminal-text: #000000;
-    --terminal-prompt: #000000;
   }
 
   html,

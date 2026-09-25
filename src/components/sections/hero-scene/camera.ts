@@ -36,7 +36,8 @@ const POSES = {
   // Desk-top poses sit above the page, which is raised on the desk.
   page: { position: [0, h + 4.4, 2.8], target: [0, h, 0.15] },
   design: { position: [2.6, h + 2.4, 2.9], target: [0, h + 0.35, 0] },
-  code: { position: [2.1, h + 2.0, 2.3], target: [0, h + 0.35, 0] },
+  // Pulled back so the booting AGV and the monitor's terminal share the frame.
+  code: { position: [1.6, h + 2.6, 7.2], target: [0, h + 1.4, -1.2] },
   factory: aroundCentre(7.5, 8, 10.5),
   factoryTrack: aroundCentre(-6.5, 7.5, 10),
   system: aroundCentre(0, 17, 6),
@@ -57,6 +58,8 @@ export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
   { t: 0, pose: POSES.page },
   { t: end("sketch"), pose: POSES.page },
   { t: end("design"), pose: POSES.design },
+  // Settle on the terminal early, so every line types in frame.
+  { t: start("code") + 1.5, pose: POSES.code },
   { t: end("code"), pose: POSES.code },
   { t: start("deploy") + 3.6, pose: POSES.factory },
   { t: end("deploy"), pose: POSES.factoryTrack },

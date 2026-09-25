@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { BEATS, TOTAL_DURATION } from "../beats";
-import { LINE_DELAY, TERMINAL_LINES, TYPING_START } from "../CodeTerminal";
 import { LEAD_IN_LENGTH, missionDistance } from "../mission";
+import { LINE_DELAY, TERMINAL_LINES, TYPING_START } from "../terminal";
 
 const beat = (id: string) => BEATS.find((b) => b.id === id)!;
 

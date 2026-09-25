@@ -1,7 +1,8 @@
 /**
  * The production dashboard shown on the factory monitor: the screen a
- * production manager watches. Stats and minimap maths are pure; the static
- * screen (title, map, cards) goes to a 2D canvas that the monitor uses as a
+ * production manager watches, and the build terminal opened over it in the
+ * code beat. Stats and minimap maths are pure; the static screen (title, map,
+ * cards, terminal) goes to a 2D canvas that the monitor uses as a
  * texture, redrawn only when a value changes. The robots move over it as
  * meshes, so they glide every frame without re-uploading the texture.
  */
@@ -10,6 +11,7 @@ import type { Pose } from "@/lib/path-following/types";
 import { FLOOR, OBSTACLES } from "./factory";
 import { FLEET_SIZE } from "./Fleet";
 import { LOOP, MISSION_SPEED, missionDistance } from "./mission";
+import { TERMINAL_LINES, terminalLinesAt } from "./terminal";
 
 /** Layout size in canvas units (16:10, matching the monitor screen). */
 export const DASH_W = 1024;
@@ -64,10 +66,8 @@ export function dashboardStats(t: number): DashboardStat[] {
 }
 
 /** Everything the static screen shows at `t`: redraw the canvas only when this changes. */
-export function dashboardKey(t: number): string {
-  return dashboardStats(t)
-    .map((s) => s.value)
-    .join("|");
+export function screenKey(t: number): string {
+  return [terminalLinesAt(t) ?? "-", ...dashboardStats(t).map((s) => s.value)].join("|");
 }
 
 /** Map-frame point → minimap pixel, keeping the floor's aspect ratio. */
@@ -155,4 +155,43 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, font: st
     ctx.fillStyle = stat.tone === "fg" ? p.fg : p[stat.tone];
     ctx.fillText(stat.value, SIDE.x + 18, y + 64);
   });
+}
+
+const TERMINAL = { x: PAD, y: TITLE_H + PAD, w: DASH_W - 2 * PAD, h: DASH_H - TITLE_H - 2 * PAD, bar: 44, line: 44 };
+
+/** Draws the build terminal window over the dashboard with its first `lines` lines typed. */
+export function drawTerminal(ctx: CanvasRenderingContext2D, lines: number, font: string) {
+  const p = SCREEN;
+  const { x, y, w, h, bar, line } = TERMINAL;
+  ctx.setTransform(DASH_SCALE, 0, 0, DASH_SCALE, 0, 0);
+  ctx.fillStyle = p.bg;
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = p.rule;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = p.surface;
+  ctx.fillRect(x + 1, y + 1, w - 2, bar);
+  ctx.textBaseline = "middle";
+  ctx.font = `600 22px ${font}`;
+  ctx.fillStyle = p.dim;
+  ctx.fillText("Terminal", x + 20, y + bar / 2);
+
+  ctx.font = `500 26px ${font}`;
+  TERMINAL_LINES.slice(0, lines).forEach((l, i) => {
+    const ly = y + bar + 36 + i * line;
+    let lx = x + 24;
+    const prefix = l.kind === "prompt" ? "❯ " : l.kind === "ok" ? "✓ " : "";
+    if (prefix) {
+      ctx.fillStyle = p.ok;
+      ctx.fillText(prefix, lx, ly);
+      lx += ctx.measureText(prefix).width;
+    }
+    ctx.fillStyle = l.kind === "log" ? p.dim : l.kind === "ok" ? p.ok : p.fg;
+    ctx.fillText(l.text, lx, ly);
+  });
+  // Cursor on the next line while the session is still typing.
+  if (lines < TERMINAL_LINES.length) {
+    ctx.fillStyle = p.fg;
+    ctx.fillRect(x + 24, y + bar + 36 + lines * line - 14, 14, 28);
+  }
 }

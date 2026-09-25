@@ -23,16 +23,18 @@ import {
   DASH_W,
   MARKER,
   SCREEN,
-  dashboardKey,
   drawDashboard,
+  drawTerminal,
   minimapToScreen,
   robotMarker,
+  screenKey,
 } from "./dashboard";
 import { DESK } from "./desk-layout";
 import { MONITOR, toWorld } from "./factory";
 import { fleetPose, FLEET_SIZE } from "./Fleet";
 import { LAYER } from "./lines";
 import { useScene } from "./scene-context";
+import { terminalLinesAt } from "./terminal";
 
 /** A black bezel on a dark metal stand and base, in the monitor's local frame (screen centre at origin). */
 function monitorBody(): Group {
@@ -88,7 +90,7 @@ function robotMarkers(): { layer: Object3D; robots: Object3D[]; dispose: () => v
 
 /**
  * The production monitor on the desk behind the notebook, showing the fleet
- * dashboard live. In beat 5 the camera flies into its screen; in the return
+ * dashboard live, with the build terminal over it in the code beat. In beat 5 the camera flies into its screen; in the return
  * it pulls back across the desk to the notebook.
  */
 export function Monitor() {
@@ -155,12 +157,15 @@ export function Monitor() {
       robot.rotation.z = pose.theta;
     });
 
-    const key = dashboardKey(t);
+    const terminal = terminalLinesAt(t);
+    markers.layer.visible = terminal === null;
+    const key = screenKey(t);
     if (key === drawn.current) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const font = getComputedStyle(document.documentElement).getPropertyValue("--font-jetbrains-mono").trim() || "monospace";
     drawDashboard(ctx, t, font);
+    if (terminal !== null) drawTerminal(ctx, terminal, font);
     texture.needsUpdate = true;
     drawn.current = key;
   });

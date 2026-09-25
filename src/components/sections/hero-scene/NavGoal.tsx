@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { useEffect, useMemo, type RefObject } from "react";
+import { useEffect, useMemo } from "react";
 import { Group, Mesh, MeshBasicMaterial, PlaneGeometry } from "three";
 
 import { LIVE_BEATS, beatAt, loopTime } from "./beats";
@@ -14,8 +14,6 @@ import { useScene, useScenePalette } from "./scene-context";
 
 const RING_SEGMENTS = 32;
 const RING_RADIUS = 0.3;
-/** /cmd_vel readout refresh interval, seconds. */
-const READOUT_PERIOD = 0.1;
 
 /**
  * Goals are accepted in the live beats while the floor is in view: once the
@@ -38,16 +36,11 @@ function ring(): number[] {
 
 /**
  * Click or tap the floor during the deploy and system beats to send the AGV
- * a nav goal: the loop pauses, pure pursuit drives there, and `/cmd_vel`
- * prints below. The loop resumes after the AGV has sat idle.
+ * a nav goal: the loop pauses, pure pursuit drives there along the drawn
+ * path, and the loop resumes after the AGV has sat idle. A crosshair cursor
+ * over the floor shows when goals are accepted.
  */
-export function NavGoal({
-  readout,
-  onLive,
-}: {
-  readout: RefObject<HTMLSpanElement | null>;
-  onLive: (live: boolean) => void;
-}) {
+export function NavGoal() {
   const sceneRef = useScene();
   const palette = useScenePalette();
 
@@ -91,12 +84,16 @@ export function NavGoal({
     const y = -e.point.z;
     if (!isGoalValid(x, y)) return;
     e.stopPropagation();
-    if (!scene.live) onLive(true);
     scene.live = setGoal(scene.agv, x, y);
     scene.rejoin = null;
   }
 
-  useFrame(({ clock }, delta) => {
+  function setCursor(over: boolean) {
+    document.body.style.cursor = over && (sceneRef.current.live || acceptsGoals(sceneRef.current.t)) ? "crosshair" : "";
+  }
+  useEffect(() => () => void (document.body.style.cursor = ""), []);
+
+  useFrame((_, delta) => {
     const scene = sceneRef.current;
     const live = scene.live;
     if (live) {
@@ -104,7 +101,6 @@ export function NavGoal({
       if (shouldResume(scene.live)) {
         scene.rejoin = { from: scene.live.pose, k: 0 };
         scene.live = null;
-        onLive(false);
       }
     }
 
@@ -118,16 +114,16 @@ export function NavGoal({
       ]);
     }
 
-    const el = readout.current;
-    if (el && scene.live && clock.elapsedTime % READOUT_PERIOD < delta) {
-      const { v, omega } = scene.live.cmd;
-      el.textContent = `linear.x: ${v.toFixed(2)}  angular.z: ${omega.toFixed(2)}`;
-    }
   });
 
   return (
     <>
-      <primitive object={floor} onPointerDown={onPointerDown} />
+      <primitive
+        object={floor}
+        onPointerDown={onPointerDown}
+        onPointerMove={() => setCursor(true)}
+        onPointerOut={() => setCursor(false)}
+      />
       <primitive object={marker} />
     </>
   );

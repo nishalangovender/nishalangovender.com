@@ -1,14 +1,12 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { PerspectiveCamera } from "three";
 
 import { HeroAgv } from "./Agv";
-import { BEATS, beatAt, parseBeatParam, parseTimeParam, type BeatId } from "./beats";
+import { BEATS, parseBeatParam, parseTimeParam } from "./beats";
 import { cameraAt } from "./camera";
-import { CmdVel } from "./CmdVel";
-import { CodeTerminal } from "./CodeTerminal";
 import { Costmap } from "./Costmap";
 import { Desk } from "./Desk";
 import { FactoryFloor } from "./FactoryFloor";
@@ -33,13 +31,9 @@ import {
 /** Largest frame step, so a tab returning from the background does not jump. */
 const MAX_DT = 0.1;
 
-/**
- * Advances the loop clock and flies the camera along its keyframes. Reports
- * beat changes (six per loop) so DOM overlays can follow without per-frame state.
- */
-function Director({ onBeat }: { onBeat: (id: BeatId) => void }) {
+/** Advances the loop clock and flies the camera along its keyframes. */
+function Director() {
   const sceneRef = useScene();
-  const beatRef = useRef<BeatId | null>(null);
 
   useFrame(({ camera }, delta) => {
     const s = sceneRef.current;
@@ -54,11 +48,6 @@ function Director({ onBeat }: { onBeat: (id: BeatId) => void }) {
     if (s.hold !== null) {
       const beat = BEATS[s.hold];
       if (s.t >= beat.end) s.t = beat.start;
-    }
-    const { id } = beatAt(s.t);
-    if (id !== beatRef.current) {
-      beatRef.current = id;
-      onBeat(id);
     }
     const pose = cameraAt(s.t);
     camera.position.set(...pose.position);
@@ -108,13 +97,8 @@ export default function HeroCanvas({ active }: { active: boolean }) {
     live: null,
     rejoin: null,
   });
-  const [beat, setBeat] = useState<BeatId>("sketch");
-  const [live, setLive] = useState(false);
-  const readoutRef = useRef<HTMLSpanElement>(null);
-
   return (
-    <>
-      <Canvas
+    <Canvas
         // No tone mapping: TTY tokens render as the exact hex values.
         flat
         // Soft shadows on the factory floor; phones skip them to keep frame rate.
@@ -127,7 +111,7 @@ export default function HeroCanvas({ active }: { active: boolean }) {
       >
         <SceneProvider value={sceneRef}>
           <PaletteProvider value={palette}>
-            <Director onBeat={setBeat} />
+            <Director />
             <Framing />
             <Lights />
             <Desk />
@@ -140,12 +124,9 @@ export default function HeroCanvas({ active }: { active: boolean }) {
             <Fleet />
             <Monitor />
             <Lidar />
-            <NavGoal readout={readoutRef} onLive={setLive} />
+            <NavGoal />
           </PaletteProvider>
         </SceneProvider>
       </Canvas>
-      <CodeTerminal visible={beat === "code"} />
-      <CmdVel visible={live || beat === "deploy"} live={live} readout={readoutRef} />
-    </>
   );
 }

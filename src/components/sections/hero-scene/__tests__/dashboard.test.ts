@@ -5,16 +5,17 @@ import { CAMERA_KEYFRAMES, FLY_IN_START, cameraAt } from "../camera";
 import {
   DASH_H,
   DASH_W,
-  dashboardKey,
   dashboardStats,
   minimapToScreen,
   robotMarker,
+  screenKey,
   toMinimap,
 } from "../dashboard";
 import { DESK } from "../desk-layout";
 import { FLOOR, MONITOR } from "../factory";
 import { acceptsGoals } from "../NavGoal";
 import { PAGE } from "../sketch";
+import { TERMINAL_LINES } from "../terminal";
 
 const system = BEATS.find((b) => b.id === "system")!;
 
@@ -25,10 +26,16 @@ describe("dashboard", () => {
   });
 
   it("changes its redraw key only when a shown value changes", () => {
-    const keys = new Set(Array.from({ length: 200 }, (_, i) => dashboardKey(system.start + i * 0.04)));
+    const keys = new Set(Array.from({ length: 200 }, (_, i) => screenKey(system.start + i * 0.04)));
     // Eight seconds of the system beat: a handful of pick ticks, not a redraw per frame.
     expect(keys.size).toBeGreaterThan(1);
     expect(keys.size).toBeLessThan(12);
+  });
+
+  it("redraws for each line the terminal types", () => {
+    const code = BEATS.find((b) => b.id === "code")!;
+    const keys = new Set(Array.from({ length: 100 }, (_, i) => screenKey(code.start + (i / 100) * (code.end - code.start))));
+    expect(keys.size).toBe(TERMINAL_LINES.length + 1);
   });
 
   it("maps minimap pixels onto the screen, centred, y up", () => {
