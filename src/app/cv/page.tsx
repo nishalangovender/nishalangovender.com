@@ -7,6 +7,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import {
   courses,
+  currentlyExploring,
   education,
   experience,
   languages,
@@ -175,6 +176,10 @@ export default function CvPage() {
               </div>
             ))}
           </div>
+          <p className="mt-6 font-mono text-[11px] text-muted">
+            <span className="text-muted-dim">◌ Currently exploring:</span>{" "}
+            {currentlyExploring.join(" · ")}
+          </p>
         </ProfileSection>
 
         {/* ── Courses & Languages row ─────────────────────────────────── */}

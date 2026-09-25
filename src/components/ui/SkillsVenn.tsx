@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type KeyboardEvent } from "react";
 
+import { ExploringTag } from "@/components/ui/ExploringTag";
 import { SkillIconTile } from "@/components/ui/SkillIconTile";
 import type { Skill, ZoneData, ZoneKey } from "@/data/skills";
 import { profColor, profLabel, zoneAnchorId, zones } from "@/data/skills";
@@ -303,8 +304,6 @@ function SkillRow({
   zoneKey: ZoneKey;
   index: number;
 }) {
-  const { varName } = profColor(skill.proficiency);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -315,30 +314,41 @@ function SkillRow({
       <SkillIconTile skill={skill} zoneKey={zoneKey} size="sm" />
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-sm text-foreground font-medium truncate">
-            {skill.name}
-          </span>
-          <span
-            className="font-mono text-[10px] ml-2 flex-shrink-0"
-            style={{ color: varName }}
-          >
-            {profLabel(skill.proficiency)}
-          </span>
-        </div>
+        {skill.exploring ? (
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-foreground font-medium truncate">
+              {skill.name}
+            </span>
+            <ExploringTag />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-foreground font-medium truncate">
+                {skill.name}
+              </span>
+              <span
+                className="font-mono text-[10px] ml-2 flex-shrink-0"
+                style={{ color: profColor(skill.proficiency).varName }}
+              >
+                {profLabel(skill.proficiency)}
+              </span>
+            </div>
 
-        <div className="h-[3px] w-full bg-border rounded-full overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ backgroundColor: varName }}
-            initial={{ width: 0 }}
-            animate={{ width: `${skill.proficiency}%` }}
-            transition={{
-              delay: index * 0.05 + 0.15,
-              duration: 0.5,
-            }}
-          />
-        </div>
+            <div className="h-[3px] w-full bg-border rounded-full overflow-hidden">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ backgroundColor: profColor(skill.proficiency).varName }}
+                initial={{ width: 0 }}
+                animate={{ width: `${skill.proficiency}%` }}
+                transition={{
+                  delay: index * 0.05 + 0.15,
+                  duration: 0.5,
+                }}
+              />
+            </div>
+          </>
+        )}
       </div>
     </motion.div>
   );

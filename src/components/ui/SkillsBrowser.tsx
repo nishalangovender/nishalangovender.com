@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 
+import { ExploringTag } from "@/components/ui/ExploringTag";
 import { SkillIconTile } from "@/components/ui/SkillIconTile";
 import type { Skill, ZoneKey } from "@/data/skills";
 import {
@@ -189,34 +190,43 @@ export default function SkillsBrowser() {
 }
 
 function SkillListRow({ skill, zoneKey }: { skill: Skill; zoneKey: ZoneKey }) {
-  const { varName } = profColor(skill.proficiency);
-
   return (
     <li className="flex items-center gap-3">
       <SkillIconTile skill={skill} zoneKey={zoneKey} size="md" />
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-sm text-foreground font-medium truncate">
-            {skill.name}
-          </span>
-          <span
-            className="font-mono text-[10px] ml-2 flex-shrink-0"
-            style={{ color: varName }}
-          >
-            {profLabel(skill.proficiency)}
-          </span>
-        </div>
+        {skill.exploring ? (
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-foreground font-medium truncate">
+              {skill.name}
+            </span>
+            <ExploringTag />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-foreground font-medium truncate">
+                {skill.name}
+              </span>
+              <span
+                className="font-mono text-[10px] ml-2 flex-shrink-0"
+                style={{ color: profColor(skill.proficiency).varName }}
+              >
+                {profLabel(skill.proficiency)}
+              </span>
+            </div>
 
-        <div className="h-[3px] w-full bg-border rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${skill.proficiency}%`,
-              backgroundColor: varName,
-            }}
-          />
-        </div>
+            <div className="h-[3px] w-full bg-border rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${skill.proficiency}%`,
+                  backgroundColor: profColor(skill.proficiency).varName,
+                }}
+              />
+            </div>
+          </>
+        )}
       </div>
     </li>
   );

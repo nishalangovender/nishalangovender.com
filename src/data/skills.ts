@@ -82,14 +82,20 @@ export type Discipline =
   | "intersection"
   | "center";
 
-export interface Skill {
+/**
+ * A skill is either graded (self-rated 0–100 proficiency, drawn as a bar) or
+ * `exploring` — a field being learned, shown as a tag with no bar so it never
+ * reads as a claimed level.
+ */
+export type Skill = {
   name: string;
   icon: IconType;
-  /** 0–100 self-rated proficiency. */
-  proficiency: number;
   /** Optional brand hex colour for the icon — otherwise rendered in accent. */
   color?: string;
-}
+} & (
+  | { proficiency: number; exploring?: never }
+  | { exploring: true; proficiency?: never }
+);
 
 export interface ZoneData {
   label: string;
@@ -237,7 +243,7 @@ export const zones: { key: ZoneKey; data: ZoneData }[] = [
   {
     key: "center",
     data: {
-      label: "Mechatronics & Physical AI",
+      label: "Mechatronics & Robotics",
       subtitle: "The Convergence",
       discipline: "center",
       skills: [
@@ -254,12 +260,12 @@ export const zones: { key: ZoneKey; data: ZoneData }[] = [
         { name: "Motion & Path Planning (A*, RRT)", icon: TbMapRoute, proficiency: 82 },
         { name: "Open-RMF", icon: TbCar, proficiency: 82 },
         { name: "SLAM", icon: TbRadar2, proficiency: 78 },
-        { name: "Sim-to-Real Transfer", icon: TbTransform, proficiency: 75 },
-        { name: "VLAs (Vision-Language-Action Models)", icon: TbEye, proficiency: 72 },
-        { name: "Imitation Learning / Teleop Data", icon: TbDeviceRemote, proficiency: 72 },
-        { name: "Bimanual Manipulation", icon: TbHandGrab, proficiency: 70 },
-        { name: "Policy Training", icon: TbChartHistogram, proficiency: 70 },
-        { name: "World Action Models", icon: TbBrain, proficiency: 68 },
+        { name: "Sim-to-Real Transfer", icon: TbTransform, exploring: true },
+        { name: "VLAs (Vision-Language-Action Models)", icon: TbEye, exploring: true },
+        { name: "Imitation Learning / Teleop Data", icon: TbDeviceRemote, exploring: true },
+        { name: "Bimanual Manipulation", icon: TbHandGrab, exploring: true },
+        { name: "Policy Training", icon: TbChartHistogram, exploring: true },
+        { name: "World Action Models", icon: TbBrain, exploring: true },
       ],
     },
   },

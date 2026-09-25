@@ -153,21 +153,6 @@ export const education: EducationEntry[] = [
  */
 export const skillCategories: SkillCategory[] = [
   {
-    label: "AI & Physical AI",
-    items: [
-      "LLMs / Claude",
-      "Agent Design (Skills, Hooks, MCP)",
-      "Prompt Engineering",
-      "Agent Memory & Evals",
-      "VLAs (Vision-Language-Action Models)",
-      "World Action Models",
-      "Imitation Learning / Teleop Data",
-      "Policy Training",
-      "Bimanual Manipulation",
-      "Sim-to-Real Transfer",
-    ],
-  },
-  {
     label: "Robotics & Controls",
     items: [
       "ROS2",
@@ -228,6 +213,15 @@ export const skillCategories: SkillCategory[] = [
     ],
   },
   {
+    label: "AI & Agents",
+    items: [
+      "LLMs / Claude",
+      "Agent Design (Skills, Hooks, MCP)",
+      "Prompt Engineering",
+      "Agent Memory & Evals",
+    ],
+  },
+  {
     label: "Software & DevOps",
     items: [
       "Python",
@@ -264,6 +258,19 @@ export const skillCategories: SkillCategory[] = [
       "Bill of Materials (BOM)",
     ],
   },
+];
+
+/**
+ * Fields being learned at Ubundi — listed as one line, not a graded group, so
+ * the CV never claims a level. Mirrors the `exploring` skills in `skills.ts`.
+ */
+export const currentlyExploring: string[] = [
+  "VLAs",
+  "World Action Models",
+  "Imitation Learning / Teleop Data",
+  "Bimanual Manipulation",
+  "Policy Training",
+  "Sim-to-Real Transfer",
 ];
 
 export const courses: string[] = [
