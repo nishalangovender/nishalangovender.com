@@ -46,6 +46,9 @@ const POSES = {
 const start = (id: BeatId) => BEATS.find((b) => b.id === id)!.start;
 const end = (id: BeatId) => BEATS.find((b) => b.id === id)!.end;
 
+/** Share of the return beat spent pulling back to the notebook; the page turns after it. */
+export const PAGE_LANDING = 0.6;
+
 /** When the camera leaves the fleet overview for the monitor, and arrives. */
 export const FLY_IN_START = start("system") + 1.3;
 const FLY_IN_END = start("system") + 3.6;
@@ -60,6 +63,7 @@ export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
   { t: FLY_IN_START, pose: POSES.system },
   { t: FLY_IN_END, pose: POSES.monitor },
   { t: end("system"), pose: POSES.monitor },
+  { t: start("return") + PAGE_LANDING * (end("return") - start("return")), pose: POSES.page },
   { t: TOTAL_DURATION, pose: POSES.page },
 ];
 
