@@ -8,11 +8,11 @@ import { TerminalPanel } from "./TerminalPanel";
 const LINE_DELAY = 0.32;
 
 export const TERMINAL_LINES: readonly { text: string; kind: "prompt" | "log" | "ok" }[] = [
-  { text: "colcon build --symlink-install", kind: "prompt" },
+  { text: "colcon build --packages-up-to nish_bot", kind: "prompt" },
   { text: "Summary: 12 packages finished [8.4s]", kind: "log" },
-  { text: "ros2 launch agv_bringup fleet.launch.py", kind: "prompt" },
-  { text: "[lidar_driver] scan @ 15 Hz", kind: "log" },
-  { text: "[canopen_master] 2 drives OPERATIONAL", kind: "log" },
+  { text: "ros2 launch nish_bot bringup.launch.py", kind: "prompt" },
+  { text: "[nish_bot_lidar] scan @ 15 Hz", kind: "log" },
+  { text: "[nish_bot_canopen] 2 drives OPERATIONAL", kind: "log" },
   { text: "[nav2] lifecycle nodes active", kind: "log" },
   { text: "nodes up", kind: "ok" },
 ];
