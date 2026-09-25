@@ -9,6 +9,7 @@ import { BEATS, parseBeatParam, parseTimeParam } from "./beats";
 import { cameraAt } from "./camera";
 import { Costmap } from "./Costmap";
 import { Desk } from "./Desk";
+import { DeskGear } from "./DeskGear";
 import { FactoryFloor } from "./FactoryFloor";
 import { Fleet } from "./Fleet";
 import { InkSketch } from "./InkSketch";
@@ -116,6 +117,7 @@ export default function HeroCanvas({ active }: { active: boolean }) {
             <Framing />
             <Lights />
             <Desk />
+            <DeskGear />
             <Notebook />
             <FactoryFloor />
             <Costmap />
