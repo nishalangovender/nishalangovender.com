@@ -8,11 +8,27 @@ import type { Pose } from "@/lib/path-following/types";
 import { FLOOR, OBSTACLES } from "./factory";
 import { FLEET_SIZE } from "./Fleet";
 import { LOOP, MISSION_SPEED, missionDistance } from "./mission";
-import type { Palette } from "./scene-context";
 
-/** Canvas size in pixels (16:10, matching the monitor screen). */
+/** Layout size in canvas units (16:10, matching the monitor screen). */
 export const DASH_W = 1024;
 export const DASH_H = 640;
+/** The canvas is drawn at twice the layout size so text stays sharp up close. */
+export const DASH_SCALE = 2;
+
+/**
+ * A monitor is dark in both site themes, so the dashboard always draws in
+ * the nish-os dark TTY values, on a near-black screen.
+ */
+const SCREEN = {
+  bg: "#020203",
+  surface: "#0b0c0f",
+  rule: "#2a2e36",
+  fg: "#eef4f9",
+  dim: "#8598ab",
+  accent: "#33e1ff",
+  ok: "#2ee6a8",
+  warn: "#ffb339",
+} as const;
 
 const TITLE_H = 64;
 const PAD = 24;
@@ -56,7 +72,9 @@ export function toMinimap(x: number, y: number): [number, number] {
 }
 
 /** Draws the dashboard for the given robot poses (hero first). */
-export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: Pose[], p: Palette, font: string) {
+export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: Pose[], font: string) {
+  const p = SCREEN;
+  ctx.setTransform(DASH_SCALE, 0, 0, DASH_SCALE, 0, 0);
   ctx.fillStyle = p.bg;
   ctx.fillRect(0, 0, DASH_W, DASH_H);
 
@@ -64,11 +82,11 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: 
   ctx.fillStyle = p.surface;
   ctx.fillRect(0, 0, DASH_W, TITLE_H);
   ctx.textBaseline = "middle";
-  ctx.font = `600 28px ${font}`;
+  ctx.font = `700 32px ${font}`;
   ctx.fillStyle = p.accent;
   ctx.fillText("❯ nish_bot", PAD, TITLE_H / 2);
   ctx.fillStyle = p.dim;
-  ctx.fillText("· fleet", PAD + 176, TITLE_H / 2);
+  ctx.fillText("· fleet", PAD + 200, TITLE_H / 2);
   ctx.textAlign = "right";
   ctx.fillStyle = p.ok;
   ctx.fillText("● LIVE", DASH_W - PAD, TITLE_H / 2);
@@ -78,7 +96,7 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: 
   const [fx0, fy0] = toMinimap(FLOOR.minX, FLOOR.maxY);
   const [fx1, fy1] = toMinimap(FLOOR.maxX, FLOOR.minY);
   ctx.strokeStyle = p.rule;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
   ctx.strokeRect(fx0, fy0, fx1 - fx0, fy1 - fy0);
   ctx.fillStyle = p.rule;
   for (const o of OBSTACLES) {
@@ -128,10 +146,10 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, robots: 
     ctx.strokeStyle = p.rule;
     ctx.lineWidth = 2;
     ctx.strokeRect(SIDE.x, y, SIDE.w, CARD_H);
-    ctx.font = `500 20px ${font}`;
+    ctx.font = `600 22px ${font}`;
     ctx.fillStyle = p.dim;
     ctx.fillText(stat.label, SIDE.x + 18, y + 28);
-    ctx.font = `600 36px ${font}`;
+    ctx.font = `700 42px ${font}`;
     ctx.fillStyle = stat.tone === "fg" ? p.fg : p[stat.tone];
     ctx.fillText(stat.value, SIDE.x + 18, y + 64);
   });

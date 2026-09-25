@@ -1,10 +1,20 @@
 "use client";
 
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
-import { BoxGeometry, CanvasTexture, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry } from "three";
+import {
+  BoxGeometry,
+  CanvasTexture,
+  Group,
+  LinearMipmapLinearFilter,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  PlaneGeometry,
+  SRGBColorSpace,
+} from "three";
 
-import { DASH_H, DASH_W, drawDashboard } from "./dashboard";
+import { DASH_H, DASH_SCALE, DASH_W, drawDashboard } from "./dashboard";
 import { MONITOR, toWorld } from "./factory";
 import { fleetPose, FLEET_SIZE } from "./Fleet";
 import { LAYER, edgeSegments, fatLines } from "./lines";
@@ -38,9 +48,11 @@ export function Monitor() {
 
   const { group, frame, screen, texture, canvas } = useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = DASH_W;
-    canvas.height = DASH_H;
+    canvas.width = DASH_W * DASH_SCALE;
+    canvas.height = DASH_H * DASH_SCALE;
     const texture = new CanvasTexture(canvas);
+    texture.colorSpace = SRGBColorSpace;
+    texture.minFilter = LinearMipmapLinearFilter;
     const screen = new Mesh(
       new PlaneGeometry(MONITOR.width, MONITOR.screenHeight),
       new MeshBasicMaterial({ map: texture }),
@@ -57,6 +69,13 @@ export function Monitor() {
   useEffect(() => {
     frame.material.color.set(palette.accent);
   }, [frame, palette]);
+
+  // Sharpest sampling the GPU offers, for the screen seen at an angle.
+  const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy());
+  useEffect(() => {
+    texture.anisotropy = maxAnisotropy;
+    texture.needsUpdate = true;
+  }, [texture, maxAnisotropy]);
 
   useEffect(
     () => () => {
@@ -76,7 +95,7 @@ export function Monitor() {
     if (!ctx) return;
     const robots = [agv, ...Array.from({ length: FLEET_SIZE - 1 }, (_, i) => fleetPose(t, i + 1))];
     const font = getComputedStyle(document.documentElement).getPropertyValue("--font-jetbrains-mono").trim() || "monospace";
-    drawDashboard(ctx, t, robots, palette, font);
+    drawDashboard(ctx, t, robots, font);
     texture.needsUpdate = true;
   });
 

@@ -22,8 +22,12 @@ const aroundCentre = (dx: number, y: number, dz: number): CameraPose => ({
   target: centre,
 });
 
-/** Distance from the screen at which it fills the view (fov 40°, 16:10 canvas). */
-const SCREEN_DISTANCE = MONITOR.width * 1.12;
+/**
+ * Distance from the screen for the close-up: the screen spans about half the
+ * hero width, so it sits clear of the headline on desktop and fits the width
+ * on phones.
+ */
+const SCREEN_DISTANCE = MONITOR.width * 1.7;
 const screen = toWorld(MONITOR.x, MONITOR.y, MONITOR.height);
 
 const POSES = {
