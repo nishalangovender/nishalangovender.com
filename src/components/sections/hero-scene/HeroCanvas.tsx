@@ -103,7 +103,8 @@ export default function HeroCanvas({ active }: { active: boolean }) {
         flat
         // Soft shadows on the factory floor; phones skip them to keep frame rate.
         shadows={typeof window !== "undefined" && window.innerWidth >= 768}
-        dpr={[1, 1.5]}
+        // Full device resolution up to 2×, so the monitor's text stays sharp on high-DPI screens.
+        dpr={[1, 2]}
         frameloop={active ? "always" : "never"}
         gl={{ antialias: true, alpha: true }}
         camera={{ fov: 40, near: 0.1, far: 100, position: cameraAt(0).position }}

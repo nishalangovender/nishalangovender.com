@@ -157,7 +157,12 @@ export function drawDashboard(ctx: CanvasRenderingContext2D, t: number, font: st
   });
 }
 
-const TERMINAL = { x: PAD, y: TITLE_H + PAD, w: DASH_W - 2 * PAD, h: DASH_H - TITLE_H - 2 * PAD, bar: 44, line: 44 };
+/**
+ * Terminal window layout in canvas units. Type is large and semi-bold because
+ * the code beat frames the whole monitor: the screen spans only ~600 CSS px,
+ * so smaller or lighter text blurs as the texture is minified.
+ */
+const TERMINAL = { x: PAD, y: TITLE_H + PAD, w: DASH_W - 2 * PAD, h: DASH_H - TITLE_H - 2 * PAD, bar: 48, line: 52 };
 
 /** Draws the build terminal window over the dashboard with its first `lines` lines typed. */
 export function drawTerminal(ctx: CanvasRenderingContext2D, lines: number, font: string) {
@@ -176,9 +181,9 @@ export function drawTerminal(ctx: CanvasRenderingContext2D, lines: number, font:
   ctx.fillStyle = p.dim;
   ctx.fillText("Terminal", x + 20, y + bar / 2);
 
-  ctx.font = `500 26px ${font}`;
+  ctx.font = `600 32px ${font}`;
   TERMINAL_LINES.slice(0, lines).forEach((l, i) => {
-    const ly = y + bar + 36 + i * line;
+    const ly = y + bar + 40 + i * line;
     let lx = x + 24;
     const prefix = l.kind === "prompt" ? "❯ " : l.kind === "ok" ? "✓ " : "";
     if (prefix) {
@@ -192,6 +197,6 @@ export function drawTerminal(ctx: CanvasRenderingContext2D, lines: number, font:
   // Cursor on the next line while the session is still typing.
   if (lines < TERMINAL_LINES.length) {
     ctx.fillStyle = p.fg;
-    ctx.fillRect(x + 24, y + bar + 36 + lines * line - 14, 14, 28);
+    ctx.fillRect(x + 24, y + bar + 40 + lines * line - 17, 17, 34);
   }
 }
