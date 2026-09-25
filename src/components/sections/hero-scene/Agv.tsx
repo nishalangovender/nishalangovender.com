@@ -13,7 +13,7 @@ import {
 } from "three";
 import type { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 
-import { smoothstep } from "@/lib/math";
+import { clamp01, smoothstep } from "@/lib/math";
 import type { Pose } from "@/lib/path-following/types";
 
 import { beatAt, beatProgress } from "./beats";
@@ -22,7 +22,7 @@ import { LAYER, fatLines } from "./lines";
 import { missionDistance, missionPose } from "./mission";
 import { blendPose } from "./nav-goal";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
-import { AGV } from "./sketch";
+import { AGV, SKETCH_HEADING } from "./sketch";
 
 const BODY_Y = AGV.wheelRadius + 0.04;
 
@@ -113,6 +113,21 @@ export function agvPresence(t: number): number {
   return 1;
 }
 
+/**
+ * Mission pose at `t`, except while parked on the page: the AGV rises at the
+ * sketched heading, then turns to face down the mission lane as the stack boots.
+ */
+export function heroPose(t: number): Pose {
+  const pose = missionPose(missionDistance(t));
+  const id = beatAt(t).id;
+  if (id === "sketch" || id === "design") return { ...pose, theta: SKETCH_HEADING };
+  if (id === "code") {
+    const turn = smoothstep(clamp01((beatProgress(t, "code") - 0.4) / 0.6));
+    return { ...pose, theta: SKETCH_HEADING * (1 - turn) };
+  }
+  return pose;
+}
+
 /** Places a model at a map-frame pose, grown and faded in by `presence` (0–1). */
 export function showAgv({ group, body, axes }: AgvModel, pose: Pose, presence: number) {
   group.visible = presence > 0;
@@ -130,7 +145,7 @@ export function HeroAgv() {
 
   useFrame(() => {
     const scene = sceneRef.current;
-    const mission = missionPose(missionDistance(scene.t));
+    const mission = heroPose(scene.t);
     if (scene.live) scene.agv = scene.live.pose;
     else if (scene.rejoin) scene.agv = blendPose(scene.rejoin.from, mission, smoothstep(scene.rejoin.k));
     else scene.agv = mission;

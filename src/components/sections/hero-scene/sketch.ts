@@ -2,8 +2,9 @@
  * World geometry for the hero, in metres. The page lies on y = 0 with x to the
  * right and z towards the viewer; ROS's y axis is therefore −z here.
  *
- * The kinematic sketch matches `HeroStatic` at 100 px per metre, with the
- * page centre at SVG (220, 170).
+ * The kinematic sketch is authored in the ROS map frame (x right, y up the
+ * page) and flattened onto the page as [x, z = −y]. `HeroStatic` draws the
+ * same strokes and labels as SVG, so the static frame and the ink match.
  */
 
 export const PAGE = { width: 4.2, depth: 3.2 } as const;
@@ -24,7 +25,7 @@ export function pageDots(): number[] {
   return out;
 }
 
-/** base_link: the drive-axle centre the TF axes and turning arc hang off. */
+/** base_link: the drive-axle centre the body axes, velocity and AGV hang off. */
 export const BASE_LINK = { x: -0.13, z: 0 } as const;
 
 /** Chassis footprint relative to base_link, and wheel/castor placement. */
@@ -42,50 +43,136 @@ export const AGV = {
   lidarRadius: 0.1,
 } as const;
 
+/** Heading the robot is sketched at; the AGV turns to 0 once it boots. */
+export const SKETCH_HEADING = (25 * Math.PI) / 180;
+
 type P = [number, number];
-/** Flat segment list: [x1, z1, x2, z2] per segment. */
+/** Flat segment list on the page: [x1, z1, x2, z2] per segment. */
 export type Segments = number[];
 
-function polyline(points: P[], closed = false): Segments {
+/** Ink colour per stroke: pencil ink, RViz body axes, and motion vectors. */
+export type SketchRole = "ink" | "axisX" | "axisY" | "motion";
+
+/** One pen stroke in the map frame (x, y up the page). */
+interface Stroke {
+  role: SketchRole;
+  points: P[];
+  dashed?: boolean;
+}
+
+const B: P = [BASE_LINK.x, -BASE_LINK.z];
+const ORIGIN: P = [-1.75, -1.25];
+
+const add = (a: P, b: P): P => [a[0] + b[0], a[1] + b[1]];
+const polar = (r: number, a: number): P => [r * Math.cos(a), r * Math.sin(a)];
+/** Point in the robot's body frame (forward, left) at the sketched heading. */
+const body = (fwd: number, left: number): P =>
+  add(B, add(polar(fwd, SKETCH_HEADING), polar(left, SKETCH_HEADING + Math.PI / 2)));
+
+function arc(c: P, r: number, from: number, to: number, steps: number): P[] {
+  return Array.from({ length: steps + 1 }, (_, i) => add(c, polar(r, from + ((to - from) * i) / steps)));
+}
+
+/** Arrowhead at `to`, pointing away from `from`. */
+function arrowHead(role: SketchRole, from: P, to: P, size = 0.09): Stroke {
+  const a = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  return { role, points: [add(to, polar(size, a + Math.PI * 0.85)), to, add(to, polar(size, a - Math.PI * 0.85))] };
+}
+
+/** Shaft plus arrowhead from `from` to `to`. */
+function arrow(role: SketchRole, from: P, to: P): Stroke[] {
+  return [{ role, points: [from, to] }, arrowHead(role, from, to)];
+}
+
+/** Rectangle in the body frame: centre `fwd` ahead, `len` long, `wid` wide. */
+function bodyRect(fwd: number, left: number, len: number, wid: number): P[] {
+  return [
+    body(fwd - len / 2, left - wid / 2),
+    body(fwd + len / 2, left - wid / 2),
+    body(fwd + len / 2, left + wid / 2),
+    body(fwd - len / 2, left + wid / 2),
+    body(fwd - len / 2, left - wid / 2),
+  ];
+}
+
+const refAngle = Math.atan2(B[1] - ORIGIN[1], B[0] - ORIGIN[0]);
+const OMEGA_CENTRE = body(-0.55, 0.95);
+
+/** Pen strokes in drawing order, as in the notebook original. */
+export const SKETCH_STROKES: readonly Stroke[] = [
+  // World frame
+  ...arrow("ink", ORIGIN, [ORIGIN[0], 1.3]),
+  ...arrow("ink", ORIGIN, [1.85, ORIGIN[1]]),
+  // Robot: chassis, drive wheels, castor
+  { role: "ink", points: bodyRect(AGV.offset, 0, AGV.length, AGV.width) },
+  { role: "ink", points: bodyRect(0, -AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
+  { role: "ink", points: bodyRect(0, AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
+  { role: "ink", points: arc(body(AGV.castorX, 0), 0.07, 0, Math.PI * 2, 12) },
+  // θ: dashed reference from the origin to base_link, and its angle
+  { role: "ink", points: [ORIGIN, add(ORIGIN, polar(0.75, refAngle)), add(ORIGIN, polar(1.5, refAngle)), B], dashed: true },
+  { role: "ink", points: arc(ORIGIN, 0.42, 0, refAngle, 8) },
+  // Body frame
+  ...arrow("axisX", B, body(0.62, 0)),
+  ...arrow("axisY", B, body(0, 0.5)),
+  // Motion: velocity along the heading, ω about the body
+  ...arrow("motion", body(0.62, 0), body(1.2, 0)),
+  { role: "motion", points: arc(OMEGA_CENTRE, 0.18, -Math.PI * 0.2, Math.PI * 1.45, 14) },
+  arrowHead("motion", add(OMEGA_CENTRE, polar(0.18, Math.PI * 1.35)), add(OMEGA_CENTRE, polar(0.18, Math.PI * 1.45)), 0.07),
+];
+
+function toSegments(stroke: Stroke): Segments {
   const out: Segments = [];
-  const n = closed ? points.length : points.length - 1;
-  for (let i = 0; i < n; i++) {
-    const a = points[i];
-    const b = points[(i + 1) % points.length];
-    out.push(a[0], a[1], b[0], b[1]);
+  for (let i = 0; i < stroke.points.length - 1; i++) {
+    if (stroke.dashed && i % 2 === 1) continue;
+    const [ax, ay] = stroke.points[i];
+    const [bx, by] = stroke.points[i + 1];
+    out.push(ax, -ay, bx, -by);
   }
   return out;
 }
 
-function rect(cx: number, cz: number, w: number, d: number): Segments {
-  const x0 = cx - w / 2, x1 = cx + w / 2, z0 = cz - d / 2, z1 = cz + d / 2;
-  return polyline([[x0, z0], [x1, z0], [x1, z1], [x0, z1]], true);
+/** All strokes flattened onto the page, in drawing order. */
+export const SKETCH_SEGMENTS: Segments = SKETCH_STROKES.flatMap(toSegments);
+
+/** Cumulative segment count at the end of each stroke. */
+const STROKE_ENDS: number[] = SKETCH_STROKES.reduce<number[]>((acc, s) => {
+  acc.push((acc.at(-1) ?? 0) + toSegments(s).length / 4);
+  return acc;
+}, []);
+
+/**
+ * Segments inked once `f` (0–1) of the drawing is done. Every stroke gets the
+ * same share of time, so a many-segment arc takes no longer than a straight line.
+ */
+export function segmentsDrawn(f: number): number {
+  const k = Math.min(Math.max(f, 0), 1) * STROKE_ENDS.length;
+  const i = Math.min(Math.floor(k), STROKE_ENDS.length - 1);
+  const start = i === 0 ? 0 : STROKE_ENDS[i - 1];
+  return k >= STROKE_ENDS.length ? STROKE_ENDS[i] : Math.round(start + (STROKE_ENDS[i] - start) * (k - i));
 }
 
-function arc(cx: number, cz: number, r: number, from: number, to: number, steps: number): P[] {
-  return Array.from({ length: steps + 1 }, (_, i) => {
-    const a = from + ((to - from) * i) / steps;
-    return [cx + r * Math.cos(a), cz + r * Math.sin(a)];
-  });
+/** Role of each segment in `SKETCH_SEGMENTS`, for colouring. */
+export const SKETCH_ROLES: readonly SketchRole[] = SKETCH_STROKES.flatMap((s) =>
+  Array<SketchRole>(toSegments(s).length / 4).fill(s.role),
+);
+
+export interface SketchLabel {
+  text: string;
+  role: SketchRole;
+  /** Page position (x, z). */
+  x: number;
+  z: number;
 }
 
-/** Keeps every other segment, so a polyline reads as a dashed pencil line. */
-function dashed(segments: Segments): Segments {
-  return segments.filter((_, i) => Math.floor(i / 4) % 2 === 0);
-}
+const label = (text: string, role: SketchRole, p: P): SketchLabel => ({ text, role, x: p[0], z: -p[1] });
 
-const bx = BASE_LINK.x;
-const wheelZ = AGV.track / 2;
-
-/** Ink strokes in drawing order: chassis, wheels, castor, turning arc, ICR line. */
-export const SKETCH_SEGMENTS: Segments = [
-  ...rect(bx + AGV.offset, 0, AGV.length, AGV.width),
-  ...rect(bx, -wheelZ, AGV.wheelRadius * 2, AGV.wheelWidth),
-  ...rect(bx, wheelZ, AGV.wheelRadius * 2, AGV.wheelWidth),
-  ...polyline(arc(bx + AGV.castorX, 0, 0.07, 0, Math.PI * 2, 12), true),
-  ...dashed(polyline(arc(bx, 0, 1, -Math.PI / 2, 0, 16))),
-  ...dashed(polyline([[bx, -0.45], [bx, -0.67], [bx, -0.89], [bx, -1.1]])),
+/** Symbols written in once the strokes are done. */
+export const SKETCH_LABELS: readonly SketchLabel[] = [
+  label("Y", "ink", [ORIGIN[0] - 0.12, 1.3]),
+  label("X", "ink", [1.95, ORIGIN[1]]),
+  label("θ", "ink", add(ORIGIN, polar(0.58, refAngle / 2))),
+  label("x", "axisX", body(0.62, 0.14)),
+  label("y", "axisY", body(-0.14, 0.5)),
+  label("V", "motion", body(1.3, 0.12)),
+  label("ω", "motion", add(OMEGA_CENTRE, [0, 0.3])),
 ];
-
-/** TF axes at base_link: x (red) forward, y (green) to the left. */
-export const SKETCH_AXES: Segments = [bx, 0, bx + 0.5, 0, bx, 0, bx, -0.4];

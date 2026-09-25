@@ -39,8 +39,3 @@ export function fatLines(
 
 /** Draw order for the transparent layers, bottom to top. */
 export const LAYER = { page: 0, costmap: 1, cloud: 2, ink: 3, agv: 4, scan: 5 } as const;
-
-/** Segment count of a fat-line geometry. */
-export function segmentCount(line: LineSegments2): number {
-  return (line.geometry.attributes.instanceStart as unknown as { count: number }).count;
-}
