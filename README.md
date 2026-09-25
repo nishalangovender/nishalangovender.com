@@ -1,16 +1,17 @@
 # nishalangovender.com
 
-Personal site and engineering portfolio for [Nishalan Govender](https://nishalangovender.com) — robotics engineer at [Ubundi](https://ubundi.com), working across AI, Physical AI, embedded systems, and the web.
+Personal site and engineering portfolio for [Nishalan Govender](https://nishalangovender.com) — robotics engineer who shipped production AGV fleets, now exploring Physical AI at [Ubundi](https://ubundi.com).
 
 Live at [**nishalangovender.com**](https://nishalangovender.com).
 
 ## Stack
 
 - **Next.js 16** (App Router, React 19, TypeScript strict)
-- **Tailwind CSS v4** — design tokens via CSS variables; light theme plus a dark theme built from `nish-arc`, a terminal palette kept outside this repo and shared with ghostty and starship
-- **Framer Motion** — page transitions and hero animation
+- **Tailwind CSS v4** — design tokens via CSS variables, derived from the `--tty-*` palette (see below)
+- **three.js + React Three Fiber** — the 3D homepage hero (no drei)
+- **Framer Motion** — page transitions and overlay animation
 - **MDX** — blog posts (`next-mdx-remote`, `rehype-pretty-code`, `shiki`)
-- **Vitest + Testing Library** — unit tests for the interactive demos
+- **Vitest + Testing Library** — unit tests for the demos, the hero scene's maths, and content limits
 - **Vercel** — hosting, preview deployments per branch
 - **Formspree** — contact and CV-request form backend
 
@@ -59,10 +60,14 @@ src/
 ## Highlights worth poking at
 
 - **Interactive robotics demos** — `src/components/demos/` and `src/lib/` house standalone simulations (4WS path-following controller, pen-plotter, Park Bot) that share a common rendering and test harness.
-- **Skills Venn** — `src/components/ui/SkillsVenn.tsx` visualises three disciplines (software, electronics, mechanical) and their intersections, with a grid listing underneath. The centre zone covers mechatronics and Physical AI.
-- **Hero loop** — `src/components/sections/hero-loop/` is the animated homepage sequence.
+- **3D hero** — `src/components/sections/hero-scene/` tells the notebook-to-factory story as one three.js scene: a kinematic sketch is inked on a dot-grid page, lifts into a wireframe AGV, the stack builds in a terminal, then the page's dots rise into a lidar point cloud of a factory where the AGV runs its mission with a laser scan and an amber costmap, joined by the rest of the fleet. Once the factory has formed, click or tap the floor during the deploy and system beats to send a nav goal: the loop pauses, pure pursuit drives there, and `/cmd_vel` prints below. The scene loads after the hero text, pauses offscreen, and falls back to a static notebook frame for reduced motion or no WebGL. In development, `?beat=1`–`6` holds the loop on one beat.
+- **Skills Venn** — `src/components/ui/SkillsVenn.tsx` visualises three disciplines (software, electronics, mechanical) and their intersections, with a grid listing underneath. Fields still being learned carry an `exploring` tag instead of a proficiency bar.
 - **Dynamic OG images** — per-project and per-post Open Graph images via edge-runtime `opengraph-image.tsx` routes. The site card embeds the avatar inline as a data URI, since Satori resolves no local paths.
 - **Terminal motifs** — starship-style prompt chips on page heroes, a right-prompt footer status line, and a `command not found` 404. Code blocks use a custom shiki theme built from the same palette (`src/lib/shiki/nish-arc.ts`).
+
+## Palette
+
+Colours come from the nish-os TTY tokens (`--tty-*` in `src/app/globals.css`), copied verbatim from `nish-os/docs/design-system.md` so the site, the app and the terminal read as one surface. Only the `--tty-*` values change per theme; every other site token derives from them. A test (`src/app/__tests__/palette.test.ts`) checks both themes against the nish-os table.
 
 ## Deployment
 
