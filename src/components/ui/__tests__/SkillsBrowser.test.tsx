@@ -22,7 +22,7 @@ describe("SkillsBrowser", () => {
     const { container } = render(<SkillsBrowser />);
     for (const skill of exploring) {
       const row = rowFor(container, skill.name);
-      expect(row.textContent).toContain("◌ exploring");
+      expect(row.textContent).toContain("◌ Exploring");
       expect(row.querySelector("[style*='width']")).toBeNull();
     }
   });
@@ -30,7 +30,7 @@ describe("SkillsBrowser", () => {
   it("shows a proficiency label and bar for graded skills", () => {
     const { container } = render(<SkillsBrowser />);
     const row = rowFor(container, graded.name);
-    expect(row.textContent).not.toContain("exploring");
+    expect(row.textContent).not.toContain("Exploring");
     expect(row.querySelector("[style*='width']")).not.toBeNull();
   });
 });

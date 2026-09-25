@@ -230,7 +230,7 @@ export default function SkillsVenn() {
               fontWeight: 600,
             }}
           >
-            &amp; PHYSICAL AI
+            &amp; ROBOTICS
           </text>
         </svg>
       </div>
