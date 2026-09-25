@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PerspectiveCamera } from "three";
 
 import { HeroAgv } from "./Agv";
-import { BEATS, beatAt, parseBeatParam, type BeatId } from "./beats";
+import { BEATS, beatAt, parseBeatParam, parseTimeParam, type BeatId } from "./beats";
 import { cameraAt } from "./camera";
 import { CmdVel } from "./CmdVel";
 import { CodeTerminal } from "./CodeTerminal";
@@ -46,7 +46,7 @@ function Director({ onBeat }: { onBeat: (id: BeatId) => void }) {
     const dt = Math.min(delta, MAX_DT);
     // A nav goal pauses the story; the camera holds where it is.
     if (s.live) return;
-    s.t += dt;
+    s.t = s.freeze ?? s.t + dt;
     if (s.rejoin) {
       s.rejoin.k += dt / REJOIN_TIME;
       if (s.rejoin.k >= 1) s.rejoin = null;
@@ -97,10 +97,13 @@ function Framing() {
 
 export default function HeroCanvas({ active }: { active: boolean }) {
   const palette = usePalette();
-  const hold = parseBeatParam(window.location.search, process.env.NODE_ENV !== "production");
+  const isDev = process.env.NODE_ENV !== "production";
+  const hold = parseBeatParam(window.location.search, isDev);
+  const freeze = parseTimeParam(window.location.search, isDev);
   const sceneRef = useRef<SceneState>({
-    t: hold === null ? 0 : BEATS[hold].start,
+    t: freeze ?? (hold === null ? 0 : BEATS[hold].start),
     hold,
+    freeze,
     agv: missionPose(0),
     live: null,
     rejoin: null,

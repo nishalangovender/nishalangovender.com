@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { BEATS, TOTAL_DURATION, beatAt, beatProgress, parseBeatParam } from "../beats";
+import { BEATS, TOTAL_DURATION, beatAt, beatProgress, parseBeatParam, parseTimeParam } from "../beats";
 import { CAMERA_KEYFRAMES, cameraAt } from "../camera";
 
 describe("beat timeline", () => {
@@ -51,5 +51,15 @@ describe("camera path", () => {
     const b = cameraAt(TOTAL_DURATION - 1e-6);
     a.position.forEach((v, i) => expect(b.position[i]).toBeCloseTo(v, 4));
     a.target.forEach((v, i) => expect(b.target[i]).toBeCloseTo(v, 4));
+  });
+});
+
+describe("parseTimeParam", () => {
+  it("freezes at a loop time in development only", () => {
+    expect(parseTimeParam("?t=12.5", true)).toBe(12.5);
+    expect(parseTimeParam("?t=12.5", false)).toBeNull();
+    expect(parseTimeParam(`?t=${TOTAL_DURATION + 1}`, true)).toBeCloseTo(1);
+    expect(parseTimeParam("?t=-1", true)).toBeNull();
+    expect(parseTimeParam("?t=abc", true)).toBeNull();
   });
 });

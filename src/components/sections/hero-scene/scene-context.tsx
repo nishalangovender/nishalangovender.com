@@ -16,6 +16,8 @@ export interface SceneState {
   t: number;
   /** Dev `?beat=N`: the beat index the clock loops within, or null. */
   hold: number | null;
+  /** Dev `?t=S`: the loop time the clock is frozen at, or null. */
+  freeze: number | null;
   /** Hero AGV pose in the map frame, written by the AGV each frame. */
   agv: Pose;
   /** Live mode: a nav goal is driving the AGV and the loop clock is paused. */

@@ -73,3 +73,14 @@ export function parseBeatParam(search: string, isDev: boolean): number | null {
   const n = Number(raw);
   return n >= 1 && n <= BEATS.length ? n - 1 : null;
 }
+
+/**
+ * Dev-only `?t=S`: the loop freezes at S seconds, for inspecting one frame.
+ * Returns the loop time, or null when absent, invalid or in production.
+ */
+export function parseTimeParam(search: string, isDev: boolean): number | null {
+  if (!isDev) return null;
+  const raw = new URLSearchParams(search).get("t");
+  if (raw === null || !/^\d+(\.\d+)?$/.test(raw)) return null;
+  return loopTime(Number(raw));
+}
