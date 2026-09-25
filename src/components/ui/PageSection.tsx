@@ -1,7 +1,8 @@
-import type { ElementType, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type PageSectionProps = {
-  as?: ElementType;
+  /** HTML tags only — three.js JSX elements share the intrinsic namespace. */
+  as?: "section" | "div" | "main" | "article";
   className?: string;
   innerClassName?: string;
   /** Max width of the inner container. Defaults to max-w-5xl. */

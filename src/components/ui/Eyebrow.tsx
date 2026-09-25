@@ -1,7 +1,8 @@
-import type { ElementType, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type EyebrowProps = {
-  as?: ElementType;
+  /** HTML tags only — three.js JSX elements share the intrinsic namespace. */
+  as?: "p" | "span" | "div" | "h2" | "h3";
   /**
    * "default" = text-sm (page headers), "small" = text-xs (section labels),
    * "xsmall" = text-[11px] (in-section category labels),

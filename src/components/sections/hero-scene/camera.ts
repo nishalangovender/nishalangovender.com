@@ -1,0 +1,57 @@
+/**
+ * Camera path for the hero loop, as keyframes on the loop clock. Each segment
+ * eases with smoothstep, and the last keyframe equals the first, so the loop
+ * has no seam.
+ */
+import { smoothstep } from "@/lib/math";
+
+import { BEATS, TOTAL_DURATION, loopTime, type BeatId } from "./beats";
+
+export type Vec3 = [number, number, number];
+
+export interface CameraPose {
+  position: Vec3;
+  target: Vec3;
+}
+
+const POSES = {
+  page: { position: [0, 4.4, 2.8], target: [0, 0, 0.15] },
+  design: { position: [2.6, 2.4, 2.9], target: [0, 0.35, 0] },
+  code: { position: [2.1, 2.0, 2.3], target: [0, 0.35, 0] },
+  factory: { position: [7.5, 8, 10.5], target: [0, 0, 0] },
+  factoryTrack: { position: [-6.5, 7.5, 10], target: [0, 0, 0] },
+  system: { position: [0, 17, 6], target: [0, 0, 0] },
+} satisfies Record<string, CameraPose>;
+
+const start = (id: BeatId) => BEATS.find((b) => b.id === id)!.start;
+const end = (id: BeatId) => BEATS.find((b) => b.id === id)!.end;
+
+export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
+  { t: 0, pose: POSES.page },
+  { t: end("sketch"), pose: POSES.page },
+  { t: end("design"), pose: POSES.design },
+  { t: end("code"), pose: POSES.code },
+  { t: start("deploy") + 2.4, pose: POSES.factory },
+  { t: end("deploy"), pose: POSES.factoryTrack },
+  { t: start("system") + 2, pose: POSES.system },
+  { t: end("system"), pose: POSES.system },
+  { t: TOTAL_DURATION, pose: POSES.page },
+];
+
+function lerp3(a: Vec3, b: Vec3, k: number): Vec3 {
+  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+}
+
+/** Camera pose at loop time `t`. */
+export function cameraAt(t: number): CameraPose {
+  const lt = loopTime(t);
+  const i = CAMERA_KEYFRAMES.findIndex((k) => k.t > lt);
+  if (i <= 0) return CAMERA_KEYFRAMES[0].pose;
+  const a = CAMERA_KEYFRAMES[i - 1];
+  const b = CAMERA_KEYFRAMES[i];
+  const k = smoothstep((lt - a.t) / (b.t - a.t));
+  return {
+    position: lerp3(a.pose.position, b.pose.position, k),
+    target: lerp3(a.pose.target, b.pose.target, k),
+  };
+}

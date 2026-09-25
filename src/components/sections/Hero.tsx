@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 
-import HeroLoop from "@/components/sections/hero-loop/HeroLoop";
+import HeroScene from "@/components/sections/hero-scene/HeroScene";
 import { LinkButton } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { fadeUp, staggerContainer } from "@/lib/animations";
@@ -54,7 +54,7 @@ export default function Hero() {
         </motion.div>
 
         <div className="w-full max-w-xl mx-auto md:mx-0">
-          <HeroLoop />
+          <HeroScene />
         </div>
       </div>
     </section>
