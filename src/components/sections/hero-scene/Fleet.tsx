@@ -2,23 +2,23 @@
 
 import { useFrame } from "@react-three/fiber";
 
-import { clamp01, smoothstep } from "@/lib/math";
 import type { Pose } from "@/lib/path-following/types";
 
 import { showAgv, useAgvModel } from "./Agv";
-import { beatAt, beatProgress } from "./beats";
+import { factoryReveal } from "./FactoryFloor";
 import { LEAD_IN_LENGTH, LOOP_LENGTH, loopPose, missionDistance } from "./mission";
 import { useScene } from "./scene-context";
 
 /** Fleet size, including the hero AGV. */
 export const FLEET_SIZE = 3;
 
-/** How visible the rest of the fleet is: revealed as the camera pulls up, gone by the return. */
+/**
+ * How present the rest of the fleet is. The fleet is part of the factory: it
+ * resolves from the scan with the racks and fades with them, so it is already
+ * working when the camera pulls up — nothing pops in over the finished floor.
+ */
 export function fleetPresence(t: number): number {
-  const id = beatAt(t).id;
-  if (id === "system") return smoothstep(clamp01(beatProgress(t, "system") / 0.3));
-  if (id === "return") return 1 - smoothstep(beatProgress(t, "return"));
-  return 0;
+  return factoryReveal(t);
 }
 
 /** Pose of fleet member `index` (1-based after the hero), spaced evenly round the loop from the hero. */
