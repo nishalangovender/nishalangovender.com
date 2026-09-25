@@ -10,6 +10,7 @@ import { cameraAt } from "./camera";
 import { Costmap } from "./Costmap";
 import { Desk } from "./Desk";
 import { DeskGear } from "./DeskGear";
+import { DeskRig } from "./DeskRig";
 import { FactoryFloor } from "./FactoryFloor";
 import { Fleet } from "./Fleet";
 import { InkSketch } from "./InkSketch";
@@ -116,16 +117,18 @@ export default function HeroCanvas({ active }: { active: boolean }) {
             <Director />
             <Framing />
             <Lights />
-            <Desk />
-            <DeskGear />
-            <Notebook />
+            <DeskRig>
+              <Desk />
+              <DeskGear />
+              <Notebook />
+              <InkSketch />
+              <Monitor />
+            </DeskRig>
             <FactoryFloor />
             <Costmap />
             <PointCloud />
-            <InkSketch />
             <HeroAgv />
             <Fleet />
-            <Monitor />
             <Lidar />
             <NavGoal />
           </PaletteProvider>

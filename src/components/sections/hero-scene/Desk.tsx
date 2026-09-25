@@ -1,27 +1,31 @@
 "use client";
 
+import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
-import { BoxGeometry, Group, Mesh, MeshStandardMaterial, type Material } from "three";
+import { BoxGeometry, Color, Group, Mesh, MeshStandardMaterial, type Material } from "three";
 
-import { DESK, RAMP } from "./desk-layout";
+import { DESK } from "./desk-layout";
 import { toWorld } from "./factory";
 import { LAYER } from "./lines";
+import { deskScale } from "./mission";
+import { useScene } from "./scene-context";
 
 const LEG = 0.22;
-const RAMP_THICKNESS = 0.08;
-const STRIPE = 0.08;
 
 /** Lit, matte materials — the same realism as the factory floor. */
 const MATERIALS = {
   top: { color: "#6b4a31", roughness: 0.7, metalness: 0 },
   leg: { color: "#34373c", roughness: 0.45, metalness: 0.6 },
-  ramp: { color: "#9aa0a7", roughness: 0.5, metalness: 0.5 },
-  hazard: { color: "#f0c030", roughness: 0.6, metalness: 0 },
 } as const;
 
-/** A walnut desk on metal legs, and an aluminium ramp with hazard edges down to the factory floor. */
+const WALNUT = new Color(MATERIALS.top.color);
+/** Polished concrete, as the factory floor: the desk top turns to it as it shrinks away. */
+const CONCRETE = new Color("#8d8d88");
+
+/** A walnut desk on metal legs; its top turns to factory concrete as the desk shrinks away. */
 export function Desk() {
-  const group = useMemo(() => {
+  const sceneRef = useScene();
+  const { group, top } = useMemo(() => {
     const mat = Object.fromEntries(
       Object.entries(MATERIALS).map(([k, v]) => [k, new MeshStandardMaterial(v)]),
     ) as Record<keyof typeof MATERIALS, MeshStandardMaterial>;
@@ -49,24 +53,13 @@ export function Desk() {
       add(group, new Mesh(new BoxGeometry(LEG, legH, LEG), mat.leg)).position.set(lx, legH / 2, lz);
     }
 
-    // Ramp: a thin plate tilted down from the desk edge to the floor, with hazard stripes along both edges.
-    const run = RAMP.toX - RAMP.fromX;
-    const length = Math.hypot(run, DESK.height);
-    const ramp = new Group();
-    ramp.position.set((RAMP.fromX + RAMP.toX) / 2, DESK.height / 2 - RAMP_THICKNESS / 2, 0);
-    ramp.rotation.z = -Math.atan2(DESK.height, run);
-    add(ramp, new Mesh(new BoxGeometry(length, RAMP_THICKNESS, RAMP.width), mat.ramp));
-    for (const side of [-1, 1]) {
-      add(ramp, new Mesh(new BoxGeometry(length, 0.01, STRIPE), mat.hazard)).position.set(
-        0,
-        RAMP_THICKNESS / 2 + 0.005,
-        side * (RAMP.width / 2 - STRIPE / 2),
-      );
-    }
-    group.add(ramp);
     group.renderOrder = LAYER.page;
-    return group;
+    return { group, top: mat.top };
   }, []);
+
+  useFrame(() => {
+    top.color.copy(WALNUT).lerp(CONCRETE, 1 - deskScale(sceneRef.current.t));
+  });
 
   useEffect(
     () => () => {

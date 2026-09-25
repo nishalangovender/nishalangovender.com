@@ -1,21 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { buildAgvModel } from "../Agv";
-import { DESK, RAMP, materialised } from "../desk-layout";
-import { FLOOR } from "../factory";
 import { LAYER } from "../lines";
 import { buildSolidAgv, setSolidOpacity } from "../solid-agv";
-
-describe("materialise on the ramp", () => {
-  it("is wireframe on the desk, filling in down the ramp, solid on the floor", () => {
-    expect(materialised(0)).toBe(0);
-    expect(materialised(DESK.maxX)).toBe(0);
-    const mid = materialised((RAMP.fromX + RAMP.toX) / 2);
-    expect(mid).toBeGreaterThan(0);
-    expect(mid).toBeLessThan(1);
-    expect(materialised(FLOOR.minX)).toBe(1);
-  });
-});
 
 describe("solid AGV", () => {
   it("is opaque with shadows when solid, and blended without shadows while fading", () => {

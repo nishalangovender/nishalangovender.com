@@ -6,8 +6,9 @@
 import { smoothstep } from "@/lib/math";
 
 import { BEATS, TOTAL_DURATION, loopTime, type BeatId } from "./beats";
-import { DESK, PAGE_HEIGHT } from "./desk-layout";
+import { DESK, PAGE_HEIGHT, PIVOT } from "./desk-layout";
 import { FACTORY_CENTRE, MONITOR, toWorld } from "./factory";
+import { SHRINK_START, SHRINK_TIME } from "./mission";
 
 export type Vec3 = [number, number, number];
 
@@ -38,6 +39,10 @@ const POSES = {
   design: { position: [2.6, h + 2.4, 2.9], target: [0, h + 0.35, 0] },
   // Pulled back so the booting AGV and the monitor's terminal share the frame.
   code: { position: [1.6, h + 2.6, 7.2], target: [0, h + 1.4, -1.2] },
+  // Behind the AGV parked at the desk's edge, then low behind it on the floor
+  // once the desk has shrunk away, looking on towards the factory.
+  deskEdge: { position: [PIVOT.x - 3.6, DESK.height + 2.4, 3.4], target: [PIVOT.x + 1.2, DESK.height + 0.2, 0] },
+  floorLevel: { position: [PIVOT.x - 3.2, 1.5, 2.6], target: [PIVOT.x + 3, 0.5, -0.2] },
   factory: aroundCentre(7.5, 8, 10.5),
   factoryTrack: aroundCentre(-6.5, 7.5, 10),
   system: aroundCentre(0, 17, 6),
@@ -61,7 +66,9 @@ export const CAMERA_KEYFRAMES: readonly { t: number; pose: CameraPose }[] = [
   // Settle on the terminal early, so every line types in frame.
   { t: start("code") + 1.5, pose: POSES.code },
   { t: end("code"), pose: POSES.code },
-  { t: start("deploy") + 3.6, pose: POSES.factory },
+  { t: SHRINK_START, pose: POSES.deskEdge },
+  { t: SHRINK_START + SHRINK_TIME, pose: POSES.floorLevel },
+  { t: SHRINK_START + SHRINK_TIME + 2.4, pose: POSES.factory },
   { t: end("deploy"), pose: POSES.factoryTrack },
   { t: FLY_IN_START, pose: POSES.system },
   { t: FLY_IN_END, pose: POSES.monitor },

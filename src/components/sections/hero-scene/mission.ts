@@ -1,11 +1,14 @@
 /**
  * The AGV's mission, map frame, metres: drive straight off the page from
- * base_link, across the desk, down the ramp and into the factory, then lap a
- * rounded loop down the aisle between the rack rows.
+ * base_link to the desk's edge and wait there while the desk shrinks away
+ * beneath it, then drive on into the factory and lap a rounded loop down the
+ * aisle between the rack rows.
  */
+import { clamp01, smoothstep } from "@/lib/math";
 import type { Pose } from "@/lib/path-following/types";
 
 import { BEATS, loopTime } from "./beats";
+import { PIVOT } from "./desk-layout";
 import { FACTORY_CENTRE } from "./factory";
 import { BASE_LINK } from "./sketch";
 
@@ -89,9 +92,43 @@ export function missionPose(s: number): Pose {
 const deploy = BEATS.find((b) => b.id === "deploy")!;
 const system = BEATS.find((b) => b.id === "system")!;
 
-/** Distance travelled along the mission at loop time `t`. */
+/** Seconds the desk takes to shrink away beneath the parked AGV, and to grow back. */
+export const SHRINK_TIME = 2;
+const REGROW = { after: 0.2, time: 1.8 } as const;
+
+/** Distance along the lead-in to the pivot at the desk's edge, where the AGV waits. */
+const PARK_DISTANCE = PIVOT.x - BASE_LINK.x;
+/** Loop time the AGV reaches the pivot and the desk starts to shrink. */
+export const SHRINK_START = deploy.start + DEPART_DELAY + PARK_DISTANCE / MISSION_SPEED;
+
+/** Distance travelled along the mission at loop time `t`, holding at the pivot while the desk shrinks. */
 export function missionDistance(t: number): number {
   const lt = loopTime(t);
-  const moving = Math.min(lt, system.end) - (deploy.start + DEPART_DELAY);
-  return lt < deploy.start ? 0 : Math.max(0, moving) * MISSION_SPEED;
+  if (lt < deploy.start) return 0;
+  const driven = Math.max(0, Math.min(lt, system.end) - (deploy.start + DEPART_DELAY)) * MISSION_SPEED;
+  if (driven <= PARK_DISTANCE) return driven;
+  return Math.max(PARK_DISTANCE, driven - SHRINK_TIME * MISSION_SPEED);
+}
+
+/**
+ * The desk's scale at `t` (1 full size, 0 gone): it shrinks towards the
+ * floor beneath the parked AGV, stays away while the AGV is out in the
+ * factory, and grows back early in the system beat, before the camera flies
+ * into the monitor on it.
+ */
+export function deskScale(t: number): number {
+  const lt = loopTime(t);
+  const regrow = system.start + REGROW.after;
+  if (lt < SHRINK_START || lt >= regrow + REGROW.time) return 1;
+  if (lt < regrow) return 1 - smoothstep(clamp01((lt - SHRINK_START) / SHRINK_TIME));
+  return smoothstep((lt - regrow) / REGROW.time);
+}
+
+/**
+ * How far the hero AGV has materialised from wireframe into the solid robot:
+ * it becomes real as the desk shrinks away beneath it, and stays solid for
+ * the rest of the loop.
+ */
+export function materialised(t: number): number {
+  return smoothstep(clamp01((loopTime(t) - SHRINK_START) / SHRINK_TIME));
 }

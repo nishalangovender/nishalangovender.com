@@ -17,11 +17,11 @@ import { clamp01, smoothstep } from "@/lib/math";
 import type { Pose } from "@/lib/path-following/types";
 
 import { beatAt, beatProgress } from "./beats";
-import { bodyPose, materialised } from "./desk-layout";
+import { bodyPose } from "./desk-layout";
 import { buildElectronics, showElectronics } from "./electronics";
 import { toWorld } from "./factory";
 import { LAYER, edgeSegments, fatLines } from "./lines";
-import { missionDistance, missionPose } from "./mission";
+import { deskScale, materialised, missionDistance, missionPose } from "./mission";
 import { blendPose } from "./nav-goal";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
 import { AGV, AGV_BODY_Y, AGV_LIDAR_OFFSET, LIDAR_HEIGHT, SKETCH_HEADING } from "./sketch";
@@ -152,7 +152,7 @@ export function heroPose(t: number): Pose {
  * is driving over (see bodyPose), grown and faded in by `presence` (0–1),
  * and crossfaded from wireframe to solid by `solidity`.
  */
-export function showAgv(model: AgvModel, pose: Pose, presence: number, solidity: number) {
+export function showAgv(model: AgvModel, pose: Pose, presence: number, solidity: number, deck = 1) {
   const { group, body, axes, solid, wheelLines } = model;
   // Roll every wheel by how far its rim has travelled since the last frame.
   if (model.last) {
@@ -161,7 +161,7 @@ export function showAgv(model: AgvModel, pose: Pose, presence: number, solidity:
   }
   model.last = pose;
   group.visible = presence > 0;
-  const { height, pitch } = bodyPose(pose);
+  const { height, pitch } = bodyPose(pose, deck);
   group.position.set(...toWorld(pose.x, pose.y, height));
   // Yaw about the world up axis, then pitch about the body's own left axis.
   group.rotation.set(0, pose.theta, -pitch, "YZX");
@@ -198,7 +198,7 @@ export function HeroAgv() {
     if (scene.live) scene.agv = scene.live.pose;
     else if (scene.rejoin) scene.agv = blendPose(scene.rejoin.from, mission, smoothstep(scene.rejoin.k));
     else scene.agv = mission;
-    showAgv(model, scene.agv, agvPresence(scene.t), materialised(scene.agv.x));
+    showAgv(model, scene.agv, agvPresence(scene.t), materialised(scene.t), deskScale(scene.t));
     showElectronics(electronics, scene.t, model.body.visible ? model.body.material.opacity : 0);
   });
 

@@ -7,6 +7,7 @@ import { BufferGeometry, Float32BufferAttribute, Group, Points, PointsMaterial }
 import { bodyPose } from "./desk-layout";
 import { raycast, toWorld } from "./factory";
 import { LAYER, fatLines } from "./lines";
+import { deskScale } from "./mission";
 import { cloudMorph } from "./PointCloud";
 import { useScene, useScenePalette } from "./scene-context";
 import { AGV_LIDAR_OFFSET, LIDAR_HEIGHT } from "./sketch";
@@ -63,7 +64,7 @@ export function Lidar() {
     const ox = agv.x + AGV_LIDAR_OFFSET * Math.cos(agv.theta);
     const oy = agv.y + AGV_LIDAR_OFFSET * Math.sin(agv.theta);
     // Scan plane rides with the AGV: page, desk, ramp or factory floor.
-    const scanH = bodyPose(agv).height + LIDAR_HEIGHT;
+    const scanH = bodyPose(agv, deskScale(t)).height + LIDAR_HEIGHT;
     const pos = hits.geometry.attributes.position.array as Float32Array;
     for (let i = 0; i < RAYS; i++) {
       const a = agv.theta + (i / RAYS) * Math.PI * 2;
