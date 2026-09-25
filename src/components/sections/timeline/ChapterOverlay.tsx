@@ -12,6 +12,40 @@ const BRANCH_DROP = 60;
 /** Curve radius for fork/merge bends */
 const CURVE_R = 20;
 
+/** Commit stem lengths (px): short by default, long to drop a label below its neighbours'. */
+const STEM_BASE = 44;
+const STEM_STEP = 80;
+/** Commits closer than this (viewport %) form a cluster whose stems alternate. */
+const CLUSTER_THRESH = 12;
+/**
+ * A commit this close (viewport %) to the right of a branch merge takes the
+ * long stem: its label reaches back over the branch's last event label,
+ * which sits at the same height as a short-stem label.
+ */
+const MERGE_CLEAR = 12;
+
+/** Stem height per commit, from commit x positions and branch merge x positions (viewport %). */
+export function commitStemHeights(positions: number[], mergePcts: number[]): number[] {
+  const n = positions.length;
+  const heights: number[] = new Array(n).fill(STEM_BASE);
+  let si = 0;
+  while (si < n) {
+    let sj = si + 1;
+    while (sj < n && positions[sj] - positions[sj - 1] < CLUSTER_THRESH) sj++;
+    const clusterSize = sj - si;
+    if (clusterSize > 1) {
+      for (let k = 0; k < clusterSize; k++) {
+        heights[si + k] = STEM_BASE + (k % 2) * STEM_STEP;
+      }
+    }
+    si = sj;
+  }
+  positions.forEach((x, j) => {
+    if (mergePcts.some((m) => x > m && x - m < MERGE_CLEAR)) heights[j] = STEM_BASE + STEM_STEP;
+  });
+  return heights;
+}
+
 /**
  * Map a year to viewport percentage for a given chapter's zoom.
  * Uses the strip's yearToPosition so commits/braces align with the
@@ -120,24 +154,12 @@ export function ChapterOverlay({
         style={{ top: "50%", height: `${BRANCH_DROP + 200}px` }}
       >
         {(() => {
-          const STEM_BASE = 44;
-          const STEM_STEP = 80;
-          const CLUSTER_THRESH = 12;
-
-          const stemHeights: number[] = new Array(n).fill(STEM_BASE);
-          let si = 0;
-          while (si < n) {
-            let sj = si + 1;
-            while (sj < n && positions[sj] - positions[sj - 1] < CLUSTER_THRESH)
-              sj++;
-            const clusterSize = sj - si;
-            if (clusterSize > 1) {
-              for (let k = 0; k < clusterSize; k++) {
-                stemHeights[si + k] = STEM_BASE + (k % 2) * STEM_STEP;
-              }
-            }
-            si = sj;
-          }
+          const branchMerges = (chapter.branches ?? []).map((b) =>
+            b.mergeYear
+              ? yearToViewportPct(parseFloat(b.mergeYear), chapter.stripPosition, zoom)
+              : mergePct,
+          );
+          const stemHeights = commitStemHeights(positions, branchMerges);
 
           const boundaryPcts = [2000, 2005, 2014, 2019, 2024, 2026, 2028].map(
             (y) => yearToViewportPct(y, chapter.stripPosition, zoom),
