@@ -7,55 +7,59 @@ import { LinkButton } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { fadeUp, staggerContainer } from "@/lib/animations";
 
+/**
+ * Full-bleed hero: the 3D scene fills the viewport and the headline sits over
+ * it — bottom on phones, left on desktop, where the scene is framed away from
+ * the text. The h1 stays in the DOM from first paint, so it remains the LCP.
+ */
 export default function Hero() {
   return (
-    <section className="blueprint-grid min-h-[calc(100dvh-4rem)] flex items-center justify-center px-4">
-      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-8 md:gap-12">
+    <section className="blueprint-grid relative min-h-[calc(100dvh-4rem)] overflow-hidden">
+      <div className="absolute inset-0">
+        <HeroScene />
+      </div>
+
+      {/* Scrim: keeps the copy readable over the scene. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-background via-background/70 via-35% to-transparent to-60% md:bg-linear-to-r md:via-background/60 md:via-30% md:to-55%"
+      />
+
+      <div className="pointer-events-none relative flex min-h-[calc(100dvh-4rem)] items-end md:items-center px-4 pb-12 md:pb-0">
         <motion.div
-          className="text-center md:text-left max-w-3xl space-y-8"
+          className="mx-auto w-full max-w-6xl"
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
         >
-          <motion.div variants={fadeUp}>
-            <Eyebrow variant="chip" className="normal-case">~/robotics</Eyebrow>
-          </motion.div>
+          <div className="pointer-events-auto max-w-xl space-y-6 md:space-y-8">
+            <motion.div variants={fadeUp}>
+              <Eyebrow variant="chip" className="normal-case">~/robotics</Eyebrow>
+            </motion.div>
 
-          <motion.h1
-            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight"
-            variants={fadeUp}
-          >
-            From Notebook to Factory Floor
-          </motion.h1>
+            <motion.h1
+              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight"
+              variants={fadeUp}
+            >
+              From Notebook to Factory Floor
+            </motion.h1>
 
-          <motion.div
-            className="circuit-divider max-w-xs mx-auto md:mx-0"
-            variants={fadeUp}
-          />
+            <motion.div className="circuit-divider max-w-xs" variants={fadeUp} />
 
-          <motion.p
-            className="text-muted text-lg max-w-xl mx-auto md:mx-0 leading-relaxed"
-            variants={fadeUp}
-          >
-            Robotics engineer. Shipped production AGV fleets into Toyota
-            South Africa — ROS2, controls, embedded C++, kernel to cloud.
-            Now exploring Physical AI at Ubundi.
-          </motion.p>
+            <motion.p className="text-muted text-lg leading-relaxed" variants={fadeUp}>
+              Robotics engineer. Shipped production AGV fleets into Toyota
+              South Africa — ROS2, controls, embedded C++, kernel to cloud.
+              Now exploring Physical AI at Ubundi.
+            </motion.p>
 
-          <motion.div
-            className="flex items-center justify-center md:justify-start gap-4"
-            variants={fadeUp}
-          >
-            <LinkButton href="/projects">View My Work</LinkButton>
-            <LinkButton href="/cv" variant="outline">
-              View CV
-            </LinkButton>
-          </motion.div>
+            <motion.div className="flex items-center gap-4" variants={fadeUp}>
+              <LinkButton href="/projects">View My Work</LinkButton>
+              <LinkButton href="/cv" variant="outline">
+                View CV
+              </LinkButton>
+            </motion.div>
+          </div>
         </motion.div>
-
-        <div className="w-full max-w-xl mx-auto md:mx-0">
-          <HeroScene />
-        </div>
       </div>
     </section>
   );

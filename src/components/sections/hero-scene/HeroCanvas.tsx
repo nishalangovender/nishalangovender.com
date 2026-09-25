@@ -1,7 +1,8 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useRef, useState } from "react";
+import type { PerspectiveCamera } from "three";
 
 import { HeroAgv } from "./Agv";
 import { BEATS, beatAt, parseBeatParam, type BeatId } from "./beats";
@@ -64,6 +65,33 @@ function Director({ onBeat }: { onBeat: (id: BeatId) => void }) {
   return null;
 }
 
+/**
+ * Frames the scene clear of the headline: shifted right on wide screens, up
+ * on narrow ones. The camera still aims at the same target; only the frame
+ * moves. Portrait screens also zoom out, so the horizontal field of view
+ * stays wide enough for the close-up beats.
+ */
+export function framing(width: number, height: number): { offset: [number, number]; zoom: number } {
+  const aspect = width / height;
+  if (aspect >= 1.1) return { offset: [-0.2 * width, 0], zoom: 1 };
+  return { offset: [0, 0.2 * height], zoom: Math.min(1, Math.max(0.55, aspect / 0.85)) };
+}
+
+function Framing() {
+  const camera = useThree((s) => s.camera) as PerspectiveCamera;
+  const { width, height } = useThree((s) => s.size);
+
+  useEffect(() => {
+    const { offset, zoom } = framing(width, height);
+    camera.setViewOffset(width, height, offset[0], offset[1], width, height);
+    camera.zoom = zoom;
+    camera.updateProjectionMatrix();
+    return () => camera.clearViewOffset();
+  }, [camera, width, height]);
+
+  return null;
+}
+
 export default function HeroCanvas({ active }: { active: boolean }) {
   const palette = usePalette();
   const hold = parseBeatParam(window.location.search, process.env.NODE_ENV !== "production");
@@ -81,7 +109,6 @@ export default function HeroCanvas({ active }: { active: boolean }) {
   return (
     <>
       <Canvas
-        className="[mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_100%)]"
         // No tone mapping: TTY tokens render as the exact hex values.
         flat
         dpr={[1, 1.5]}
@@ -93,6 +120,7 @@ export default function HeroCanvas({ active }: { active: boolean }) {
         <SceneProvider value={sceneRef}>
           <PaletteProvider value={palette}>
             <Director onBeat={setBeat} />
+            <Framing />
             <Notebook />
             <Costmap />
             <PointCloud />

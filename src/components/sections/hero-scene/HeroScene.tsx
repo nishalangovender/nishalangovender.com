@@ -6,11 +6,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { HeroStatic } from "./HeroStatic";
 
-// three.js loads after the hero text paints; the static frame holds its place.
-const HeroCanvas = dynamic(() => import("./HeroCanvas"), {
-  ssr: false,
-  loading: () => <HeroStatic />,
-});
+// three.js loads after the hero text paints; nothing draws behind the copy until it does.
+const HeroCanvas = dynamic(() => import("./HeroCanvas"), { ssr: false });
 
 function hasWebGL(): boolean {
   try {
@@ -60,8 +57,17 @@ export default function HeroScene() {
   const live = webgl === true && !reduceMotion;
 
   return (
-    <div ref={ref} className="relative w-full" style={{ aspectRatio: "440 / 340" }}>
-      {live ? <HeroCanvas active={active} /> : <HeroStatic />}
+    <div ref={ref} className="relative h-full w-full">
+      {live ? (
+        <HeroCanvas active={active} />
+      ) : (
+        // Framed like the live scene: above the copy on phones, right of it on desktop.
+        <div className="absolute inset-0 flex items-start justify-center px-4 pt-6 md:items-center md:justify-end md:pr-[6%] md:pt-0">
+          <div className="w-full max-w-md md:max-w-xl">
+            <HeroStatic />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
