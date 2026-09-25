@@ -4,12 +4,20 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import { CanvasTexture, Color, Group, Mesh, MeshBasicMaterial, PlaneGeometry } from "three";
 
-import { clamp01 } from "@/lib/math";
+import { clamp01, smoothstep } from "@/lib/math";
 
-import { beatAt, beatProgress } from "./beats";
+import { beatProgress } from "./beats";
 import { LAYER, fatLines, toPositions } from "./lines";
 import { useScene, useScenePalette, type Palette } from "./scene-context";
-import { SKETCH_LABELS, SKETCH_ROLES, SKETCH_SEGMENTS, segmentsDrawn, type SketchRole } from "./sketch";
+import {
+  SKETCH_BODY,
+  SKETCH_LABELS,
+  SKETCH_ROLES,
+  SKETCH_SEGMENTS,
+  bodySegmentsIn,
+  segmentsDrawn,
+  type SketchRole,
+} from "./sketch";
 
 /** Share of the sketch beat spent drawing strokes; labels are written in after. */
 const DRAW_SHARE = 0.8;
@@ -23,17 +31,20 @@ export function roleColor(role: SketchRole, p: Palette): string {
   return { ink: p.accent, axisX: p.error, axisY: p.ok, motion: p.warn }[role];
 }
 
-/** Ink state at time `t`: strokes drawn, labels written, height and opacity. */
-export function inkAt(t: number): { drawn: number; labels: number; lift: number; opacity: number } {
-  const id = beatAt(t).id;
-  if (id !== "sketch" && id !== "design") return { drawn: 0, labels: 0, lift: 0, opacity: 0 };
+/**
+ * Ink state at time `t`: strokes drawn and labels written in the sketch beat;
+ * the robot outline lifts and fades in the design beat; the annotations stay
+ * on the page until the return beat clears it for the next loop.
+ */
+export function inkAt(t: number): { drawn: number; labels: number; lift: number; body: number; page: number } {
   const sketch = beatProgress(t, "sketch");
-  const lift = beatProgress(t, "design");
+  const design = beatProgress(t, "design");
   return {
     drawn: clamp01(sketch / DRAW_SHARE),
     labels: clamp01((sketch - DRAW_SHARE) / (1 - DRAW_SHARE)),
-    lift: lift * LIFT,
-    opacity: 1 - lift,
+    lift: design * LIFT,
+    body: 1 - design,
+    page: 1 - smoothstep(beatProgress(t, "return")),
   };
 }
 
@@ -60,16 +71,31 @@ function glyphTexture(text: string): CanvasTexture {
   return texture;
 }
 
-/** Beats 1–2: the kinematic sketch inked stroke by stroke, labelled, then lifted. */
+function strokeColors(roles: readonly SketchRole[], p: Palette): number[] {
+  return roles.flatMap((role) => {
+    const c = new Color(roleColor(role, p)).toArray();
+    return [...c, ...c];
+  });
+}
+
+const PAGE_ROLES = SKETCH_ROLES.filter((_, i) => !SKETCH_BODY[i]);
+const BODY_ROLES = SKETCH_ROLES.filter((_, i) => SKETCH_BODY[i]);
+const segmentsWhere = (keep: boolean) =>
+  SKETCH_SEGMENTS.filter((_, i) => SKETCH_BODY[Math.floor(i / 4)] === keep);
+
+/**
+ * Beats 1–2: the kinematic sketch inked stroke by stroke and labelled; the
+ * robot's outline then lifts off into the wireframe while the axes, vectors
+ * and symbols stay written on the page.
+ */
 export function InkSketch() {
   const sceneRef = useScene();
   const palette = useScenePalette();
 
-  const { group, ink, labels } = useMemo(() => {
-    const ink = fatLines(toPositions(SKETCH_SEGMENTS), {
-      linewidth: 2,
-      colors: new Array((SKETCH_SEGMENTS.length / 4) * 6).fill(1),
-    });
+  const { page, body, labels, group } = useMemo(() => {
+    const white = (n: number) => new Array(n * 6).fill(1);
+    const page = fatLines(toPositions(segmentsWhere(false)), { linewidth: 2, colors: white(PAGE_ROLES.length) });
+    const body = fatLines(toPositions(segmentsWhere(true)), { linewidth: 2, colors: white(BODY_ROLES.length) });
     const plane = new PlaneGeometry(LABEL_SIZE, LABEL_SIZE);
     const labels = SKETCH_LABELS.map((l) => {
       const mesh = new Mesh(
@@ -81,46 +107,49 @@ export function InkSketch() {
       return mesh;
     });
     const group = new Group();
-    group.add(ink, ...labels);
+    group.add(page, body, ...labels);
     group.renderOrder = LAYER.ink;
-    return { group, ink, labels };
+    return { page, body, labels, group };
   }, []);
 
   useEffect(() => {
-    ink.geometry.setColors(
-      SKETCH_ROLES.flatMap((role) => {
-        const c = new Color(roleColor(role, palette)).toArray();
-        return [...c, ...c];
-      }),
-    );
+    page.geometry.setColors(strokeColors(PAGE_ROLES, palette));
+    body.geometry.setColors(strokeColors(BODY_ROLES, palette));
     labels.forEach((mesh, i) => mesh.material.color.set(roleColor(SKETCH_LABELS[i].role, palette)));
-  }, [ink, labels, palette]);
+  }, [page, body, labels, palette]);
 
   useEffect(
     () => () => {
-      ink.geometry.dispose();
-      ink.material.dispose();
+      for (const line of [page, body]) {
+        line.geometry.dispose();
+        line.material.dispose();
+      }
       labels[0]?.geometry.dispose();
       for (const mesh of labels) {
         mesh.material.map?.dispose();
         mesh.material.dispose();
       }
     },
-    [ink, labels],
+    [page, body, labels],
   );
 
   useFrame(() => {
-    const { drawn, labels: written, lift, opacity } = inkAt(sceneRef.current.t);
-    ink.geometry.instanceCount = segmentsDrawn(drawn);
-    ink.material.opacity = opacity;
+    const ink = inkAt(sceneRef.current.t);
+    const drawn = segmentsDrawn(ink.drawn);
+    const bodyDrawn = bodySegmentsIn(drawn);
+    body.geometry.instanceCount = bodyDrawn;
+    page.geometry.instanceCount = drawn - bodyDrawn;
+    body.position.y = ink.lift;
+    body.material.opacity = ink.body;
+    body.visible = ink.body > 0;
+    page.material.opacity = ink.page;
     // Labels are written in one after another once the strokes are done.
     labels.forEach((mesh, i) => {
-      const k = clamp01(written * labels.length - i);
+      const k = clamp01(ink.labels * labels.length - i);
       mesh.visible = k > 0;
-      mesh.material.opacity = k * opacity;
+      mesh.material.opacity = k * ink.page;
     });
-    group.position.y = lift;
-    group.visible = opacity > 0 && drawn > 0;
+    group.visible = drawn > 0 && ink.page > 0;
   });
 
   return <primitive object={group} />;

@@ -5,10 +5,12 @@ import { BEATS, TOTAL_DURATION } from "../beats";
 import { inkAt } from "../InkSketch";
 import {
   PAGE,
+  SKETCH_BODY,
   SKETCH_HEADING,
   SKETCH_LABELS,
   SKETCH_ROLES,
   SKETCH_SEGMENTS,
+  bodySegmentsIn,
   pageDots,
   segmentsDrawn,
 } from "../sketch";
@@ -35,6 +37,16 @@ describe("sketch geometry", () => {
       expect(n).toBeGreaterThanOrEqual(prev);
       prev = n;
     }
+  });
+
+  it("marks only the chassis, drive wheels and castor as the lifting robot outline", () => {
+    const bodyCount = SKETCH_BODY.filter(Boolean).length;
+    expect(bodyCount).toBeGreaterThan(0);
+    expect(bodyCount).toBeLessThan(SKETCH_BODY.length);
+    expect(bodySegmentsIn(SKETCH_BODY.length)).toBe(bodyCount);
+    SKETCH_BODY.forEach((isBody, i) => {
+      if (isBody) expect(SKETCH_ROLES[i]).toBe("ink");
+    });
   });
 
   it("labels every symbol of the kinematic diagram on the page", () => {
@@ -68,13 +80,16 @@ describe("beats 1–2", () => {
     expect(agvPresence(0)).toBe(0);
   });
 
-  it("finishes the drawing and labels before the design beat, then lifts it into the AGV", () => {
+  it("finishes the drawing and labels before the design beat, then lifts only the robot outline", () => {
     expect(inkAt(beat("sketch").end - 0.01).drawn).toBe(1);
     expect(inkAt(beat("sketch").end - 0.01).labels).toBeGreaterThan(0.9);
     expect(inkAt(mid("sketch")).labels).toBe(0);
     const lifting = inkAt(mid("design"));
     expect(lifting.lift).toBeGreaterThan(0);
-    expect(lifting.opacity).toBeLessThan(1);
+    expect(lifting.body).toBeLessThan(1);
+    // Annotations and symbols stay written on the page.
+    expect(lifting.page).toBe(1);
+    expect(inkAt(mid("system")).page).toBe(1);
     expect(agvPresence(mid("design"))).toBeGreaterThan(0);
     expect(agvPresence(mid("code"))).toBe(1);
   });
@@ -87,7 +102,8 @@ describe("beats 1–2", () => {
 
   it("clears the page by the end of the loop", () => {
     const end = TOTAL_DURATION - 1e-6;
-    expect(inkAt(end).opacity).toBe(0);
+    expect(inkAt(end).page).toBeCloseTo(0, 3);
+    expect(inkAt(end).body).toBe(0);
     expect(agvPresence(end)).toBeCloseTo(0, 3);
   });
 });

@@ -58,6 +58,8 @@ interface Stroke {
   role: SketchRole;
   points: P[];
   dashed?: boolean;
+  /** Part of the robot's outline, which lifts off into the wireframe. */
+  body?: boolean;
 }
 
 const B: P = [BASE_LINK.x, -BASE_LINK.z];
@@ -104,10 +106,10 @@ export const SKETCH_STROKES: readonly Stroke[] = [
   ...arrow("ink", ORIGIN, [ORIGIN[0], 1.3]),
   ...arrow("ink", ORIGIN, [1.85, ORIGIN[1]]),
   // Robot: chassis, drive wheels, castor
-  { role: "ink", points: bodyRect(AGV.offset, 0, AGV.length, AGV.width) },
-  { role: "ink", points: bodyRect(0, -AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
-  { role: "ink", points: bodyRect(0, AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
-  { role: "ink", points: arc(body(AGV.castorX, 0), 0.07, 0, Math.PI * 2, 12) },
+  { role: "ink", body: true, points: bodyRect(AGV.offset, 0, AGV.length, AGV.width) },
+  { role: "ink", body: true, points: bodyRect(0, -AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
+  { role: "ink", body: true, points: bodyRect(0, AGV.track / 2, AGV.wheelRadius * 2, AGV.wheelWidth) },
+  { role: "ink", body: true, points: arc(body(AGV.castorX, 0), 0.07, 0, Math.PI * 2, 12) },
   // θ: dashed reference from the origin to base_link, and its angle
   { role: "ink", points: [ORIGIN, add(ORIGIN, polar(0.75, refAngle)), add(ORIGIN, polar(1.5, refAngle)), B], dashed: true },
   { role: "ink", points: arc(ORIGIN, 0.42, 0, refAngle, 8) },
@@ -149,6 +151,18 @@ export function segmentsDrawn(f: number): number {
   const i = Math.min(Math.floor(k), STROKE_ENDS.length - 1);
   const start = i === 0 ? 0 : STROKE_ENDS[i - 1];
   return k >= STROKE_ENDS.length ? STROKE_ENDS[i] : Math.round(start + (STROKE_ENDS[i] - start) * (k - i));
+}
+
+/** Whether each segment in `SKETCH_SEGMENTS` is robot outline (lifts) or annotation (stays on the page). */
+export const SKETCH_BODY: readonly boolean[] = SKETCH_STROKES.flatMap((s) =>
+  Array<boolean>(toSegments(s).length / 4).fill(Boolean(s.body)),
+);
+
+/** How many of the first `n` drawn segments belong to the robot outline. */
+export function bodySegmentsIn(n: number): number {
+  let count = 0;
+  for (let i = 0; i < Math.min(n, SKETCH_BODY.length); i++) if (SKETCH_BODY[i]) count++;
+  return count;
 }
 
 /** Role of each segment in `SKETCH_SEGMENTS`, for colouring. */
