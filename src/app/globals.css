@@ -1,127 +1,111 @@
 @import "tailwindcss";
 
+/* ── Palette ──
+ * The `--tty-*` values are nish-os's TTY tokens, copied verbatim from
+ * `nish-os/docs/design-system.md` so the site, the app and the terminal read
+ * as one surface. Only the `--tty-*` values change per theme; every site token
+ * below is derived from them once, in `:root`.
+ */
+
 /* ── Light theme (default) ── */
 :root {
-  --background: #FAFAFA;
-  --foreground: #1A1A1A;
-  --accent: #0066FF;
-  --accent-light: #E8F0FE;
-  --accent-dark: #0047B3;
-  --surface: #FFFFFF;
-  --muted: #6B6B6B;
-  --muted-dim: #8A8A8A;
-  --border: #E5E7EB;
-  --focus: #0066FF;
-  --blueprint-line: rgba(0, 102, 255, 0.06);
-  --terminal-bg: #0F0F0F;
-  --terminal-border: rgba(255, 255, 255, 0.12);
-  --terminal-text: #DCDCDC;
-  --terminal-prompt: #78C86E;
-  --notebook-page: #F5EFE0;
-  --notebook-page-dot: rgba(60, 45, 20, 0.22);
-  --notebook-page-shadow: rgba(60, 45, 20, 0.18);
-  --notebook-page-edge: rgba(60, 45, 20, 0.55);
-  --notebook-cover: #1E3A6B;
-  --notebook-cover-edge: #142650;
-  --notebook-binding: #0E1F42;
-  --factory-floor: #DCDAD2;
-  --factory-grid: rgba(100, 100, 100, 0.35);
-  --factory-wall: rgba(50, 50, 50, 0.9);
-  --factory-rack: #AA8C55;
-  --factory-rack-edge: rgba(60, 40, 20, 0.8);
-  --factory-pallet: #A08250;
-  --factory-pallet-edge: rgba(60, 40, 20, 0.75);
-  --factory-pallet-plank: rgba(85, 60, 35, 0.65);
-  --factory-lane: rgba(220, 170, 30, 0.8);
-  --factory-room: #BEBCB4;
-  --factory-room-edge: rgba(60, 60, 60, 0.7);
-  --prof-advanced: #059669;
-  --prof-proficient: #0284C7;
-  --prof-competent: #D97706;
-  --prof-familiar: #6B7280;
+  --tty-bg: #f7f9fb;
+  --tty-surface: #e8edf2;
+  --tty-rule: #c7d2dd;
+  --tty-fg: #0b1017;
+  --tty-dim: #55667a;
+  --tty-accent: #006f8a;
+  --tty-focus: #1f5fd0;
+  --tty-ok: #0a7d5a;
+  --tty-warn: #8a5300;
+  --tty-error: #b3132f;
+
+  /* Notebook: paper page, teal ink. */
+  --notebook-page: #ffffff;
+  --notebook-page-shadow: rgba(11, 16, 23, 0.14);
+  --factory-floor: var(--tty-surface);
+
+  --background: var(--tty-bg);
+  --foreground: var(--tty-fg);
+  --accent: var(--tty-accent);
+  --accent-light: color-mix(in srgb, var(--tty-accent) 12%, var(--tty-bg));
+  /* Literal, not color-mix: demo canvases read this through getComputedStyle. */
+  --accent-dark: #03576d;
+  --surface: color-mix(in srgb, var(--tty-surface) 35%, #ffffff);
+  --muted: var(--tty-dim);
+  --muted-dim: color-mix(in srgb, var(--tty-dim) 75%, var(--tty-bg));
+  --border: var(--tty-rule);
+  --focus: var(--tty-focus);
+  --blueprint-line: color-mix(in srgb, var(--tty-accent) 7%, transparent);
+  /* The terminal stays dark in both themes, drawn in the dark TTY values. */
+  --terminal-bg: #040405;
+  --terminal-border: color-mix(in srgb, #eef4f9 14%, transparent);
+  --terminal-text: #eef4f9;
+  --terminal-prompt: #2ee6a8;
+  --notebook-ink: var(--tty-accent);
+  --notebook-page-dot: color-mix(in srgb, var(--tty-dim) 40%, transparent);
+  --notebook-page-edge: var(--tty-rule);
+  --notebook-cover: color-mix(in srgb, var(--tty-accent) 30%, #040405);
+  --notebook-cover-edge: color-mix(in srgb, var(--tty-accent) 20%, #040405);
+  --notebook-binding: color-mix(in srgb, var(--tty-accent) 12%, #040405);
+  --factory-grid: color-mix(in srgb, var(--tty-dim) 30%, transparent);
+  --factory-point: var(--tty-accent);
+  --factory-costmap: var(--tty-warn);
+  --factory-lane: var(--tty-warn);
+  --factory-wall: color-mix(in srgb, var(--tty-fg) 60%, transparent);
+  --factory-rack: color-mix(in srgb, var(--tty-warn) 45%, var(--tty-surface));
+  --factory-rack-edge: color-mix(in srgb, var(--tty-warn) 70%, transparent);
+  --factory-pallet: color-mix(in srgb, var(--tty-warn) 35%, var(--tty-surface));
+  --factory-pallet-edge: color-mix(in srgb, var(--tty-warn) 60%, transparent);
+  --factory-pallet-plank: color-mix(in srgb, var(--tty-warn) 50%, transparent);
+  --factory-room: color-mix(in srgb, var(--tty-rule) 70%, var(--tty-surface));
+  --factory-room-edge: color-mix(in srgb, var(--tty-dim) 60%, transparent);
+  --prof-advanced: var(--tty-ok);
+  --prof-proficient: var(--tty-accent);
+  --prof-competent: var(--tty-warn);
+  --prof-familiar: var(--tty-dim);
 }
 
-/* ── Dark theme (explicit toggle) ── */
+/* ── Dark theme ──
+ * The same values apply on an explicit toggle and, before JS loads, from the
+ * system preference. The two blocks must stay identical; the palette test
+ * checks both against nish-os.
+ */
 [data-theme="dark"] {
-  --background: #05070D;
-  --foreground: #DDE7F0;
-  --accent: #33E1FF;
-  --accent-light: #0E2A33;
-  --accent-dark: #7BEBFF;
-  --surface: #0B1017;
-  --muted: #8A9BB0;
-  --muted-dim: #5C6B7D;
-  --border: #16202B;
-  --focus: #2F81FF;
-  --blueprint-line: rgba(51, 225, 255, 0.07);
-  --terminal-bg: #05070D;
-  --terminal-border: rgba(221, 231, 240, 0.14);
-  --terminal-text: #DDE7F0;
-  --terminal-prompt: #2EE6A8;
-  --notebook-page: #1F1C18;
-  --notebook-page-dot: rgba(200, 180, 150, 0.22);
-  --notebook-page-shadow: rgba(0, 0, 0, 0.5);
-  --notebook-page-edge: rgba(200, 180, 150, 0.4);
-  --notebook-cover: #1E3A6B;
-  --notebook-cover-edge: #0E1F42;
-  --notebook-binding: #0A1632;
-  --factory-floor: #2C2A26;
-  --factory-grid: rgba(180, 180, 180, 0.22);
-  --factory-wall: rgba(220, 220, 220, 0.5);
-  --factory-rack: #5A4A30;
-  --factory-rack-edge: rgba(180, 140, 90, 0.5);
-  --factory-pallet: #50412A;
-  --factory-pallet-edge: rgba(180, 140, 90, 0.45);
-  --factory-pallet-plank: rgba(200, 160, 110, 0.4);
-  --factory-lane: rgba(220, 170, 30, 0.7);
-  --factory-room: #3A3834;
-  --factory-room-edge: rgba(200, 200, 200, 0.5);
-  --prof-advanced: #2EE6A8;
-  --prof-proficient: #33E1FF;
-  --prof-competent: #FFB339;
-  --prof-familiar: #8A9BB0;
-}
+  --tty-bg: #040405;
+  --tty-surface: #0e0f12;
+  --tty-rule: #1d2026;
+  --tty-fg: #eef4f9;
+  --tty-dim: #8598ab;
+  --tty-accent: #33e1ff;
+  --tty-focus: #2f81ff;
+  --tty-ok: #2ee6a8;
+  --tty-warn: #ffb339;
+  --tty-error: #ff4d6d;
 
-/* ── Dark theme (system preference fallback before JS loads) ── */
+  /* Notebook: charcoal page, cyan ink. */
+  --notebook-page: #15171b;
+  --notebook-page-shadow: rgba(0, 0, 0, 0.5);
+  --surface: var(--tty-surface);
+  --accent-dark: #62e6fe;
+}
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: #05070D;
-    --foreground: #DDE7F0;
-    --accent: #33E1FF;
-    --accent-light: #0E2A33;
-    --accent-dark: #7BEBFF;
-    --surface: #0B1017;
-    --muted: #8A9BB0;
-    --muted-dim: #5C6B7D;
-    --border: #16202B;
-    --focus: #2F81FF;
-    --blueprint-line: rgba(51, 225, 255, 0.07);
-    --terminal-bg: #05070D;
-    --terminal-border: rgba(221, 231, 240, 0.14);
-    --terminal-text: #DDE7F0;
-    --terminal-prompt: #2EE6A8;
-    --notebook-page: #1F1C18;
-    --notebook-page-dot: rgba(200, 180, 150, 0.22);
+    --tty-bg: #040405;
+    --tty-surface: #0e0f12;
+    --tty-rule: #1d2026;
+    --tty-fg: #eef4f9;
+    --tty-dim: #8598ab;
+    --tty-accent: #33e1ff;
+    --tty-focus: #2f81ff;
+    --tty-ok: #2ee6a8;
+    --tty-warn: #ffb339;
+    --tty-error: #ff4d6d;
+
+    --notebook-page: #15171b;
     --notebook-page-shadow: rgba(0, 0, 0, 0.5);
-    --notebook-page-edge: rgba(200, 180, 150, 0.4);
-    --notebook-cover: #1E3A6B;
-    --notebook-cover-edge: #0E1F42;
-    --notebook-binding: #0A1632;
-    --factory-floor: #2C2A26;
-    --factory-grid: rgba(180, 180, 180, 0.22);
-    --factory-wall: rgba(220, 220, 220, 0.5);
-    --factory-rack: #5A4A30;
-    --factory-rack-edge: rgba(180, 140, 90, 0.5);
-    --factory-pallet: #50412A;
-    --factory-pallet-edge: rgba(180, 140, 90, 0.45);
-    --factory-pallet-plank: rgba(200, 160, 110, 0.4);
-    --factory-lane: rgba(220, 170, 30, 0.7);
-    --factory-room: #3A3834;
-    --factory-room-edge: rgba(200, 200, 200, 0.5);
-    --prof-advanced: #2EE6A8;
-    --prof-proficient: #33E1FF;
-    --prof-competent: #FFB339;
-    --prof-familiar: #8A9BB0;
+    --surface: var(--tty-surface);
+    --accent-dark: #62e6fe;
   }
 }
 

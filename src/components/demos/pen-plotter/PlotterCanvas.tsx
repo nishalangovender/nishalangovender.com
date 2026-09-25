@@ -101,7 +101,7 @@ export function PlotterCanvas({
     // Resolve theme-aware colours from CSS variables.
     const styles = window.getComputedStyle(canvas);
     const fg = styles.getPropertyValue("--foreground").trim() || "#1a1a1a";
-    const accent = styles.getPropertyValue("--accent").trim() || "#0066FF";
+    const accent = styles.getPropertyValue("--accent").trim() || "#006f8a";
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     const paper = isDark ? "#1f1f1f" : "#f8f7f2";
 

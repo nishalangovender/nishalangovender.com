@@ -43,7 +43,7 @@ function readThemeColors(): ThemeColors {
   return {
     background: get("--background") || "#FAFAFA",
     foreground: get("--foreground") || "#1A1A1A",
-    accent: get("--accent") || "#0066FF",
+    accent: get("--accent") || "#006f8a",
     accentDark: get("--accent-dark") || "#0047B3",
     muted: get("--muted") || "#6B6B6B",
   };

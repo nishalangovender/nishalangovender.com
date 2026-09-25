@@ -177,7 +177,7 @@ export default function CvPage() {
             ))}
           </div>
           <p className="mt-6 font-mono text-[11px] text-muted">
-            <span className="text-muted-dim">◌ Currently exploring:</span>{" "}
+            <span className="text-foreground/80">◌ Currently exploring:</span>{" "}
             {currentlyExploring.join(" · ")}
           </p>
         </ProfileSection>

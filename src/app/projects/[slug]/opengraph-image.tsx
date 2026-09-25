@@ -41,11 +41,11 @@ export default async function ProjectOgImage({
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px",
-          background: "#0A0A0A",
+          background: "#040405",
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+            "linear-gradient(rgba(51,225,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(51,225,255,0.05) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
-          color: "#E5E5E5",
+          color: "#EEF4F9",
           fontFamily: "Space Grotesk",
         }}
       >
@@ -55,7 +55,7 @@ export default async function ProjectOgImage({
             alignItems: "center",
             gap: "16px",
             fontSize: "20px",
-            color: "#3B82F6",
+            color: "#33E1FF",
             letterSpacing: "0.2em",
             textTransform: "uppercase",
             fontFamily: "JetBrains Mono",
@@ -65,7 +65,7 @@ export default async function ProjectOgImage({
             style={{
               width: 44,
               height: 44,
-              border: "2px solid #3B82F6",
+              border: "2px solid #33E1FF",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -96,14 +96,14 @@ export default async function ProjectOgImage({
               width: 240,
               height: 2,
               background:
-                "linear-gradient(90deg, #3B82F6 0%, rgba(59,130,246,0) 100%)",
+                "linear-gradient(90deg, #33E1FF 0%, rgba(51,225,255,0) 100%)",
             }}
           />
           {description && (
             <div
               style={{
                 fontSize: "26px",
-                color: "#A3A3A3",
+                color: "#8598AB",
                 maxWidth: 1056,
                 lineHeight: 1.35,
                 fontWeight: 400,
@@ -132,8 +132,8 @@ export default async function ProjectOgImage({
               key={tag}
               style={{
                 padding: "8px 16px",
-                border: "1px solid rgba(229,229,229,0.25)",
-                color: "#A3A3A3",
+                border: "1px solid rgba(238,244,249,0.25)",
+                color: "#8598AB",
                 borderRadius: 999,
               }}
             >
@@ -143,7 +143,7 @@ export default async function ProjectOgImage({
           <span
             style={{
               marginLeft: "auto",
-              color: "#737373",
+              color: "#657382",
               letterSpacing: "0.15em",
               textTransform: "uppercase",
             }}

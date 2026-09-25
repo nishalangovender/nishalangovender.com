@@ -23,8 +23,8 @@ export default function GlobalError({
           justifyContent: "center",
           padding: "2rem",
           fontFamily: "system-ui, sans-serif",
-          background: "#0A0A0A",
-          color: "#E5E5E5",
+          background: "#040405",
+          color: "#EEF4F9",
           margin: 0,
         }}
       >
@@ -35,7 +35,7 @@ export default function GlobalError({
               fontSize: "0.75rem",
               letterSpacing: "0.2em",
               textTransform: "uppercase",
-              color: "#3B82F6",
+              color: "#33E1FF",
               margin: 0,
             }}
           >
@@ -56,7 +56,7 @@ export default function GlobalError({
             style={{
               marginTop: "1.5rem",
               fontSize: "1rem",
-              color: "#A3A3A3",
+              color: "#8598AB",
               lineHeight: 1.6,
             }}
           >
@@ -69,7 +69,7 @@ export default function GlobalError({
                 marginTop: "1.5rem",
                 fontFamily: "monospace",
                 fontSize: "0.75rem",
-                color: "#737373",
+                color: "#657382",
               }}
             >
               Reference: {error.digest}
@@ -81,8 +81,8 @@ export default function GlobalError({
             style={{
               marginTop: "2rem",
               padding: "0.75rem 1.5rem",
-              background: "#3B82F6",
-              color: "white",
+              background: "#33E1FF",
+              color: "#040405",
               border: "none",
               borderRadius: "0.5rem",
               fontSize: "1rem",
