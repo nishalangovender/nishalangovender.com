@@ -18,14 +18,14 @@ export default function Hero() {
           animate="visible"
         >
           <motion.div variants={fadeUp}>
-            <Eyebrow variant="chip">Design &middot; Iterate &middot; Deploy</Eyebrow>
+            <Eyebrow variant="chip" className="normal-case">~/robotics</Eyebrow>
           </motion.div>
 
           <motion.h1
             className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight"
             variants={fadeUp}
           >
-            I Solve Problems
+            From Notebook to Factory Floor
           </motion.h1>
 
           <motion.div
@@ -37,10 +37,9 @@ export default function Hero() {
             className="text-muted text-lg max-w-xl mx-auto md:mx-0 leading-relaxed"
             variants={fadeUp}
           >
-            Starting at the whiteboard, not the keyboard. I walk the floor,
-            understand the process, then design modular systems that
-            scale — deploying a proof of concept as fast as possible,
-            then iterating. The tech stack changes; the approach doesn&apos;t.
+            Robotics engineer. Shipped production AGV fleets into Toyota
+            South Africa — ROS2, controls, embedded C++, kernel to cloud.
+            Now exploring Physical AI at Ubundi.
           </motion.p>
 
           <motion.div
@@ -49,7 +48,7 @@ export default function Hero() {
           >
             <LinkButton href="/projects">View My Work</LinkButton>
             <LinkButton href="/cv" variant="outline">
-              View Profile
+              View CV
             </LinkButton>
           </motion.div>
         </motion.div>

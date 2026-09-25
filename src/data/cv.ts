@@ -50,7 +50,7 @@ export const profileSummary = `Robotics engineer working across AI and Physical 
 
 export const experience: ExperienceEntry[] = [
   {
-    role: "Robotics Engineer",
+    role: "Lead Robotics Engineer",
     company: "Ubundi",
     companyUrl: "https://ubundi.com",
     location: "Stellenbosch, South Africa · Hybrid",

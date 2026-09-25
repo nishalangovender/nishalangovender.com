@@ -14,7 +14,7 @@ const avatarPath = join(process.cwd(), "public/images/avatar/avatar-400.png");
 
 export default async function OpengraphImage() {
   const name = siteConfig.name;
-  const taglineLine = `${siteConfig.tagline} · Robotics, Embedded Systems, Controls`;
+  const taglineLine = `${siteConfig.tagline} · ROS2, Controls, Embedded Systems`;
 
   const [spaceGrotesk700, spaceGrotesk400, jetBrainsMono400, avatar] =
     await Promise.all([

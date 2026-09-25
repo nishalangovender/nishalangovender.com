@@ -50,12 +50,12 @@ function AboutHeader() {
     <header className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8 flex items-center gap-5">
       <Avatar size={72} alt={siteConfig.name} />
       <div className="min-w-0">
-        <Eyebrow size="small">Robotics Engineer · Ubundi</Eyebrow>
+        <Eyebrow size="small">{siteConfig.role} · Ubundi</Eyebrow>
         <p className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight">
           {siteConfig.name}
         </p>
         <p className="mt-1 text-sm text-muted">
-          AI and Physical AI, from Stellenbosch.
+          Deployed robotics. Now exploring Physical AI.
         </p>
       </div>
     </header>

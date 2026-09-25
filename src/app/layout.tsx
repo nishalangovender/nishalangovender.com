@@ -71,7 +71,7 @@ const personJsonLd = {
   name: siteConfig.name,
   url: siteConfig.url,
   email: `mailto:${siteConfig.email}`,
-  jobTitle: siteConfig.tagline,
+  jobTitle: siteConfig.role,
   description: siteConfig.description,
   sameAs: [
     siteConfig.socials.github,
@@ -85,17 +85,13 @@ const personJsonLd = {
   },
   knowsAbout: [
     "Robotics",
-    "Physical AI",
-    "Vision-Language-Action Models",
-    "World Action Models",
-    "Large Language Models",
-    "AI Agents",
-    "Embedded Systems",
-    "Control Systems",
     "ROS2",
+    "Control Systems",
+    "Embedded Systems",
     "C++",
-    "Mechatronics Engineering",
     "Autonomous Vehicles",
+    "Mechatronics Engineering",
+    "Physical AI",
   ],
 };
 

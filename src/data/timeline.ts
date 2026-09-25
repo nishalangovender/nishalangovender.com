@@ -220,7 +220,7 @@ export const timelineChapters: TimelineChapter[] = [
   {
     id: "ubundi",
     title: "Ubundi",
-    subtitle: "Robotics Engineer",
+    subtitle: "Lead Robotics Engineer",
     logo: "/images/logos/ubundi.png",
     yearRange: "May 2026 – Present",
     description:
@@ -404,7 +404,7 @@ export const timelineYears: TimelineYear[] = [
       {
         month: "May",
         text: "Ubundi",
-        subtitle: "Robotics Engineer",
+        subtitle: "Lead Robotics Engineer",
         logo: "/images/logos/ubundi.png",
         side: "left",
       },

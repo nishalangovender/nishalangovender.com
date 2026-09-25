@@ -19,12 +19,12 @@ import { siteConfig } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Profile",
   description:
-    "Public profile of Nishalan Govender — mechatronics engineer specialising in production robotics, embedded systems and controls. Request the full CV via the form.",
+    "Public profile of Nishalan Govender — robotics engineer specialising in production robotics, embedded systems and controls. Request the full CV via the form.",
   alternates: { canonical: "/cv" },
   openGraph: {
     title: "Profile — Nishalan Govender",
     description:
-      "Public profile of Nishalan Govender — mechatronics engineer specialising in production robotics, embedded systems and controls. Request the full CV via the form.",
+      "Public profile of Nishalan Govender — robotics engineer specialising in production robotics, embedded systems and controls. Request the full CV via the form.",
     url: "/cv",
     type: "profile",
   },

@@ -121,7 +121,7 @@ export const institutions: InstitutionPeriod[] = [
   { label: "Stellenbosch University", subtitle: "Bachelor of Engineering in Mechatronics", fromYear: 2019, toYear: 2024, logo: "/images/logos/stellenbosch-university.jpg" },
   { label: "BATTALION Technologies", subtitle: "Mechatronics Engineer", fromYear: 2024, toYear: 2026, logo: "/images/logos/battalion-technologies.jpeg" },
   { label: "Freelance", subtitle: "Independent", fromYear: 2026, toYear: UBUNDI_START_YEAR, logo: "/images/logos/ng-freelance.svg" },
-  { label: "Ubundi", subtitle: "Robotics Engineer", fromYear: UBUNDI_START_YEAR, toYear: PRESENT_YEAR, logo: "/images/logos/ubundi.png" },
+  { label: "Ubundi", subtitle: "Lead Robotics Engineer", fromYear: UBUNDI_START_YEAR, toYear: PRESENT_YEAR, logo: "/images/logos/ubundi.png" },
 ];
 
 // ─── Transition arcs (scholarships/bursaries bridging institutions) ───
