@@ -4,13 +4,11 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import {
   BufferGeometry,
-  CanvasTexture,
   Color,
   DoubleSide,
   Float32BufferAttribute,
   Group,
   Mesh,
-  MeshBasicMaterial,
   PlaneGeometry,
   Points,
   PointsMaterial,
@@ -26,7 +24,6 @@ import { HINGE_X, PAPER, PEN, paperMaterial } from "./Notebook";
 import { useScene } from "./scene-context";
 import {
   SKETCH_BODY,
-  SKETCH_LABELS,
   SKETCH_ROLES,
   SKETCH_SEGMENTS,
   PAGE,
@@ -36,12 +33,10 @@ import {
   type SketchRole,
 } from "./sketch";
 
-/** Share of the sketch beat spent drawing strokes; labels are written in after. */
-const DRAW_SHARE = 0.8;
+/** Share of the sketch beat spent writing; the finished page holds for the rest. */
+const DRAW_SHARE = 0.92;
 /** How far the ink lifts off the page as it becomes the wireframe. */
 const LIFT = 0.5;
-/** Label glyph size on the page, metres. */
-const LABEL_SIZE = 0.34;
 
 /** Pen colour for each stroke role — RViz red/green for the body axes. */
 export function roleColor(role: SketchRole): string {
@@ -49,14 +44,13 @@ export function roleColor(role: SketchRole): string {
 }
 
 /**
- * Ink state at time `t`: strokes drawn and labels written in the sketch beat;
+ * Ink state at time `t`: the diagram and its symbols written in the sketch beat;
  * the robot outline lifts and fades in the design beat; in the return beat
  * the written sheet turns over the gutter coil (`turn` 0 → 1, a half turn)
  * and lands face-down on the stack of turned pages, uncovering a fresh page.
  */
 export function inkAt(t: number): {
   drawn: number;
-  labels: number;
   lift: number;
   body: number;
   turn: number;
@@ -66,7 +60,6 @@ export function inkAt(t: number): {
   const back = beatProgress(t, "return");
   return {
     drawn: clamp01(sketch / DRAW_SHARE),
-    labels: clamp01((sketch - DRAW_SHARE) / (1 - DRAW_SHARE)),
     lift: design * LIFT,
     body: 1 - design,
     // Turns once the camera has landed back on the notebook (see camera.ts).
@@ -77,30 +70,6 @@ export function inkAt(t: number): {
 /** Layer heights above the page, so the turning sheet never fights the page under it. */
 const SHEET_Y = 0.004;
 const INK_Y = 0.007;
-const LABEL_Y = 0.009;
-
-/** One symbol as a white glyph on a transparent texture, tinted by the material. */
-function glyphTexture(text: string): CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 128;
-  const texture = new CanvasTexture(canvas);
-  const draw = () => {
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const mono = getComputedStyle(document.documentElement).getPropertyValue("--font-jetbrains-mono").trim();
-    ctx.clearRect(0, 0, 128, 128);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = `600 92px ${mono || "monospace"}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, 64, 68);
-    texture.needsUpdate = true;
-  };
-  draw();
-  // Redraw once the web font has loaded, in case the first pass fell back.
-  void document.fonts?.ready.then(draw);
-  return texture;
-}
 
 function strokeColors(roles: readonly SketchRole[]): number[] {
   return roles.flatMap((role) => {
@@ -116,33 +85,17 @@ const segmentsWhere = (keep: boolean) =>
 
 /**
  * The top sheet of the notebook and everything written on it. Beats 1–2: the
- * kinematic sketch is inked stroke by stroke and labelled; the robot's
+ * kinematic sketch and its symbols are inked stroke by stroke; the robot's
  * outline lifts off into the wireframe while the axes, vectors and symbols
- * stay on the page. Return beat: the sheet turns over the spiral binding onto
+ * stay on the page. Return beat: the sheet turns about the spine onto
  * the left-hand stack. At the loop seam it is back on the right, blank — the
  * same as the fresh page it uncovered, so nothing visibly vanishes.
  */
 export function InkSketch() {
   const sceneRef = useScene();
-  const { page, body, labels, paper, dots, hinge } = useMemo(() => {
+  const { page, body, paper, dots, hinge } = useMemo(() => {
     const page = fatLines(toPositions(segmentsWhere(false), INK_Y), { linewidth: 2, colors: strokeColors(PAGE_ROLES) });
     const body = fatLines(toPositions(segmentsWhere(true), INK_Y), { linewidth: 2, colors: strokeColors(BODY_ROLES) });
-    const plane = new PlaneGeometry(LABEL_SIZE, LABEL_SIZE);
-    const labels = SKETCH_LABELS.map((l) => {
-      const mesh = new Mesh(
-        plane,
-        new MeshBasicMaterial({
-          map: glyphTexture(l.text),
-          color: roleColor(l.role),
-          transparent: true,
-          depthWrite: false,
-        }),
-      );
-      mesh.rotation.x = -Math.PI / 2;
-      mesh.position.set(l.x, LABEL_Y, l.z);
-      return mesh;
-    });
-
     // The sheet itself: lit paper matching the page beneath, both sides, with the page's dot grid.
     const paperMat = paperMaterial(PAPER.sheet);
     Object.assign(paperMat, { side: DoubleSide, transparent: true });
@@ -157,19 +110,19 @@ export function InkSketch() {
     );
     dots.position.y = SHEET_Y;
 
-    // Draw order inside the sheet: paper, dots, ink, symbols — the paper is
-    // transparent (for the labels' blending), so it must never paint over the ink.
+    // Draw order inside the sheet: paper, dots, then ink. The paper is
+    // transparent so it sorts with the ink, and must never paint over it.
     paper.material.depthWrite = false;
-    [paper, dots, page, body, ...labels].forEach((obj, i) => (obj.renderOrder = Math.min(i, 3)));
+    [paper, dots, page, body].forEach((obj, i) => (obj.renderOrder = Math.min(i, 2)));
     const sheet = new Group();
-    sheet.add(paper, dots, page, body, ...labels);
+    sheet.add(paper, dots, page, body);
     // Hinge in the gutter, at page height; the sheet lies out to its right.
     sheet.position.x = PAGE.width / 2;
     const hinge = new Group();
     hinge.add(sheet);
     hinge.position.set(HINGE_X, PAGE_HEIGHT, 0);
     hinge.renderOrder = LAYER.ink;
-    return { page, body, labels, paper, dots, hinge };
+    return { page, body, paper, dots, hinge };
   }, []);
 
   useEffect(
@@ -178,13 +131,8 @@ export function InkSketch() {
         obj.geometry.dispose();
         obj.material.dispose();
       }
-      labels[0]?.geometry.dispose();
-      for (const mesh of labels) {
-        mesh.material.map?.dispose();
-        mesh.material.dispose();
-      }
     },
-    [page, body, labels, paper, dots],
+    [page, body, paper, dots],
   );
 
   useFrame(() => {
@@ -196,12 +144,6 @@ export function InkSketch() {
     body.position.y = ink.lift;
     body.material.opacity = ink.body;
     body.visible = ink.body > 0;
-    // Labels are written in one after another once the strokes are done.
-    labels.forEach((mesh, i) => {
-      const k = clamp01(ink.labels * labels.length - i);
-      mesh.visible = k > 0;
-      mesh.material.opacity = k;
-    });
     // A half turn about the gutter (positive about z) lifts the free right edge
     // up and over to the left, landing the sheet face-down on the turned pages.
     hinge.rotation.z = ink.turn * Math.PI;

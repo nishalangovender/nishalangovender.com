@@ -1,4 +1,4 @@
-import { PAGE, SKETCH_LABELS, SKETCH_ROLES, SKETCH_SEGMENTS, type SketchRole } from "./sketch";
+import { PAGE, SKETCH_ROLES, SKETCH_SEGMENTS, type SketchRole } from "./sketch";
 
 /**
  * Static notebook frame: the dot-grid page with the finished kinematic sketch.
@@ -59,13 +59,6 @@ export function HeroStatic() {
       <g fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         {PATHS.map(({ role, d }) => (
           <path key={role} d={d} stroke={ROLE_STROKE[role]} />
-        ))}
-      </g>
-      <g fontFamily="var(--font-mono)" fontSize="18" fontWeight="600" textAnchor="middle" dominantBaseline="central">
-        {SKETCH_LABELS.map((l) => (
-          <text key={l.text} x={sx(l.x)} y={sy(l.z)} fill={ROLE_STROKE[l.role]}>
-            {l.text}
-          </text>
         ))}
       </g>
     </svg>

@@ -14,6 +14,7 @@ import {
   SKETCH_ORIGIN,
   SKETCH_ROLES,
   SKETCH_SEGMENTS,
+  SKETCH_STROKES,
   bodySegmentsIn,
   pageDots,
   segmentsDrawn,
@@ -44,15 +45,15 @@ describe("sketch geometry", () => {
   });
 
   it("marks only the chassis, drive wheels and castor as the lifting robot outline", () => {
+    expect(SKETCH_STROKES.filter((st) => st.body)).toHaveLength(4); // chassis, two wheels, castor
     const bodyCount = SKETCH_BODY.filter(Boolean).length;
-    expect(bodyCount).toBe(4 * 4); // four closed rectangles
     expect(bodySegmentsIn(SKETCH_BODY.length)).toBe(bodyCount);
     SKETCH_BODY.forEach((isBody, i) => {
       if (isBody) expect(SKETCH_ROLES[i]).toBe("ink");
     });
   });
 
-  it("labels every symbol of the kinematic diagram on the page", () => {
+  it("writes every symbol of the kinematic diagram on the page", () => {
     expect(SKETCH_LABELS.map((l) => l.text).sort()).toEqual(["V", "X", "Y", "x", "y", "θ", "ω"].sort());
     for (const l of SKETCH_LABELS) {
       expect(Math.abs(l.x)).toBeLessThan(PAGE.width / 2);
@@ -85,8 +86,7 @@ describe("beats 1–2", () => {
 
   it("finishes the drawing and labels before the design beat, then lifts only the robot outline", () => {
     expect(inkAt(beat("sketch").end - 0.01).drawn).toBe(1);
-    expect(inkAt(beat("sketch").end - 0.01).labels).toBeGreaterThan(0.9);
-    expect(inkAt(mid("sketch")).labels).toBe(0);
+    expect(inkAt(mid("sketch")).drawn).toBeLessThan(1);
     const lifting = inkAt(mid("design"));
     expect(lifting.lift).toBeGreaterThan(0);
     expect(lifting.body).toBeLessThan(1);
@@ -132,12 +132,10 @@ describe("sketch on the dot grid", () => {
   });
 
   it("draws the position line from the origin to base_link as one unbroken stroke", () => {
-    const [ox, oy] = SKETCH_ORIGIN;
-    const segs = SKETCH_SEGMENTS;
-    const fromOrigin = [];
-    for (let i = 0; i < segs.length; i += 4) {
-      if (segs[i] === ox && segs[i + 1] === -oy && segs[i + 2] === BASE_LINK.x) fromOrigin.push(i);
-    }
-    expect(fromOrigin).toHaveLength(1);
+    const near = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1]) < 1e-9;
+    const lines = SKETCH_STROKES.filter(
+      (st) => near(st.points[0], SKETCH_ORIGIN) && near(st.points.at(-1)!, [BASE_LINK.x, -BASE_LINK.z]),
+    );
+    expect(lines).toHaveLength(1);
   });
 });

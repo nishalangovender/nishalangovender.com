@@ -4,8 +4,9 @@
  *
  * The kinematic sketch is authored in the ROS map frame (x right, y up the
  * page) and flattened onto the page as [x, z = −y]. `HeroStatic` draws the
- * same strokes and labels as SVG, so the static frame and the ink match.
+ * same strokes as SVG, so the static frame and the ink match.
  */
+import { penWobble, writeGlyph, type P } from "./handwriting";
 
 export const PAGE = { width: 4.2, depth: 3.2 } as const;
 
@@ -54,7 +55,6 @@ export const AGV_BODY_Y = AGV.wheelRadius + 0.04;
 export const AGV_LIDAR_OFFSET = AGV.offset + AGV.length / 2 - 0.2;
 export const LIDAR_HEIGHT = AGV_BODY_Y + AGV.height + 0.05;
 
-type P = [number, number];
 /** Flat segment list on the page: [x1, z1, x2, z2] per segment. */
 export type Segments = number[];
 
@@ -109,8 +109,8 @@ function bodyRect(fwd: number, left: number, len: number, wid: number): P[] {
 const refAngle = Math.atan2(B[1] - ORIGIN[1], B[0] - ORIGIN[0]);
 const OMEGA_CENTRE = body(-0.55, 0.95);
 
-/** Pen strokes in drawing order, as in the notebook original. */
-export const SKETCH_STROKES: readonly Stroke[] = [
+/** The diagram's pen strokes in drawing order, as in the notebook original (symbols follow). */
+const DIAGRAM: readonly Stroke[] = [
   // World frame
   ...arrow("ink", ORIGIN, [ORIGIN[0], 1.3]),
   ...arrow("ink", ORIGIN, [1.9, ORIGIN[1]]),
@@ -130,6 +130,41 @@ export const SKETCH_STROKES: readonly Stroke[] = [
   { role: "motion", points: arc(OMEGA_CENTRE, 0.18, -Math.PI * 0.2, Math.PI * 1.45, 14) },
   arrowHead("motion", add(OMEGA_CENTRE, polar(0.18, Math.PI * 1.35)), add(OMEGA_CENTRE, polar(0.18, Math.PI * 1.45)), 0.07),
 ];
+
+export interface SketchLabel {
+  text: string;
+  role: SketchRole;
+  /** Page position (x, z). */
+  x: number;
+  z: number;
+}
+
+const label = (text: string, role: SketchRole, p: P): SketchLabel => ({ text, role, x: p[0], z: -p[1] });
+
+/** Where each symbol is written, once the strokes are done. */
+export const SKETCH_LABELS: readonly SketchLabel[] = [
+  label("Y", "ink", [ORIGIN[0] + 0.2, 1.25]),
+  label("X", "ink", [1.88, ORIGIN[1] - 0.2]),
+  label("θ", "ink", add(ORIGIN, polar(0.58, refAngle / 2))),
+  label("x", "axisX", body(0.62, 0.14)),
+  label("y", "axisY", body(-0.2, 0.3)),
+  label("V", "motion", body(1.3, 0.12)),
+  label("ω", "motion", add(OMEGA_CENTRE, [0, 0.3])),
+];
+
+/** Symbol height on the page, metres. */
+const SYMBOL_SIZE = 0.24;
+
+/**
+ * Every pen stroke in drawing order: the diagram, then its symbols in neat
+ * handwriting, all with a slight hand wobble.
+ */
+export const SKETCH_STROKES: readonly Stroke[] = [
+  ...DIAGRAM,
+  ...SKETCH_LABELS.flatMap((l) =>
+    writeGlyph(l.text, [l.x, -l.z], SYMBOL_SIZE).map((points): Stroke => ({ role: l.role, points })),
+  ),
+].map((stroke, i) => ({ ...stroke, points: penWobble(stroke.points, i * 1.7) }));
 
 function toSegments(stroke: Stroke): Segments {
   const out: Segments = [];
@@ -178,23 +213,4 @@ export const SKETCH_ROLES: readonly SketchRole[] = SKETCH_STROKES.flatMap((s) =>
   Array<SketchRole>(toSegments(s).length / 4).fill(s.role),
 );
 
-export interface SketchLabel {
-  text: string;
-  role: SketchRole;
-  /** Page position (x, z). */
-  x: number;
-  z: number;
-}
 
-const label = (text: string, role: SketchRole, p: P): SketchLabel => ({ text, role, x: p[0], z: -p[1] });
-
-/** Symbols written in once the strokes are done. */
-export const SKETCH_LABELS: readonly SketchLabel[] = [
-  label("Y", "ink", [ORIGIN[0] - 0.12, 1.3]),
-  label("X", "ink", [1.88, ORIGIN[1] - 0.2]),
-  label("θ", "ink", add(ORIGIN, polar(0.58, refAngle / 2))),
-  label("x", "axisX", body(0.62, 0.14)),
-  label("y", "axisY", body(-0.14, 0.5)),
-  label("V", "motion", body(1.3, 0.12)),
-  label("ω", "motion", add(OMEGA_CENTRE, [0, 0.3])),
-];
